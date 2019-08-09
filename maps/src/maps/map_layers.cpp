@@ -117,7 +117,6 @@ maps::createMapLayers(const std::vector<MapLayerType>& layer_types)
         /**
          * Free Space layers
          **/
-	/*
         std::string free_space_dir;
         ros_params::getRequiredParam("/maps/free_space_dir", free_space_dir);
 
@@ -129,7 +128,6 @@ maps::createMapLayers(const std::vector<MapLayerType>& layer_types)
           auto layer = std::make_shared<FreeSpaceMapLayer>(filename_stem, filename);
           layers.push_back(std::static_pointer_cast<MapLayer>(layer));
         }
-        */
       } break;
 
       case MapLayerType::RADAR_ZONES: {

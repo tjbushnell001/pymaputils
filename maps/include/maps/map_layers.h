@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include <maps/free_space_maps.h>
 #include <maps/geojson_maps.h>
 
 namespace maps {
