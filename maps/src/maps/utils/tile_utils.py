@@ -65,8 +65,6 @@ def tile_id_to_tile_xy(tile_id, tile_level):
     :return: decoded x, y coordinates
     """
     tile_y, tile_x = morton_decode(tile_id, tile_level)
-    print "tile x: {}, tile y: {}".format(tile_x, tile_y)
-    lat_lng_to_tile_xy(33.748380,-116.266990, 14)
     return tile_x, tile_y
 
 
@@ -98,9 +96,6 @@ def lat_lng_to_tile_xy(lat, lng, tile_level):
     assert abs_lat_offset >= 0.
 
     degrees_per_tile = 360.0 / (1 << tile_level)
-
-    print "abs_lng:", abs_lng_offset, "abs_lat:", abs_lat_offset
-    print "degrees_per_tile:", degrees_per_tile
 
     tile_x = int(abs_lng_offset / degrees_per_tile)
     tile_y = int(abs_lat_offset / degrees_per_tile)
