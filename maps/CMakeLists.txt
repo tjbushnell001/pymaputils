@@ -128,8 +128,17 @@ include_directories(
 add_library(${PROJECT_NAME}
    src/${PROJECT_NAME}/map_layer.cpp
    src/${PROJECT_NAME}/map_layers.cpp
+   src/${PROJECT_NAME}/lane_maps.cpp
    src/${PROJECT_NAME}/geojson_maps.cpp
    src/${PROJECT_NAME}/free_space_maps.cpp
+   src/${PROJECT_NAME}/utils/lane_map_transform.cpp
+   src/${PROJECT_NAME}/utils/lane_map_msg_parser.cpp
+   src/${PROJECT_NAME}/utils/lane_map_msg_utils.cpp
+   src/${PROJECT_NAME}/utils/lane_map_utils.cpp
+   src/${PROJECT_NAME}/utils/ego_lane_finder.cpp
+   src/${PROJECT_NAME}/utils/lane_annotator.cpp
+   src/${PROJECT_NAME}/utils/lane_group_annotator.cpp
+   src/${PROJECT_NAME}/utils/lane_map_filtering.cpp
    src/${PROJECT_NAME}/utils/map_frame_utils.cpp
 )
 

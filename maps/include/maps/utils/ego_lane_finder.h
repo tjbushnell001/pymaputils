@@ -4,7 +4,7 @@
 #include <math.h>
 #include <utils/map/utils.h>
 #include <vector>
-#include "map_interpreter.h"
+#include <maps/lane_maps.h>
 
 namespace ego_lane_finder {
 
@@ -14,25 +14,25 @@ const double MAX_DISTANCE_DIFF = 1.0;              // meters
 const double LOOK_AHEAD_DIST = 10.0;               // meters
 const double LOOK_BEHIND_DIST = 10.0;              // meters
 
-std::vector<map_utils::LaneRef> getEgoLanes(const mappery::MapInterpreter& map_interpreter);
+std::vector<lane_map::LaneRef> getEgoLanes(const maps::LaneSubMap& lane);
 
-std::vector<map_utils::LaneRef> getCandidateLanes(const mappery::MapInterpreter& map_interpreter);
+std::vector<lane_map::LaneRef> getCandidateLanes(const maps::LaneSubMap& lane);
 
-std::vector<map_utils::LaneRef> filterUsingHeading(const std::vector<map_utils::LaneRef>& lane_refs,
-                                                   const mappery::MapInterpreter& map_interpreter);
+std::vector<lane_map::LaneRef> filterUsingHeading(const std::vector<lane_map::LaneRef>& lane_refs,
+                                                   const maps::LaneSubMap& lane);
 
-std::vector<map_utils::LaneRef> filterDistantLanes(const std::vector<map_utils::LaneRef>& lane_refs,
-                                                   const mappery::MapInterpreter& map_interpreter);
+std::vector<lane_map::LaneRef> filterDistantLanes(const std::vector<lane_map::LaneRef>& lane_refs,
+                                                   const maps::LaneSubMap& lane);
 
-std::vector<map_utils::LaneRef>
-sortFromLeftToRight(const std::vector<map_utils::LaneRef>& lane_refs,
-                    const mappery::MapInterpreter& map_interpreter);
+std::vector<lane_map::LaneRef>
+sortFromLeftToRight(const std::vector<lane_map::LaneRef>& lane_refs,
+                    const maps::LaneSubMap& lane);
 
-double getAngleBetweenEgoHeadingAndLane(const map_utils::LaneRef& lane_ref,
-                                        const mappery::MapInterpreter& map_interpreter);
+double getAngleBetweenEgoHeadingAndLane(const lane_map::LaneRef& lane_ref,
+                                        const maps::LaneSubMap& lane);
 
-double getCompositeLateralValue(const map_utils::LaneRef& lane_ref,
-                                const mappery::MapInterpreter& map_interpreter);
+double getCompositeLateralValue(const lane_map::LaneRef& lane_ref,
+                                const maps::LaneSubMap& lane);
 
 } // end namespace
 

@@ -2,23 +2,24 @@
 #define LANE_MAP_SERVER_LANE_ANNOTATOR_H
 
 #include <ros/ros.h>
-#include <boost/filesystem.hpp>
 #include <string>
 #include <vector>
-#include "utils/json/json.h"
-#include "utils/map/structs.h"
+#include "maps/map_layers.h"
+#include "utils/map/lane_map_structs.h"
 
 class LaneAnnotator
 {
  public:
-  LaneAnnotator(const std::string& route, const std::string& map_folder,
-                const std::string& map_annotation_file, bool map_utils::Lane::*field);
+  LaneAnnotator(const std::string& route, const std::string& layer_name,
+                const maps::MapLayers& maps, bool lane_map::Lane::*field);
 
-  void annotateTile(map_utils::Tile& tile);
+  void annotateTile(lane_map::Tile& tile);
 
  private:
-  std::vector<BoostPolygon> annotations_;
-  bool map_utils::Lane::*lane_field_;
+  const maps::MapLayers& maps_;
+  const std::string route_name_;
+  const std::string layer_name_;
+  bool lane_map::Lane::*lane_field_;
 };
 
 #endif // LANE_MAP_SERVER_MAP_ANNOTATOR_H

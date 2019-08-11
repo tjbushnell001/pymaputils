@@ -1,45 +1,40 @@
-#ifndef LANE_MAP_SERVER_MAPPERY_MAP_PARSER_H
-#define LANE_MAP_SERVER_MAPPERY_MAP_PARSER_H
-
-#include <geometry_msgs/Point.h>
 #include <perception_msgs/Map.h>
-#include <utils/map/utils.h>
-#include <unordered_map>
-#include "utils/map/structs.h"
+#include <perception_msgs/MapBoundary.h>
+#include <perception_msgs/MapBoundaryRef.h>
+#include <perception_msgs/MapConnector.h>
+#include <perception_msgs/MapConnectorRef.h>
+#include <perception_msgs/MapJunction.h>
+#include <perception_msgs/MapJunctionRef.h>
+#include <perception_msgs/MapLane.h>
+#include <perception_msgs/MapLaneGroup.h>
+#include <perception_msgs/MapLaneGroupRef.h>
+#include <perception_msgs/MapTile.h>
+#include "maps/map_layers.h"
+#include "utils/map/lane_map_structs.h"
 
+namespace map_msg_utils {
 
-namespace mappery {
+perception_msgs::MapBoundary getBoundaryMsg(const lane_map::Boundary& boundary);
 
-class MapParser
-{
- public:
-  std::unordered_map<uint64_t, map_utils::Tile> getTiles(const perception_msgs::Map& map_msg);
+perception_msgs::MapBoundaryRef getBoundaryRefMsg(const lane_map::BoundaryRef& boundary_ref);
 
- private:
-  static map_utils::Tile getTileStruct(const perception_msgs::MapTile& tile_msg);
+perception_msgs::MapLane getLaneMsg(const lane_map::Lane& lane);
 
-  static map_utils::LaneGroup
-  getLaneGroupStruct(const perception_msgs::MapLaneGroup& lane_group_msg);
+perception_msgs::MapLaneRef getLaneRefMsg(const lane_map::LaneRef& lane_ref);
 
-  static map_utils::Connector
-  getConnectorStruct(const perception_msgs::MapConnector& connector_msg);
+perception_msgs::MapLaneGroup getLaneGroupMsg(const lane_map::LaneGroup& lane_group);
 
-  static map_utils::ConnectorRef
-  getConnectorRefStruct(const perception_msgs::MapConnectorRef& conn_ref_msg);
+perception_msgs::MapLaneGroupRef getLaneGroupRefMsg(const lane_map::LaneGroupRef& lg_ref);
 
-  static map_utils::Lane getLaneStruct(const perception_msgs::MapLane& lane_msg);
+perception_msgs::MapJunction getJunctionMsg(const lane_map::Junction& junction);
 
-  static map_utils::Boundary getBoundaryStruct(const perception_msgs::MapBoundary& boundary_msg);
+perception_msgs::MapJunctionRef getJunctionRefMsg(const lane_map::JunctionRef& junc_ref);
 
-  static map_utils::LaneGroupRef
-  getLaneGroupRefStruct(const perception_msgs::MapLaneGroupRef& lg_ref_msg);
+perception_msgs::MapConnector getConnectorMsg(const lane_map::Connector& connector);
 
-  void addLaneGroupPerimeters(std::unordered_map<uint64_t, map_utils::Tile>& tiles);
+perception_msgs::MapConnectorRef getConnectorRefMsg(const lane_map::ConnectorRef& conn_ref);
 
-  static void addGeoPts(std::vector<BoostPoint>& target, const std::vector<geometry_msgs::Point>& pts,
-                        bool flip);
-};
+perception_msgs::MapTile getTileMsg(const lane_map::Tile& tile);
 
-} // end namespace
-
-#endif
+perception_msgs::Map getMapMsg(const maps::LaneSubMap& map);
+}

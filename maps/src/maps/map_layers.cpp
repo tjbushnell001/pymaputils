@@ -83,21 +83,18 @@ maps::createMapLayers(const std::vector<MapLayerType>& layer_types)
         /**
          * Lane Map layers
          **/
-	/*
         std::string map_dir;
         ros_params::getRequiredParam("/maps/map_dir", map_dir);
 
         const std::string lane_tiles_dir = map_dir + "/tiles";
         auto layer = std::make_shared<LaneMapLayer>(lane_tiles_dir, 1);
         layers.push_back(std::static_pointer_cast<MapLayer>(layer));
-        */
       } break;
 
       case MapLayerType::LANE_ANNOTATION: {
         /**
          * Lane Annotation layers
          **/
-	/*
         std::string map_dir;
         ros_params::getRequiredParam("/maps/map_dir", map_dir);
 
@@ -110,7 +107,6 @@ maps::createMapLayers(const std::vector<MapLayerType>& layer_types)
               MapLayerType::LANE_ANNOTATION, filename_stem, MapFrameType::GCS_NED, filename);
           layers.push_back(std::static_pointer_cast<MapLayer>(layer));
         }
-        */
       } break;
 
       case MapLayerType::FREE_SPACE: {
@@ -141,6 +137,9 @@ maps::createMapLayers(const std::vector<MapLayerType>& layer_types)
         // create a layer for each map file
         for (const std::string& filename : file_utils::getFilesInDirectory(radar_zones_dir)) {
           const std::string filename_stem = file_utils::getFilenameStem(filename);
+          if (filename_stem.empty())
+            continue;
+
           auto layer =
               std::make_shared<GeoJsonMapLayer>(MapLayerType::RADAR_ZONES, filename_stem, filename);
           layers.push_back(std::static_pointer_cast<MapLayer>(layer));
@@ -157,6 +156,9 @@ maps::createMapLayers(const std::vector<MapLayerType>& layer_types)
         // create a layer for each map file
         for (const std::string& filename : file_utils::getFilesInDirectory(map_reader_dir)) {
           const std::string filename_stem = file_utils::getFilenameStem(filename);
+          if (filename_stem.empty())
+            continue;
+
           auto layer =
               std::make_shared<GeoJsonMapLayer>(MapLayerType::MAP_READER, filename_stem, filename);
           layers.push_back(std::static_pointer_cast<MapLayer>(layer));
@@ -167,7 +169,6 @@ maps::createMapLayers(const std::vector<MapLayerType>& layer_types)
         /**
          * Localization Zones layers
          **/
-	/*
         std::string map_dir;
         ros_params::getRequiredParam("/maps/map_dir", map_dir);
 
@@ -175,7 +176,6 @@ maps::createMapLayers(const std::vector<MapLayerType>& layer_types)
         auto layer = std::make_shared<PolygonFeatureMapLayer>(MapLayerType::LOCALIZATION_ZONES, "",
                                                               MapFrameType::GCS_NED, filename);
         layers.push_back(std::static_pointer_cast<MapLayer>(layer));
-        */
       } break;
 
       default:

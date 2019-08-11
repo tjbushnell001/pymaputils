@@ -1,7 +1,4 @@
 #include "lane_group_annotator.h"
-#include <utils/ros/params.h>
-#include "map_parsing_utils.h"
-#include "utils/file/file_utils.h"
 
 /*
  * This class annotates Lane structs by setting boolean members.  Given a json file
@@ -9,24 +6,14 @@
  * lane falls within a polygon.  Additionally, it filters
  * polygons so only those with a matching map file property are loaded.
  */
-LaneGroupAnnotator::LaneGroupAnnotator(const std::string& route, const std::string& map_folder,
-                                       const std::string& map_annotation_file,
-                                       bool map_utils::LaneGroup::*field)
+LaneGroupAnnotator::LaneGroupAnnotator(const std::string& route, const std::string& layer_name,
+                                       const maps::MapLayers& maps,
+                                       bool lane_map::LaneGroup::*field)
+  : maps_(maps), route_name_(route), layer_name_(layer_name), lane_group_field_(field)
 {
-  lane_group_field_ = field;
-
-  const std::string full_path = map_folder + "/annotations/" + map_annotation_file;
-  if (!file_utils::fileExists(full_path)) {
-    ROS_FATAL_STREAM("Lane Group annotation file " << full_path << " not found");
-    std::terminate();
-  }
-
-  annotations_ = parseAnnotationFile(full_path, route);
-  ROS_INFO_STREAM("Loaded " << annotations_.size() << " polygon(s) for route: " << route);
 }
 
-
-void LaneGroupAnnotator::annotateTile(map_utils::Tile& tile)
+void LaneGroupAnnotator::annotateTile(lane_map::Tile& tile)
 {
   /*
    *  Given a tile, annotate its lane group.  If any point in a lane exists within our polygons,
@@ -34,9 +21,28 @@ void LaneGroupAnnotator::annotateTile(map_utils::Tile& tile)
    *  as the list of polygons grows and it no longer makes sense to check every polygon.
    *  For now, this should be quick and low impact given this node only publishes once a second.
    */
+  auto annotation_map = maps_.getLayerAs<maps::PolygonFeatureMapLayer>(
+      maps::MapLayerType::LANE_ANNOTATION, layer_name_);
+  // Make sure map layer was loaded
+  assert(annotation_map);
+
+  std::vector<BoostPolygon> route_polygons;
+  for (const auto& route : *annotation_map->getFeatures()) {
+    const Json::Value json_route = route.properties["route"];
+    if (json_route.isNull() || json_route.asString() != route_name_) {
+      continue;
+    }
+    route_polygons.push_back(route.polygon);
+  }
+
+  if (route_polygons.empty()) {
+    // no annotations for route
+    return;
+  }
+
   for (auto& lane_group_pair : tile.lane_groups) {
     auto& lane_group = lane_group_pair.second;
-    for (const auto& annotation : annotations_) {
+    for (const auto& annotation : route_polygons) {
       // early if already set to true::
       if (lane_group.*lane_group_field_) {
         continue;

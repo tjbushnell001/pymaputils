@@ -9,6 +9,7 @@
 
 #include <maps/free_space_maps.h>
 #include <maps/geojson_maps.h>
+#include <maps/lane_maps.h>
 
 namespace maps {
 
