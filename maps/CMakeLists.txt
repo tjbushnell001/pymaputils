@@ -129,6 +129,7 @@ add_library(${PROJECT_NAME}
    src/${PROJECT_NAME}/map_layer.cpp
    src/${PROJECT_NAME}/map_layers.cpp
    src/${PROJECT_NAME}/lane_maps.cpp
+   src/${PROJECT_NAME}/road_maps.cpp
    src/${PROJECT_NAME}/geojson_maps.cpp
    src/${PROJECT_NAME}/free_space_maps.cpp
    src/${PROJECT_NAME}/utils/lane_map_transform.cpp

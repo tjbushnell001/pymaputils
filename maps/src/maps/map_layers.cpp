@@ -69,14 +69,12 @@ maps::createMapLayers(const std::vector<MapLayerType>& layer_types)
         /**
          * Road Graph layers
          **/
-	/*
         std::string map_dir;
         ros_params::getRequiredParam("/maps/map_dir", map_dir);
 
         const std::string road_tiles_dir = map_dir + "/road_tiles";
         auto layer = std::make_shared<RoadMapLayer>(road_tiles_dir, 1);
         layers.push_back(std::static_pointer_cast<MapLayer>(layer));
-        */
       } break;
 
       case MapLayerType::LANE: {
