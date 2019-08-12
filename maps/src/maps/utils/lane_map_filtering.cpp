@@ -38,7 +38,7 @@ std::unordered_set<lane_map::LaneRef> lane_map_utils::filterLanes(const maps::La
 
 std::unordered_set<lane_map::LaneGroupRef> lane_map_utils::traverseLaneGroups(
     const maps::LaneSubMap& map, const lane_map::LaneGroupRef& initial_lg_ref,
-    const LaneGroupFilter filter_fn, FlowDirection flow_direction, size_t max_distance)
+    const LaneGroupFilter filter_fn, TraverseDirection traverse_direction, size_t max_distance)
 {
   std::unordered_set<lane_map::LaneGroupRef> visited_lane_groups;
   std::vector<size_t> lane_group_dist;
@@ -66,7 +66,7 @@ std::unordered_set<lane_map::LaneGroupRef> lane_map_utils::traverseLaneGroups(
     }
 
     // Only proceed if the lane group exists and it has not been visited.
-    const auto connected_lgs = getConnectedLaneGroups(map, *lg, flow_direction);
+    const auto connected_lgs = getConnectedLaneGroups(map, *lg, traverse_direction);
     for (const auto& connected_lg_ref : connected_lgs) {
       if (visited_lane_groups.count(connected_lg_ref) == 0) {
         const auto connected_lg = map.getLaneGroup(connected_lg_ref);

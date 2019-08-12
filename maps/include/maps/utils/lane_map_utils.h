@@ -19,7 +19,10 @@ class MapDataError : public std::runtime_error
   }
 };
 
-enum class FlowDirection
+/**
+ * Which direction to we want to traverse the lane graph?
+ **/
+enum class TraverseDirection
 {
   IN,
   OUT,
@@ -41,7 +44,7 @@ lane_map::LaneJunction getBackwardLaneJunction(const maps::LaneSubMap& map,
  */
 std::unordered_set<lane_map::LaneGroupRef>
 getConnectedLaneGroups(const maps::LaneSubMap& map, const lane_map::LaneGroup& lane_group,
-                       FlowDirection flow_direction);
+                       TraverseDirection traverse_direction);
 
 /**
  * Using an input lane group, it returns all lane groups which can be reached by visiting
@@ -56,11 +59,11 @@ std::unordered_set<lane_map::LaneGroupRef> getAllValidLaneGroups(const maps::Lan
 
 std::unordered_set<lane_map::LaneGroupRef>
 getConnectedLaneGroups(const maps::LaneSubMap& map, const lane_map::ConnectorRef& conn_ref,
-                       FlowDirection flow_direction = FlowDirection::BOTH);
+                       TraverseDirection traverse_direction = TraverseDirection::BOTH);
 
 std::vector<lane_map::LaneRef>
 getConnectedLanes(const maps::LaneSubMap& map, const lane_map::JunctionRef& conn_ref,
-                  FlowDirection flow_direction = FlowDirection::BOTH);
+                  TraverseDirection traverse_direction = TraverseDirection::BOTH);
 
 /*
  * This function returns the lanes in the lane group such that if you are

@@ -38,7 +38,7 @@ std::unordered_set<lane_map::LaneRef> filterLanes(const maps::LaneSubMap& map,
  * @param[in] map Lane sub map.
  * @param[in] initial_lg_ref Lane group to start with.
  * @param[in] filter_fn Predicate to filter lane groups with.
- * @param[in] flow_direction Control traversal direction (forward, backward,
+ * @param[in] traverse_direction Control traversal direction (forward, backward,
  *            both).
  * @param[in] max_distance Skip lane groups further than this number of steps
  *            from initial lane group. Use 0 for no limit.
@@ -46,7 +46,7 @@ std::unordered_set<lane_map::LaneRef> filterLanes(const maps::LaneSubMap& map,
  **/
 std::unordered_set<lane_map::LaneGroupRef> traverseLaneGroups(
     const maps::LaneSubMap& map, const lane_map::LaneGroupRef& initial_lg_ref,
-    const LaneGroupFilter filter_fn, FlowDirection flow_direction, size_t max_distance);
+    const LaneGroupFilter filter_fn, TraverseDirection traverse_direction, size_t max_distance);
 
 }; // namespace lane_map_utils
 

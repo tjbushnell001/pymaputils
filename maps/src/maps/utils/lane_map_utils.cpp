@@ -29,8 +29,8 @@ LaneJunction getForwardLaneJunction(const maps::LaneSubMap& map, const LaneRef& 
   LaneJunction lane_junction;
   lane_junction.ref = lane->end_junction_ref;
 
-  lane_junction.outflowing_lanes = getConnectedLanes(map, lane_junction.ref, FlowDirection::OUT);
-  lane_junction.inflowing_lanes = getConnectedLanes(map, lane_junction.ref, FlowDirection::IN);
+  lane_junction.outflowing_lanes = getConnectedLanes(map, lane_junction.ref, TraverseDirection::OUT);
+  lane_junction.inflowing_lanes = getConnectedLanes(map, lane_junction.ref, TraverseDirection::IN);
 
   if (lane_junction.inflowing_lanes.empty()) {
     lane_junction.inflowing_lanes.push_back(lane_ref);
@@ -51,8 +51,8 @@ LaneJunction getBackwardLaneJunction(const maps::LaneSubMap& map, const LaneRef&
 
   LaneJunction lane_junction;
   lane_junction.ref = lane->start_junction_ref;
-  lane_junction.outflowing_lanes = getConnectedLanes(map, lane_junction.ref, FlowDirection::OUT);
-  lane_junction.inflowing_lanes = getConnectedLanes(map, lane_junction.ref, FlowDirection::IN);
+  lane_junction.outflowing_lanes = getConnectedLanes(map, lane_junction.ref, TraverseDirection::OUT);
+  lane_junction.inflowing_lanes = getConnectedLanes(map, lane_junction.ref, TraverseDirection::IN);
 
   if (lane_junction.outflowing_lanes.empty()) {
     lane_junction.outflowing_lanes.push_back(lane_ref);
@@ -63,21 +63,21 @@ LaneJunction getBackwardLaneJunction(const maps::LaneSubMap& map, const LaneRef&
 
 std::unordered_set<LaneGroupRef> getConnectedLaneGroups(const maps::LaneSubMap& map,
                                                         const LaneGroup& lane_group,
-                                                        FlowDirection flow_direction)
+                                                        TraverseDirection traverse_direction)
 {
-  switch (flow_direction) {
-    case FlowDirection::BOTH: {
-      auto forward = getConnectedLaneGroups(map, lane_group.end_connector, FlowDirection::BOTH);
-      auto backward = getConnectedLaneGroups(map, lane_group.start_connector, FlowDirection::BOTH);
+  switch (traverse_direction) {
+    case TraverseDirection::BOTH: {
+      auto forward = getConnectedLaneGroups(map, lane_group.end_connector, TraverseDirection::BOTH);
+      auto backward = getConnectedLaneGroups(map, lane_group.start_connector, TraverseDirection::BOTH);
 
       return set_utils::set_union(forward, backward);
     } break;
 
-    case FlowDirection::IN:
-      return getConnectedLaneGroups(map, lane_group.start_connector, FlowDirection::IN);
+    case TraverseDirection::IN:
+      return getConnectedLaneGroups(map, lane_group.start_connector, TraverseDirection::IN);
 
-    case FlowDirection::OUT:
-      return getConnectedLaneGroups(map, lane_group.end_connector, FlowDirection::OUT);
+    case TraverseDirection::OUT:
+      return getConnectedLaneGroups(map, lane_group.end_connector, TraverseDirection::OUT);
     default:
       assert(false);
   }
@@ -88,7 +88,7 @@ std::unordered_set<LaneGroupRef> getReachableValidLaneGroups(const maps::LaneSub
                                                              size_t max_distance)
 {
   return lane_map_utils::traverseLaneGroups(map, initial_lg_ref, isDirectionalLaneGroup,
-                                            FlowDirection::BOTH, max_distance);
+                                            TraverseDirection::BOTH, max_distance);
 }
 
 
@@ -103,21 +103,21 @@ std::unordered_set<LaneGroupRef> getAllValidLaneGroups(const maps::LaneSubMap& m
 
 std::unordered_set<LaneGroupRef> getConnectedLaneGroups(const maps::LaneSubMap& map,
                                                         const ConnectorRef& conn_ref,
-                                                        FlowDirection flow_direction)
+                                                        TraverseDirection traverse_direction)
 {
   auto conn = map.getConnector(conn_ref);
   if (!conn) {
     return {};
   }
 
-  switch (flow_direction) {
-    case FlowDirection::BOTH:
+  switch (traverse_direction) {
+    case TraverseDirection::BOTH:
       return conn->connected_lane_groups;
 
-    case FlowDirection::OUT:
+    case TraverseDirection::OUT:
       return conn->outflow_refs;
 
-    case FlowDirection::IN:
+    case TraverseDirection::IN:
       return conn->inflow_refs;
   }
 }
@@ -125,7 +125,7 @@ std::unordered_set<LaneGroupRef> getConnectedLaneGroups(const maps::LaneSubMap& 
 
 std::vector<LaneRef> getConnectedLanes(const maps::LaneSubMap& map,
                                        const lane_map::JunctionRef& junc_ref,
-                                       FlowDirection flow_direction)
+                                       TraverseDirection traverse_direction)
 {
   const ConnectorRef conn_ref = junc_ref.getConnectorRef();
   const auto lg_refs = getConnectedLaneGroups(map, conn_ref);
@@ -142,14 +142,14 @@ std::vector<LaneRef> getConnectedLanes(const maps::LaneSubMap& map,
       const Lane& lane = lane_pair.second;
 
       bool match = false;
-      switch (flow_direction) {
-        case FlowDirection::OUT:
+      switch (traverse_direction) {
+        case TraverseDirection::OUT:
           match = lane.start_junction_ref == junc_ref;
           break;
-        case FlowDirection::IN:
+        case TraverseDirection::IN:
           match = lane.end_junction_ref == junc_ref;
           break;
-        case FlowDirection::BOTH:
+        case TraverseDirection::BOTH:
           match = (lane.start_junction_ref == junc_ref || lane.end_junction_ref == junc_ref);
           break;
       }
