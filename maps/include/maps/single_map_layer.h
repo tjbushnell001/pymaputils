@@ -54,7 +54,8 @@ class SingleMapLayer : public MapLayer
       ROS_ERROR_STREAM(file_name_ << ": Not a file");
     }
 
-    // if we're not tranforming to UTM, load the file
+    // if we're sticking with a global system that doesn't depend on location,
+    // go ahead and load the map now
     // otherwise, it will get loaded with updateLocation()
     if (map_frame_.type == MapFrameType::GCS || map_frame_.type == MapFrameType::GCS_NED) {
       features_ = loadFeatures(file_name_, map_frame_);
@@ -66,7 +67,7 @@ class SingleMapLayer : public MapLayer
    * Update the map layer to be centered around the given coordinates.
    *
    * @param[in] lat latitude
-   * @param[in] lng longitdue
+   * @param[in] lng longitude
    * @param[in] utm_zone UTM zone to use for utm transforms.
    **/
   void updateLocation(const double lat, const double lng, const map_utils::UtmZone utm_zone)

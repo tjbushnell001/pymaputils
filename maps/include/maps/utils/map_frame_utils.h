@@ -15,7 +15,7 @@ namespace maps {
  *       mapFrameFromLocalization().
  *
  * @param[in] lat latitude
- * @param[in] lng longitdue
+ * @param[in] lng longitude
  * @param[in] utm_zone UTM zone to use for utm transforms.
  * @returns map frame
  **/

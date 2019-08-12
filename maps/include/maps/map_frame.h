@@ -10,9 +10,9 @@ namespace maps {
 enum class MapFrameType
 {
   INVALID,
-  // map is in GCS (with standard x=lon, y=lat points; aka ENU)
+  // map is in GCS (with standard x=lng, y=lat points; aka ENU)
   GCS,
-  // map is in GCS (with reversed x=lat, y=lon points; aka NED)
+  // map is in GCS (with reversed x=lat, y=lng points; aka NED)
   GCS_NED,
   // map is in UTM (in utm_zone)
   UTM,

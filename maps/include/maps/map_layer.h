@@ -46,7 +46,7 @@ class MapLayer
    * sub-classes may choose to use this only for utm zone updates.
    *
    * @param[in] lat latitude
-   * @param[in] lng longitdue
+   * @param[in] lng longitude
    * @param[in] utm_zone UTM zone to use for utm transforms.
    **/
   virtual void updateLocation(const double lat, const double lng,

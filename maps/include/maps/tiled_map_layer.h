@@ -65,7 +65,7 @@ class TiledMapLayer : public MapLayer
    * Update the map layer to be centered around the given coordinates.
    *
    * @param[in] lat latitude
-   * @param[in] lng longitdue
+   * @param[in] lng longitude
    * @param[in] utm_zone UTM zone to use for utm transforms.
    **/
   void updateLocation(const double lat, const double lng, const map_utils::UtmZone utm_zone)

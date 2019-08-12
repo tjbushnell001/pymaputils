@@ -57,8 +57,7 @@ int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
 
-  // We are not testing a node, so we don't need this
-  // ros::init(argc, argv, "tester");
-  // ros::NodeHandle nh;
+  // NOTE: createMapLayers() requires ros params. If used, add ros::init()
+
   return RUN_ALL_TESTS();
 }
