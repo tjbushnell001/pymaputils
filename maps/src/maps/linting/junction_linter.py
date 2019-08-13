@@ -2,6 +2,7 @@
 """ Library to lint map junctions for "Issues" """
 from maps.issue_types import IssueType
 from maps.issues import Issue, IssueLayer
+from maps.utils import geojson_utils
 
 
 def lint_junction(junction, lane_map, issue_layer=None):
@@ -27,36 +28,50 @@ def lint_junction(junction, lane_map, issue_layer=None):
         outflows.append(lane)
 
     if len(outflows) > 1:
-        transition_count = {"MERGE": 0, "SPLIT": 0, "UNKNOWN": 0}
+        transition_count = {}
         for lane in outflows:
+            lane_group_ref = geojson_utils.hashify(
+                {'id': lane.ref['lane_group_id'], 'tile_id': lane.ref['tile_id'], 'type': 'lane_group_ref'})
+            lane_group = lane_map.get_tile(lane.ref['tile_id']).get_features('lane_group')[lane_group_ref]
+            lg_key = "ramp" if lane_group.properties['is_ramp'] else "normal"
+            if lg_key not in transition_count:
+                transition_count[lg_key] = {"MERGE": 0, "SPLIT": 0, "UNKNOWN": 0}
             if lane.properties['lane_transition_type'] is None:
                 transition_type = "UNKNOWN"
             else:
                 transition_type = lane.properties['lane_transition_type']
-            transition_count[transition_type] += 1
+            transition_count[lg_key][transition_type] += 1
             if lane.properties['from_split'] is False:
                 issue_layer.add_issue(junction, Issue(IssueType.FROM_SPLIT_MISSING_PROPERTY.name))
 
-        if transition_count["UNKNOWN"] == 0:
-            issue_layer.add_issue(junction, Issue(IssueType.SPLIT_NO_NORMAL.name))
-        elif transition_count["UNKNOWN"] > 1:
-            issue_layer.add_issue(junction, Issue(IssueType.SPLIT_MULTIPLE_NORMAL.name))
+        for lane_group_counts in transition_count.values():
+            if lane_group_counts["UNKNOWN"] == 0:
+                issue_layer.add_issue(junction, Issue(IssueType.SPLIT_NO_NORMAL.name))
+            elif lane_group_counts["UNKNOWN"] > 1:
+                issue_layer.add_issue(junction, Issue(IssueType.SPLIT_MULTIPLE_NORMAL.name))
 
     if len(inflows) > 1:
-        transition_count = {"MERGE": 0, "SPLIT": 0, "UNKNOWN": 0}
+        transition_count = {}
         for lane in inflows:
+            lane_group_ref = geojson_utils.hashify(
+                {'id': lane.ref['lane_group_id'], 'tile_id': lane.ref['tile_id'], 'type': 'lane_group_ref'})
+            lane_group = lane_map.get_tile(lane.ref['tile_id']).get_features('lane_group')[lane_group_ref]
+            lg_key = "ramp" if lane_group.properties['is_ramp'] else "normal"
+            if lg_key not in transition_count:
+                transition_count[lg_key] = {"MERGE": 0, "SPLIT": 0, "UNKNOWN": 0}
             if lane.properties['lane_transition_type'] is None:
                 transition_type = "UNKNOWN"
             else:
                 transition_type = lane.properties['lane_transition_type']
-            transition_count[transition_type] += 1
+            transition_count[lg_key][transition_type] += 1
             if lane.properties['merging'] is False:
                 issue_layer.add_issue(junction, Issue(IssueType.MERGING_MISSING_PROPERTY.name))
 
-        if transition_count["UNKNOWN"] == 0:
-            issue_layer.add_issue(junction, Issue(IssueType.MERGE_NO_NORMAL.name))
-        elif transition_count["UNKNOWN"] > 1:
-            issue_layer.add_issue(junction, Issue(IssueType.MERGE_MULTIPLE_NORMAL.name))
+        for lane_group_counts in transition_count.values():
+            if lane_group_counts["UNKNOWN"] == 0:
+                issue_layer.add_issue(junction, Issue(IssueType.MERGE_NO_NORMAL.name))
+            elif lane_group_counts["UNKNOWN"] > 1:
+                issue_layer.add_issue(junction, Issue(IssueType.MERGE_MULTIPLE_NORMAL.name))
 
     if len(inflows) > 1 and len(outflows) > 1:
         issue_layer.add_issue(junction, Issue(IssueType.MULTIPLE_INFLOW_OUTFLOWS.name))
