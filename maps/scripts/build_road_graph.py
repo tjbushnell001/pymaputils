@@ -3,7 +3,6 @@
 Construct a road graph using a tiled lane map as a reference source. First generate the road tiles to give coverage
 over the lane map, then relink the road tiles.
 """
-import argparse
 import os
 import rospkg
 import tempfile
@@ -14,11 +13,8 @@ from maps.lane_maps import ConvertedLaneMapLayer
 import maps.road_graph
 from maps.utils import tile_linker
 
-parser = argparse.ArgumentParser("Build road graph tiles using tiled map.")
 
 if __name__ == '__main__':
-    args = parser.parse_args()
-
     map_dir = os.path.join(rospkg.RosPack().get_path('lane_map_server'), 'maps/tiled_maps/usa')
 
     # read in linked raw here lane tiles into geo json

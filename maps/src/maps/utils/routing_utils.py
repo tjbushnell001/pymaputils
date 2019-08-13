@@ -161,3 +161,21 @@ def create_waypoints_from_map_reader(map_reader, route_id):
         waypoints.append(wp)
 
     return waypoints
+
+
+def get_lane_groups_in_route(route, road_map, lane_map):
+    """
+    Yield each lane group in a route.
+     :param route: a route generated using routing.find_route
+    :param road_map: a tiled map layer containing road tiles
+    :param lane_map: a tiled map layer containing lane tiles
+    :return: yield a set of lane groups
+    """
+    for route_road_refs, _ in route:
+        for road_ref in route_road_refs:
+            road_tile = road_map.get_tile(road_ref['tile_id'])
+            road_segment = road_tile.get_features('road_segment')[road_ref]
+            for lane_group_ref in road_segment.properties['lane_group_refs']:
+                lane_tile = lane_map.get_tile(lane_group_ref['tile_id'])
+                lane_group = lane_tile.get_features('lane_group')[lane_group_ref]
+                yield lane_group

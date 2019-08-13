@@ -496,10 +496,10 @@ def convert_junction_to_geojson(raw_junction, tile_id, connector_id):
 
     return junction
 
+
 # -------------------------------------------
 # Helper Methods
 # -------------------------------------------
-
 
 def determine_direction_of_travel(raw_lg):
     # find the DOT for all non-emergency lanes (which have NONE) in this lane group

@@ -1,3 +1,4 @@
+import collections
 import glob
 import json
 import os
@@ -5,11 +6,41 @@ import os
 from maps.utils import tile_utils
 
 
+class LRUCache(object):
+    """ Elegant implementation from https://www.kunxi.org/2014/05/lru-cache-in-python/ """
+    def __init__(self, capacity):
+        self.capacity = capacity
+        self.cache = collections.OrderedDict()
+
+    def get(self, key):
+        try:
+            value = self.cache.pop(key)
+            self.cache[key] = value
+            return value
+        except KeyError:
+            return None
+
+    def set(self, key, value):
+        try:
+            self.cache.pop(key)
+        except KeyError:
+            if len(self.cache) >= self.capacity:
+                self.cache.popitem(last=False)
+        self.cache[key] = value
+
+    def contains(self, key):
+        return key in self.cache
+
+    def clear(self):
+        self.cache = collections.OrderedDict()
+
+
 class TiledMapLayer(object):
     """
     Class that represents a tiled map and it's directory structure. No longer loads a single monolithic map. Instead
     this edits individual map files.
     """
+    MAX_CACHE_SIZE = 100
 
     def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True):
         """
@@ -25,26 +56,26 @@ class TiledMapLayer(object):
         self.load_tiles = load_tiles
 
         # tile cache
-        self.tiles = {}
+        self.cache = LRUCache(self.MAX_CACHE_SIZE)
 
     def get_tile(self, tile_id):
         tile = None
-        if self.cache_tiles and tile_id in self.tiles:
-            tile = self.tiles[tile_id]
+        if self.cache_tiles and self.cache.contains(tile_id):
+            tile = self.cache.get(tile_id)
 
         elif self.load_tiles:
             tile = self.load_tile(tile_id)
             if self.cache_tiles:
-                self.tiles[tile_id] = tile
+                self.cache.set(tile_id, tile)
 
         return tile
 
     def add_tile(self, tile_id, tile):
         if self.cache_tiles:
-            self.tiles[tile_id] = tile
+            self.cache.set(tile_id, tile)
 
     def clear_cache(self):
-        self.tiles = {}
+        self.cache.clear()
 
     # ---------------------------------------
     # Disk operations to access map files
@@ -52,7 +83,6 @@ class TiledMapLayer(object):
     def load_tile(self, tile_id):
         """
         Load a here map tile and return it.
-
         :param tile_id: int id of the tile (used to name / fetch json tile files)
         """
         raise NotImplementedError()
@@ -60,7 +90,6 @@ class TiledMapLayer(object):
     def save_tile(self, tile_id, tile):
         """
         Save a tile to disk in here maps format.
-
         :param tile_id: id of the tile to fetch
         :param tile: a tile dict in here maps format
         """
@@ -84,7 +113,6 @@ class TiledMapLayer(object):
     def tile_exists(self, tile_id):
         """
         Return true if the tile exists
-
         :param tile_id: The id of the tile to check for
         :return: boolean
         """
@@ -93,7 +121,6 @@ class TiledMapLayer(object):
     def yield_adjacent_tiles(self, tile_id):
         """
         Yield a tile in the adjacency set of tile with id tile_id.
-
         :param tile_id: id of tile around which to search
         """
         for adjacent_tile_id in tile_utils.adjacent_tile_ids(tile_id, self.tile_level, include_self=True):
@@ -112,7 +139,6 @@ class JsonTiledMapLayer(TiledMapLayer):
     def load_tile(self, tile_id):
         """
         Load a here map tile and return it.
-
         :param tile_id: int id of the tile (used to name / fetch json tile files)
         """
 
@@ -127,7 +153,6 @@ class JsonTiledMapLayer(TiledMapLayer):
     def save_tile(self, tile_id, tile):
         """
         Save a tile to disk in here maps format.
-
         :param tile_id: id of the tile to fetch
         :param tile: a tile dict in here maps format
         """
@@ -160,7 +185,6 @@ class JsonTiledMapLayer(TiledMapLayer):
     def tile_exists(self, tile_id):
         """
         Return true if the tile exists
-
         :param tile_id: The id of the tile to check for
         :return: boolean
         """
