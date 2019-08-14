@@ -30,10 +30,9 @@ def lint_junction(junction, lane_map, issue_layer=None):
     if len(outflows) > 1:
         transition_count = {}
         for lane in outflows:
-            lane_group_ref = geojson_utils.hashify(
-                {'id': lane.ref['lane_group_id'], 'tile_id': lane.ref['tile_id'], 'type': 'lane_group_ref'})
-            lane_group = lane_map.get_tile(lane.ref['tile_id']).get_features('lane_group')[lane_group_ref]
-            lg_key = "ramp" if lane_group.properties['is_ramp'] else "normal"
+            lane_group_ref = geojson_utils.lane_group_ref_from_lane_ref(lane.ref)
+            lane_group = lane_map.get_feature(lane_group_ref)
+            lg_key = lane_group_ref if lane_group.properties['is_ramp'] else "normal"
             if lg_key not in transition_count:
                 transition_count[lg_key] = {"MERGE": 0, "SPLIT": 0, "UNKNOWN": 0}
             if lane.properties['lane_transition_type'] is None:
@@ -53,10 +52,9 @@ def lint_junction(junction, lane_map, issue_layer=None):
     if len(inflows) > 1:
         transition_count = {}
         for lane in inflows:
-            lane_group_ref = geojson_utils.hashify(
-                {'id': lane.ref['lane_group_id'], 'tile_id': lane.ref['tile_id'], 'type': 'lane_group_ref'})
-            lane_group = lane_map.get_tile(lane.ref['tile_id']).get_features('lane_group')[lane_group_ref]
-            lg_key = "ramp" if lane_group.properties['is_ramp'] else "normal"
+            lane_group_ref = geojson_utils.lane_group_ref_from_lane_ref(lane.ref)
+            lane_group = lane_map.get_feature(lane_group_ref)
+            lg_key = lane_group_ref if lane_group.properties['is_ramp'] else "normal"
             if lg_key not in transition_count:
                 transition_count[lg_key] = {"MERGE": 0, "SPLIT": 0, "UNKNOWN": 0}
             if lane.properties['lane_transition_type'] is None:

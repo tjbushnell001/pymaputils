@@ -79,3 +79,6 @@ class GeoJsonTiledMapLayer(JsonTiledMapLayer):
         with open(fn, 'w') as f:
             geojson.dump(tile.tile, f, sort_keys=True, separators=(',', ':'), indent=1)
             print "Saved tile: {}".format(fn)
+
+    def get_feature(self, ref):
+        return self.get_tile(ref['tile_id']).get_features(ref['type'].replace('_ref', ''))[ref]
