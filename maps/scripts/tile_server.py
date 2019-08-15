@@ -205,4 +205,4 @@ if __name__ == '__main__':
                                       maps.road_graph.ROAD_GRAPH_TILE_LEVEL,
                                       cache_tiles=False)
 
-    app.run(debug=True, port=PORT, threaded=True)
+    app.run(debug=False, port=PORT, threaded=True)
