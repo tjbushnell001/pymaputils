@@ -28,6 +28,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 cors = flask_cors.CORS(app, resources={r"/foo": {"origins": "http://localhost:port"}})
 
 lane_map = None
+dot_corrected_lane_map = None
 road_graph = None
 map_reader_dir = None
 
@@ -163,12 +164,10 @@ def rebuild_road_tiles(lane_tile_id):
         unlinked_road_graph.add_tile(adjacent_tile_id, tile)
 
     # but fully regenerate the affected road tile
-    maps.road_graph.generate_road_tile(road_tile_id, unlinked_road_graph, lane_map, save_tiles=False)
+    maps.road_graph.generate_road_tile(road_tile_id, unlinked_road_graph, dot_corrected_lane_map, save_tiles=False)
 
     # relink affected road tile
     tile_linker.relink_road_tile(road_tile_id, road_graph, unlinked_road_graph)
-
-    print 'Updated Road Tile', road_tile_id
 
 
 @app.route("/tiles/<int:tile_id>", methods=['PUT'])
@@ -187,8 +186,9 @@ def update_tile(tile_id):
     tile = TileDict(geojson.loads(flask.request.data))
     lane_map.save_tile(tile_id, tile)
 
-    print "Rebuilding road tiles"
+    print "Rebuilding road tiles, please wait..."
     rebuild_road_tiles(tile_id)
+    print "Done rebuilding."
 
     return flask.Response(status=200)
 
@@ -198,11 +198,9 @@ if __name__ == '__main__':
     map_dir = os.path.join(base_dir, "perception/lane_map_server/maps/tiled_maps/usa")
     map_reader_dir = os.path.join(base_dir, "perception/map_reader/maps")
 
-    lane_map = ConvertedLaneMapLayer(os.path.join(map_dir, 'tiles'),
-                                     cache_tiles=False, fix_dot=False)
-
-    road_graph = GeoJsonTiledMapLayer(os.path.join(map_dir, 'road_tiles'),
-                                      maps.road_graph.ROAD_GRAPH_TILE_LEVEL,
+    lane_map = ConvertedLaneMapLayer(os.path.join(map_dir, 'tiles'), cache_tiles=False, fix_dot=False)
+    dot_corrected_lane_map = ConvertedLaneMapLayer(os.path.join(map_dir, 'tiles'), cache_tiles=False, fix_dot=True)
+    road_graph = GeoJsonTiledMapLayer(os.path.join(map_dir, 'road_tiles'), maps.road_graph.ROAD_GRAPH_TILE_LEVEL,
                                       cache_tiles=False)
 
     app.run(debug=False, port=PORT, threaded=True)

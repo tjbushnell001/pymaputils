@@ -16,6 +16,9 @@ def generate_road_tile(road_tile_id, road_graph, lane_map, save_tiles=True):
     Generate a road tile given a road tile id and the associated lane data in lane map. Store the new
     tiles in road_graph. If save_tiles, tiles will be written to disk
     """
+    # If our lane map has not been dot corrected, road generation will fail
+    assert lane_map.fix_dot
+
     sub_tile_ids = tile_utils.sub_tile_ids(road_tile_id, road_graph.tile_level, lane_map.tile_level)
 
     sub_tiles = []
@@ -66,8 +69,7 @@ def traverse_lane_groups(lane_group, all_lane_groups, all_connectors, reverse=Fa
             # can't find connector
             break
 
-        if (len(connector.properties['outflow_refs']) != 1 or
-            len(connector.properties['inflow_refs']) != 1):
+        if len(connector.properties['outflow_refs']) != 1 or len(connector.properties['inflow_refs']) != 1:
             break
 
         lg_ref = connector.properties['inflow_refs' if reverse else 'outflow_refs'][0]
