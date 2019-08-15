@@ -64,6 +64,7 @@ VALID_LANE_TYPES = {
 
 VALID_LANE_TRANSITION_TYPES = {None, 'UNKNOWN', 'MERGE', 'SPLIT'}
 
+
 # ---------------------------------------
 # Maps Translation API
 # ---------------------------------------
@@ -374,8 +375,8 @@ def convert_lane_to_geojson(raw_lane, tile_id, lane_group_id, lane_idx, start_co
     center_line = raw_lane['pts']
     altitude_pts = raw_lane['altitude_pts']
 
-    left_boundary_ref = map_types.create_boundary_ref(tile_id, lane_group_id, raw_lane['left_boundary_id'])
-    right_boundary_ref = map_types.create_boundary_ref(tile_id, lane_group_id, raw_lane['right_boundary_id'])
+    left_boundary_ref = map_types.create_lane_boundary_ref(tile_id, lane_group_id, raw_lane['left_boundary_id'])
+    right_boundary_ref = map_types.create_lane_boundary_ref(tile_id, lane_group_id, raw_lane['right_boundary_id'])
 
     start_junction_ref = map_types.create_junction_ref_from_connector_ref(start_connector_ref,
                                                                           raw_lane['start_connector_lane_number'])
@@ -436,7 +437,7 @@ def convert_lane_to_geojson(raw_lane, tile_id, lane_group_id, lane_idx, start_co
 def convert_boundary_to_geojson(raw_boundary, tile_id, lane_group_id, reverse_dot=False):
     assert raw_boundary['type'] == 'lane_boundary', raw_boundary['type']
 
-    boundary_ref = map_types.create_boundary_ref(tile_id, lane_group_id, raw_boundary['id'])
+    lane_boundary_ref = map_types.create_lane_boundary_ref(tile_id, lane_group_id, raw_boundary['id'])
 
     style = raw_boundary['style']
     assert style in {None, 'UNKNOWN', 'SOLID', 'DASHED'}, style
@@ -454,7 +455,7 @@ def convert_boundary_to_geojson(raw_boundary, tile_id, lane_group_id, reverse_do
 
     boundary = geojson_utils.create_feature(
         'lane_boundary',
-        boundary_ref,
+        lane_boundary_ref,
         geojson.LineString(line),
         style=style,
         color=color,

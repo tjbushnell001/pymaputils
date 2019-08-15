@@ -43,13 +43,13 @@ def create_junction_ref_from_connector_ref(connector_ref, junction_id):
                                junction_id)
 
 
-def create_boundary_ref(tile_id, lane_group_id, boundary_id):
+def create_lane_boundary_ref(tile_id, lane_group_id, boundary_id):
     assert 0 <= boundary_id < (1 << 8), boundary_id
     assert 0 <= lane_group_id < (1 << 64), lane_group_id
     assert 0 <= tile_id < (1 << 64), tile_id
 
     return geojson_utils.hashify(
-        {'type': 'boundary_ref', 'tile_id': tile_id, 'lane_group_id': lane_group_id, 'id': boundary_id})
+        {'type': 'lane_boundary_ref', 'tile_id': tile_id, 'lane_group_id': lane_group_id, 'id': boundary_id})
 
 
 def create_road_segment_ref(tile_id, road_segment_id):
