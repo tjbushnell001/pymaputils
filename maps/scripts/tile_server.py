@@ -37,16 +37,16 @@ map_reader_dir = None
 # Helper Methods
 # ------------------------------------
 
-def get_tile_boundaries(tiled_map, feature_type):
+def get_tile_boundary_feature_collection(tile_ids, feature_type, tile_level):
     features = []
-    for tile_id in tiled_map.get_tile_list():
-        bbox = maps.utils.tile_utils.tile_bounds(tile_id, tiled_map.tile_level)
-        utm_zone, utm_lat_band = maps.utils.tile_utils.tile_utm_zone(tile_id, tiled_map.tile_level)
+    for tile_id in tile_ids:
+        bbox = maps.utils.tile_utils.tile_bounds(tile_id, tile_level)
+        utm_zone, utm_lat_band = maps.utils.tile_utils.tile_utm_zone(tile_id, tile_level)
         f = geojson.Feature(geometry=geojson_utils.bbox_to_poly(*bbox),
                             id=tile_id,
                             feature_type=feature_type,
                             properties={
-                                "tile_level": tiled_map.tile_level,
+                                "tile_level": tile_level,
                                 "utm_zone": utm_zone,
                                 "utm_lat_band": utm_lat_band})
 
@@ -65,7 +65,11 @@ def get_tile_boundaries(tiled_map, feature_type):
 @cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
 def get_lane_tiles():
     """ Return a feature collection of tile boundaries of all lane tiles. """
-    return get_tile_boundaries(lane_map, 'tile')
+    tile_ids = lane_map.get_tile_list()
+    if len(tile_ids) == 0:
+        print 'No lane tiles found! Did you run "git submodule update --init" to populate tiled_maps?'
+        return flask.Response(response="No tiles founds.", status=204)
+    return get_tile_boundary_feature_collection(tile_ids, 'tile', lane_map.tile_level)
 
 
 @app.route("/tiles/<int:tile_id>", methods=['GET'])
@@ -90,7 +94,11 @@ def get_lane_tile(tile_id):
 @cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
 def get_road_tiles():
     """ Return a feature collection of road tile boundaries of all road tiles. """
-    return get_tile_boundaries(road_graph, 'road_tile')
+    tile_ids = road_graph.get_tile_list()
+    if len(tile_ids) == 0:
+        print 'No road tiles found! Did you run "git submodule update --init" to populate tiled_maps?'
+        return flask.Response(response="No tiles founds.", status=204)
+    return get_tile_boundary_feature_collection(tile_ids, 'road_tile', road_graph.tile_level)
 
 
 @app.route("/road_tiles/<int:tile_id>", methods=['GET'])
