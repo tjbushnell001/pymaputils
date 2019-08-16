@@ -16,7 +16,6 @@ class ConvertedLaneMapLayer(JsonTiledMapLayer):
         """
         super(ConvertedLaneMapLayer, self).__init__(lane_tile_dir, LANE_MAP_TILE_LEVEL, cache_tiles=cache_tiles,
                                                     load_tiles=load_tiles)
-
         self.fix_dot = fix_dot
 
     # --------------------------------------

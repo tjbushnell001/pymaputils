@@ -199,8 +199,7 @@ def link_junction(lane_segment, tile, is_start_junction, reverse_dot=False):
         return
 
     # make sure connector exists
-    connector_ref = map_types.create_connector_ref(junction_ref['tile_id'],
-                                                   junction_ref['connector_id'])
+    connector_ref = map_types.create_connector_ref(junction_ref['tile_id'], junction_ref['connector_id'])
     if connector_ref not in tile.get_features('connector'):
         # connector doesn't exist
         return
