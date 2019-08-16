@@ -33,6 +33,8 @@ lane_map::LaneRef getLaneRefStruct(const perception_msgs::MapLaneRef& lane_ref_m
 
 lane_map::BoundaryRef getBoundaryRefStruct(const perception_msgs::MapBoundaryRef& boundary_ref_msg);
 
+lane_map::Junction getJunctionStruct(const perception_msgs::MapJunction& junction_msg);
+
 lane_map::JunctionRef getJunctionRefStruct(const perception_msgs::MapJunctionRef& junction_ref_msg);
 
 } // namespace map_msg_utils
