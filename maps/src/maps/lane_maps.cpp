@@ -144,6 +144,26 @@ const lane_map::Connector* LaneSubMap::getConnector(const lane_map::ConnectorRef
   return &connector_it->second;
 }
 
+const lane_map::Junction* LaneSubMap::getJunction(const lane_map::JunctionRef& ref) const
+{
+  const auto tile = getTile(ref.tile_id);
+  if (!tile) {
+    return nullptr;
+  }
+  const auto connector_it = tile->connectors.find(ref.getConnectorRef());
+  if (connector_it == tile->connectors.end()) {
+    return nullptr;
+  }
+  const auto& connector = connector_it->second;
+
+  for (const auto& junction : connector.junctions) {
+    if (junction.ref == ref)
+      return &junction;
+  }
+
+  return nullptr;
+}
+
 const lane_map::Boundary* LaneSubMap::getBoundary(const lane_map::BoundaryRef& ref) const
 {
   const auto tile = getTile(ref.tile_id);

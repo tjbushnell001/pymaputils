@@ -32,12 +32,6 @@ enum class TraverseDirection
 lane_map::LaneRef createLaneRefFromLaneGroupRef(const lane_map::LaneGroupRef& lg_ref,
                                                 uint8_t lane_id);
 
-lane_map::LaneJunction getForwardLaneJunction(const maps::LaneSubMap& map,
-                                              const lane_map::LaneRef& lane_ref);
-
-lane_map::LaneJunction getBackwardLaneJunction(const maps::LaneSubMap& map,
-                                               const lane_map::LaneRef& lane_ref);
-
 /*
  * Get all lane groups which are connected to the current lane group via either
  * of its connectors but only if they are in the current map.
@@ -60,10 +54,6 @@ std::unordered_set<lane_map::LaneGroupRef> getAllValidLaneGroups(const maps::Lan
 std::unordered_set<lane_map::LaneGroupRef>
 getConnectedLaneGroups(const maps::LaneSubMap& map, const lane_map::ConnectorRef& conn_ref,
                        TraverseDirection traverse_direction = TraverseDirection::BOTH);
-
-std::vector<lane_map::LaneRef>
-getConnectedLanes(const maps::LaneSubMap& map, const lane_map::JunctionRef& conn_ref,
-                  TraverseDirection traverse_direction = TraverseDirection::BOTH);
 
 /*
  * This function returns the lanes in the lane group such that if you are

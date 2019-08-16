@@ -10,57 +10,12 @@ using lane_map::Boundary;
 using lane_map::BoundaryRef;
 using lane_map::Connector;
 using lane_map::ConnectorRef;
-using lane_map::LaneJunction;
 using lane_map::Lane;
 using lane_map::LaneGroup;
 using lane_map::LaneGroupRef;
 using lane_map::LaneRef;
 
 namespace lane_map_utils {
-LaneJunction getForwardLaneJunction(const maps::LaneSubMap& map, const LaneRef& lane_ref)
-{
-  const Lane* lane = map.getLane(lane_ref);
-  assert(lane);
-
-  if (!isDirectionalLane(*lane)) {
-    throwDataError(lane_ref, "not directional");
-  }
-
-  LaneJunction lane_junction;
-  lane_junction.ref = lane->end_junction_ref;
-
-  lane_junction.outflowing_lanes = getConnectedLanes(map, lane_junction.ref, TraverseDirection::OUT);
-  lane_junction.inflowing_lanes = getConnectedLanes(map, lane_junction.ref, TraverseDirection::IN);
-
-  if (lane_junction.inflowing_lanes.empty()) {
-    lane_junction.inflowing_lanes.push_back(lane_ref);
-  }
-
-  return lane_junction;
-}
-
-
-LaneJunction getBackwardLaneJunction(const maps::LaneSubMap& map, const LaneRef& lane_ref)
-{
-  const Lane* lane = map.getLane(lane_ref);
-  assert(lane);
-
-  if (!isDirectionalLane(*lane)) {
-    throwDataError(lane_ref, "not directional");
-  }
-
-  LaneJunction lane_junction;
-  lane_junction.ref = lane->start_junction_ref;
-  lane_junction.outflowing_lanes = getConnectedLanes(map, lane_junction.ref, TraverseDirection::OUT);
-  lane_junction.inflowing_lanes = getConnectedLanes(map, lane_junction.ref, TraverseDirection::IN);
-
-  if (lane_junction.outflowing_lanes.empty()) {
-    lane_junction.outflowing_lanes.push_back(lane_ref);
-  }
-
-  return lane_junction;
-}
-
 std::unordered_set<LaneGroupRef> getConnectedLaneGroups(const maps::LaneSubMap& map,
                                                         const LaneGroup& lane_group,
                                                         TraverseDirection traverse_direction)
@@ -121,46 +76,7 @@ std::unordered_set<LaneGroupRef> getConnectedLaneGroups(const maps::LaneSubMap& 
       return conn->inflow_refs;
   }
 }
-
-
-std::vector<LaneRef> getConnectedLanes(const maps::LaneSubMap& map,
-                                       const lane_map::JunctionRef& junc_ref,
-                                       TraverseDirection traverse_direction)
-{
-  const ConnectorRef conn_ref = junc_ref.getConnectorRef();
-  const auto lg_refs = getConnectedLaneGroups(map, conn_ref);
-
-  // Now we just figure out which of these are connected:
-  std::vector<LaneRef> connected_lane_refs;
-  for (const auto& lg_ref : lg_refs) {
-    const LaneGroup* lg = map.getLaneGroup(lg_ref);
-    if (!lg) {
-      continue;
-    }
-
-    for (auto& lane_pair : lg->lanes) {
-      const Lane& lane = lane_pair.second;
-
-      bool match = false;
-      switch (traverse_direction) {
-        case TraverseDirection::OUT:
-          match = lane.start_junction_ref == junc_ref;
-          break;
-        case TraverseDirection::IN:
-          match = lane.end_junction_ref == junc_ref;
-          break;
-        case TraverseDirection::BOTH:
-          match = (lane.start_junction_ref == junc_ref || lane.end_junction_ref == junc_ref);
-          break;
-      }
-      if (match) {
-        connected_lane_refs.push_back(lane_pair.first);
-      }
-    }
-  }
-  return connected_lane_refs;
-}
-
+  
 std::vector<const Lane*> getLanesInOrder(const LaneGroup& lg)
 {
   if (!isDirectionalLaneGroup(lg)) {

@@ -36,6 +36,7 @@ class LaneSubMap : public SubMap<lane_map::Tile>
   const lane_map::LaneGroup* getLaneGroup(const lane_map::LaneGroupRef& ref) const;
   const lane_map::Lane* getLane(const lane_map::LaneRef& ref) const;
   const lane_map::Connector* getConnector(const lane_map::ConnectorRef& ref) const;
+  const lane_map::Junction* getJunction(const lane_map::JunctionRef& ref) const;
   const lane_map::Boundary* getBoundary(const lane_map::BoundaryRef& ref) const;
 
   void addLaneGroup(const lane_map::LaneGroupRef& ref, const lane_map::LaneGroup& lane_group);
