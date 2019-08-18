@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import geojson
 import os
+import rospy
 
 from geometry_msgs.msg import Point
 from perception_msgs.msg import MapWaypoint, MapRoute, MapTrip, MapRoadSegmentRef
@@ -29,6 +30,7 @@ def trip_to_msg(routes, all_waypoints):
         routes=[route_to_msg(r, w, wp_by_id) for r, w in routes],
         waypoints=[waypoint_to_msg(w) for w in all_waypoints],
     )
+    msg.header.stamp = rospy.Time.now()
     return msg
 
 
