@@ -1,4 +1,5 @@
 #include <maps/mission.h>
+#include <ros/ros.h>
 
 using namespace mission_plan;
 
@@ -6,10 +7,17 @@ MissionPlan::MissionPlan(const maps::MapLayers& maps) : maps_(maps)
 {
 }
 
-void MissionPlan::updateTrip(perception_msgs::MapTrip::ConstPtr trip)
+void MissionPlan::updateTrip(const perception_msgs::MapTrip& trip)
 {
-  trip_ = trip;
+  if (trip_ && trip_->header.stamp == trip.header.stamp) {
+    // not a new trip
+    return;
+  }
 
+  ROS_WARN("Route updated. Resetting mission.");
+  trip_ = boost::make_shared<const perception_msgs::MapTrip>(trip);
+
+  route_road_segs_.clear();
   route_lane_groups_.clear();
   route_tiles_.clear();
 }
@@ -19,10 +27,23 @@ bool MissionPlan::isActive() const
   return trip_ && !trip_->inactive;
 }
 
+perception_msgs::MapTrip::ConstPtr MissionPlan::getTrip() const
+{
+  if (!isActive()) {
+    return nullptr;
+  }
+  return trip_;
+}
+
+std::unordered_set<road_map::RoadSegmentRef> MissionPlan::getRouteSegments() const
+{
+  return route_road_segs_;
+}
+
 std::unordered_set<lane_map::LaneGroupRef> MissionPlan::getRouteLaneGroups() const
 {
   if (!isActive()) {
-    return route_lane_groups_;
+    return {};
   }
 
   auto road_map = maps_.getLayerAs<maps::RoadMapLayer>(maps::MapLayerType::ROAD)->getSubMap();
@@ -38,6 +59,8 @@ std::unordered_set<lane_map::LaneGroupRef> MissionPlan::getRouteLaneGroups() con
       const road_map::RoadSegment* road_segment = road_map->getRoadSegment(road_segment_ref);
       if (!road_segment)
         continue;
+
+      route_road_segs_.insert(road_segment_ref);
 
       route_lane_groups_.insert(road_segment->lane_group_refs.begin(),
                                 road_segment->lane_group_refs.end());

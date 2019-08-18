@@ -12,11 +12,14 @@ class MissionPlan
  public:
   MissionPlan(const maps::MapLayers& maps);
 
-  void updateTrip(perception_msgs::MapTrip::ConstPtr trip);
-
+  void updateTrip(const perception_msgs::MapTrip& trip);
+  
   bool isActive() const;
 
   std::unordered_set<lane_map::LaneGroupRef> getRouteLaneGroups() const;
+  std::unordered_set<road_map::RoadSegmentRef> getRouteSegments() const;  
+
+  perception_msgs::MapTrip::ConstPtr getTrip() const;
 
  private:
   const maps::MapLayers& maps_;
@@ -24,6 +27,7 @@ class MissionPlan
 
   mutable std::unordered_set<uint64_t> route_tiles_;
   mutable std::unordered_set<lane_map::LaneGroupRef> route_lane_groups_;
+  mutable std::unordered_set<road_map::RoadSegmentRef> route_road_segs_;
 };
 
 
