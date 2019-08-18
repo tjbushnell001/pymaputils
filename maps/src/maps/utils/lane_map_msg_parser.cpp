@@ -197,6 +197,7 @@ Junction getJunctionStruct(const perception_msgs::MapJunction& junction_msg)
   for (const auto& lane_ref_msg : junction_msg.outflow_refs) {
     junction.outflow_refs.insert(getLaneRefStruct(lane_ref_msg));
   }
+  return junction;
 }
 
 JunctionRef getJunctionRefStruct(const perception_msgs::MapJunctionRef& junction_ref_msg)
