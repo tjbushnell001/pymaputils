@@ -48,7 +48,7 @@ def lint_route_junctions(route, lane_map, road_map, issue_layer):
                 else:
                     junction_linter.lint_junction(junction, lane_map, issue_layer)
 
-def lint_route_lanes(route, lane_map, road_map):
+def lint_route_lanes(route, lane_map, road_map, issue_layer):
     for lane_group in routing_utils.get_lane_groups_in_route(route, road_map, lane_map):
         lane_tile = lane_map.get_tile(lane_group.ref['tile_id'])
         for lane_segment_ref in lane_group.properties['lane_segment_refs']:

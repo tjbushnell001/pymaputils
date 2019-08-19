@@ -83,5 +83,5 @@ def lint_junction(junction, lane_map, issue_layer=None):
     if d is not None and d > 0.10:
         issue_layer.add_issue(junction, Issue(IssueType.JUNCTION_TOO_FAR.name,
                                               msg="{0:.2f}m".format(junction_dist)))
-   
+
     return issue_layer

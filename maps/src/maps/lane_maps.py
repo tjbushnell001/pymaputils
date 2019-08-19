@@ -26,7 +26,7 @@ class ConvertedLaneMapLayer(JsonTiledMapLayer):
         tile = self.get_tile(ref['tile_id'])
         if tile is None:
             return None
-        
+
         feature_type = ref['type'].replace('_ref', '')
         return tile.get_features(feature_type).get(ref)
 
