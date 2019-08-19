@@ -111,7 +111,6 @@ def convert_geojson_to_tile(geojson_tile):
         'type': 'tile',
     }
 
-
 def convert_tile_to_geojson(here_map_tile, tile_level, fix_dot=True):
     """
     Converts a here map formatted tile into a GeoJSON formatted feature group
@@ -134,31 +133,30 @@ def convert_tile_to_geojson(here_map_tile, tile_level, fix_dot=True):
     for raw_lg in here_map_tile['lane_groups']:
         # Lane Groups
         raw_lane_group_id = raw_lg['id']
-        lane_group_dot = determine_direction_of_travel(raw_lg)
-        reverse_dot = fix_dot and lane_group_dot == 'BACKWARD'
 
-        lane_group = convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone, reverse_dot=reverse_dot)
+        lane_group = convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone)
         lane_segment_refs = lane_group.properties['lane_segment_refs']
         features.append(lane_group)
 
-        # Lanes
-        # lanes should be ordered left to right
-        lg_lanes = raw_lg['lanes']
-        if reverse_dot:
-            lg_lanes = reversed(lg_lanes)
-
-        for lane_idx, raw_lane in enumerate(lg_lanes):
+        # Lanes, ordered left to right
+        lg_lanes = []
+        for lane_idx, raw_lane in enumerate(raw_lg['lanes']):
             lane_seg = convert_lane_to_geojson(raw_lane, tile_id, raw_lane_group_id, lane_idx,
                                                lane_group.properties['start_connector_ref'],
-                                               lane_group.properties['end_connector_ref'],
-                                               reverse_dot=reverse_dot)
+                                               lane_group.properties['end_connector_ref'])
             lane_segment_refs.append(lane_seg.ref)
+            lg_lanes.append(lane_seg)
             features.append(lane_seg)
 
         # Boundaries
+        lg_boundaries = []
         for raw_boundary in raw_lg['boundaries']:
-            boundary = convert_boundary_to_geojson(raw_boundary, tile_id, raw_lane_group_id, reverse_dot=reverse_dot)
+            boundary = convert_boundary_to_geojson(raw_boundary, tile_id, raw_lane_group_id)
+            lg_boundaries.append(boundary)
             features.append(boundary)
+
+        if fix_dot:
+            correct_direction_of_travel(lane_group, lg_boundaries, lg_lanes)
 
     # Connectors
     for raw_conn in here_map_tile['connectors']:
@@ -181,7 +179,6 @@ def convert_tile_to_geojson(here_map_tile, tile_level, fix_dot=True):
         max_lng=max_lng
     )
     return tile
-
 
 # -------------------------------------------
 # Feature Translation - GeoJSON to Here Maps
@@ -291,7 +288,7 @@ def feature_to_junction(feature):
 # -------------------------------------------
 
 
-def convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone, reverse_dot=False):
+def convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone):
     assert raw_lg['type'] == 'lane_group', raw_lg['type']
 
     start_connector_ref = map_types.create_connector_ref(tile_id, raw_lg['start_connector_id'])
@@ -303,20 +300,6 @@ def convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone, reverse_dot=False):
     right_boundary = list(raw_lg['right_boundary'])
 
     dot = determine_direction_of_travel(raw_lg)
-
-    if reverse_dot:
-        assert dot == 'BACKWARD'
-
-        # swap the connectors
-        start_connector_ref, end_connector_ref = end_connector_ref, start_connector_ref
-
-        # reverse the left and right boundary points
-        for b in (left_boundary, right_boundary):
-            b.reverse()
-        # also swap left and right boundaries themselves
-        left_boundary, right_boundary = right_boundary, left_boundary
-
-        dot = 'FORWARD'
 
     # build a boundary geometry out of the left and right lines
     boundary = geojson_utils.boundaries_to_poly(left_boundary, right_boundary)
@@ -368,8 +351,7 @@ def boundary_length(points, utm_zone):
     return dist.sum()
 
 
-def convert_lane_to_geojson(raw_lane, tile_id, lane_group_id, lane_idx, start_connector_ref, end_connector_ref,
-                            reverse_dot=False):
+def convert_lane_to_geojson(raw_lane, tile_id, lane_group_id, lane_idx, start_connector_ref, end_connector_ref):
     assert raw_lane['type'] == 'lane', raw_lane['type']
     lane_num = lane_idx + 1
     center_line = raw_lane['pts']
@@ -386,22 +368,6 @@ def convert_lane_to_geojson(raw_lane, tile_id, lane_group_id, lane_idx, start_co
     # we actually ignore the per lane direction of travel, and look at
     # the presumed DOT for the lane group instead
     dot = raw_lane['direction_of_travel']
-    if reverse_dot:
-        # we should only be reversing backwards or unknown segments
-        assert dot in {'BACKWARD', 'NONE'}
-
-        # swap the junctions
-        start_junction_ref, end_junction_ref = end_junction_ref, start_junction_ref
-
-        # also swap left and right boundaries
-        left_boundary_ref, right_boundary_ref = right_boundary_ref, left_boundary_ref
-
-        # reverse the center line
-        center_line.reverse()
-
-        altitude_pts.reverse()
-
-        dot = 'FORWARD'
 
     lane_seg_ref = map_types.create_lane_segment_ref(tile_id, lane_group_id, raw_lane['id'])
 
@@ -434,7 +400,7 @@ def convert_lane_to_geojson(raw_lane, tile_id, lane_group_id, lane_idx, start_co
     return lane_seg
 
 
-def convert_boundary_to_geojson(raw_boundary, tile_id, lane_group_id, reverse_dot=False):
+def convert_boundary_to_geojson(raw_boundary, tile_id, lane_group_id):
     assert raw_boundary['type'] == 'lane_boundary', raw_boundary['type']
 
     lane_boundary_ref = map_types.create_lane_boundary_ref(tile_id, lane_group_id, raw_boundary['id'])
@@ -449,9 +415,6 @@ def convert_boundary_to_geojson(raw_boundary, tile_id, lane_group_id, reverse_do
     assert material in {None, 'UNKNOWN', 'PAINT', 'BARRIER', 'BOTTS_DOTS'}, material
 
     line = raw_boundary['pts']
-
-    if reverse_dot:
-        line.reverse()
 
     boundary = geojson_utils.create_feature(
         'lane_boundary',
@@ -514,3 +477,59 @@ def determine_direction_of_travel(raw_lg):
         dot = 'UNKNOWN'
 
     return dot
+
+def swap_properties(feature, prop1, prop2):
+    feature.properties[prop1], feature.properties[prop2] = feature.properties[prop2], feature.properties[prop1]
+
+def correct_direction_of_travel(lane_group, boundaries, lanes):
+    lg_dot = lane_group.properties['direction_of_travel']
+    if lg_dot == 'FORWARD':
+        # already forward
+        return True
+    elif lg_dot != 'BACKWARD':
+        # can only correct BACKWARD lane groups
+        return False
+
+    # swap start and end connectors
+    swap_properties(lane_group, 'start_connector_ref', 'end_connector_ref')
+
+    # reverse points on both lane group boundaries AND swap left for right
+    lane_group.properties['left_boundary'].reverse()
+    lane_group.properties['right_boundary'].reverse()
+    swap_properties(lane_group, 'left_boundary', 'right_boundary')
+
+    # reverse lane reference order
+    lane_group.properties["lane_segment_refs"].reverse()
+
+    # reverse each lane
+    num_lanes = len(lanes)
+    for lane in lanes:
+        lane_dot = lane.properties['direction_of_travel']
+        assert lane_dot in ('BACKWARD', 'NONE')
+
+        # reverse lane order
+        lane.properties['lane_num'] = num_lanes - lane.properties['lane_num']
+
+        # reverse lane center points
+        lane.geometry['coordinates'].reverse()
+
+        # reverse altitude
+        lane.properties['altitude_pts'].reverse()
+
+        # swap left and right boundaries
+        swap_properties(lane, 'left_boundary_ref', 'right_boundary_ref')
+
+        # swap start and end junctions
+        swap_properties(lane, 'start_junction_ref', 'end_junction_ref')
+
+        # update dot
+        lane.properties['direction_of_travel'] = 'FORWARD'
+
+    #  reverse points for each boundary
+    for boundary in boundaries:
+        boundary.geometry['coordinates'].reverse()
+
+    # update dot
+    lane_group.properties['direction_of_travel'] = 'FORWARD'
+
+    return True
