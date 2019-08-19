@@ -7,7 +7,7 @@ import rospkg
 import maps.routing
 import sys
 
-from maps.linting import lane_linter, junction_linter
+from maps.linting import junction_linter
 from maps.geojson_maps import GeoJsonTiledMapLayer
 from maps.issues import IssueLayer, IssueLevel, Issue
 from maps.issue_types import IssueType
@@ -48,11 +48,6 @@ def lint_route_junctions(route, lane_map, road_map, issue_layer):
                 else:
                     junction_linter.lint_junction(junction, lane_map, issue_layer)
 
-def lint_route_lanes(route, lane_map, road_map, issue_layer):
-    for lane_group in routing_utils.get_lane_groups_in_route(route, road_map, lane_map):
-        lane_tile = lane_map.get_tile(lane_group.ref['tile_id'])
-        for lane_segment_ref in lane_group.properties['lane_segment_refs']:
-            lane_linter.lint_lane(lane_tile.get_features('lane')[lane_segment_ref], issue_layer)
 
 def main():
     args = parser.parse_args()
@@ -94,10 +89,6 @@ def main():
         print
         print "Linting route [{}]".format(route_id)
 
-        #print
-        #print 'Linting Lanes'
-        # lint_route_lanes(routes, lane_map, road_map, issue_layer)
-
         print
         print 'Linting Junctions'
         lint_route_junctions(routes, lane_map, road_map, issue_layer)
@@ -116,6 +107,7 @@ def main():
 
     if route_failed or level_counts[IssueLevel.ERROR] > 0:
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()

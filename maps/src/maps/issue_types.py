@@ -9,7 +9,6 @@ class IssueType(Enum):
         return self.name
 
     # Lane Issues
-    MULTIPLE_TRANSITION_PROPERTIES = 0
     NON_EXISTANT_JUNCTION_REF = 1
 
     # Junction Issues
