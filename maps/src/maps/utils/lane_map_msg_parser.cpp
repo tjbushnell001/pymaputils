@@ -7,6 +7,7 @@ namespace map_msg_utils {
 using lane_map::Tile;
 using lane_map::LaneGroup;
 using lane_map::Connector;
+using lane_map::Junction;
 using lane_map::Lane;
 using lane_map::Boundary;
 using lane_map::LaneGroupRef;
@@ -116,6 +117,10 @@ Connector getConnectorStruct(const perception_msgs::MapConnector& connector_msg)
     connector.outflow_refs.insert(getLaneGroupRefStruct(lg_ref_msg));
   }
 
+  for (const auto& junction_msg : connector_msg.junctions) {
+    connector.junctions.push_back(getJunctionStruct(junction_msg));
+  }
+
   return connector;
 }
 
@@ -176,6 +181,23 @@ BoundaryRef getBoundaryRefStruct(const perception_msgs::MapBoundaryRef& boundary
 LaneGroupRef getLaneGroupRefStruct(const perception_msgs::MapLaneGroupRef& lg_ref_msg)
 {
   return LaneGroupRef(lg_ref_msg.tile_id, lg_ref_msg.id);
+}
+
+
+Junction getJunctionStruct(const perception_msgs::MapJunction& junction_msg)
+{
+  lane_map::Junction junction;
+  junction.ref = getJunctionRefStruct(junction_msg.ref);
+  junction.pt = junction_msg.pt;
+  junction.junction_type = junction_msg.junction_type;
+
+  for (const auto& lane_ref_msg : junction_msg.inflow_refs) {
+    junction.inflow_refs.insert(getLaneRefStruct(lane_ref_msg));
+  }
+  for (const auto& lane_ref_msg : junction_msg.outflow_refs) {
+    junction.outflow_refs.insert(getLaneRefStruct(lane_ref_msg));
+  }
+  return junction;
 }
 
 JunctionRef getJunctionRefStruct(const perception_msgs::MapJunctionRef& junction_ref_msg)
