@@ -69,7 +69,7 @@ LaneGroup getLaneGroupStruct(const perception_msgs::MapLaneGroup& lane_group_msg
   lane_group.start_connector = getConnectorRefStruct(lane_group_msg.start_connector);
   lane_group.end_connector = getConnectorRefStruct(lane_group_msg.end_connector);
   lane_group.direction_of_travel =
-      static_cast<lane_map::DirectionOfTravel>(lane_group_msg.direction_of_travel);
+      static_cast<lane_map::DirectionOfTravel>(lane_group_msg.dot);
 
   lane_group.left_boundary = lane_group_msg.left_boundary;
   lane_group.right_boundary = lane_group_msg.right_boundary;
@@ -132,7 +132,7 @@ Lane getLaneStruct(const perception_msgs::MapLane& lane_msg)
   lane.ref = getLaneRefStruct(lane_msg.ref);
   lane.pts = lane_msg.pts;
   lane.lane_order = lane_msg.lane_order;
-  lane.direction_of_travel = static_cast<lane_map::DirectionOfTravel>(lane_msg.direction_of_travel);
+  lane.direction_of_travel = static_cast<lane_map::DirectionOfTravel>(lane_msg.dot);
   lane.left_boundary_ref = getBoundaryRefStruct(lane_msg.left_boundary_ref);
   lane.right_boundary_ref = getBoundaryRefStruct(lane_msg.right_boundary_ref);
   lane.start_junction_ref = getJunctionRefStruct(lane_msg.start_junction_ref);
