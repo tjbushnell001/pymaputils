@@ -23,7 +23,7 @@ perception_msgs::MapLane getLaneMsg(const lane_map::Lane& lane)
   perception_msgs::MapLane lane_msg;
   lane_msg.ref = getLaneRefMsg(lane.ref);
   lane_msg.lane_order = lane.lane_order;
-  lane_msg.direction_of_travel = basic_types::enum_value(lane.direction_of_travel);
+  lane_msg.dot = basic_types::enum_value(lane.direction_of_travel);
   lane_msg.left_boundary_ref = getBoundaryRefMsg(lane.left_boundary_ref);
   lane_msg.right_boundary_ref = getBoundaryRefMsg(lane.right_boundary_ref);
   lane_msg.start_junction_ref = getJunctionRefMsg(lane.start_junction_ref);
@@ -46,7 +46,7 @@ perception_msgs::MapLaneGroup getLaneGroupMsg(const lane_map::LaneGroup& lane_gr
   perception_msgs::MapLaneGroup lg_msg;
   lg_msg.ref = getLaneGroupRefMsg(lane_group.ref);
   lg_msg.length = lane_group.length;
-  lg_msg.direction_of_travel = basic_types::enum_value(lane_group.direction_of_travel);
+  lg_msg.dot = basic_types::enum_value(lane_group.direction_of_travel);
   lg_msg.left_boundary = lane_group.left_boundary;
   lg_msg.right_boundary = lane_group.right_boundary;
   lg_msg.start_connector = getConnectorRefMsg(lane_group.start_connector);
