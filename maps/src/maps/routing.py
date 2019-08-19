@@ -197,8 +197,6 @@ def find_route(road_graph, waypoints):
 
         waypoint_type = wp.properties['waypoint_type']
 
-        print "Route", waypoint_type, wp_id
-
         # make sure waypoint tile is loaded
         road_segment = find_nearest(road_graph, 'road_segment', point, 1.0)
 

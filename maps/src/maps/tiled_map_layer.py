@@ -147,7 +147,6 @@ class JsonTiledMapLayer(TiledMapLayer):
             return None
         with open(fn, 'r') as f:
             tile = json.load(f)
-            print "Loaded tile: {}".format(fn)
             return tile
 
     def save_tile(self, tile_id, tile):
