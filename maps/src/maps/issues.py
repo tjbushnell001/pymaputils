@@ -31,8 +31,7 @@ class IssueLayer(object):
         issue_set = self.get_feature_issues(feature, create=True)
 
         if point is not None:
-            issue_set.update_point(point)
-            del point
+            issue_set.update_point(point)s
 
         issue_set.add_issue(issue)
 
@@ -48,10 +47,19 @@ class IssueLayer(object):
     def get_all_features(self):
         return self.features.itervalues()
 
-    def size(self):
+    def count(self):
         num_issues = 0
-        for issue_set in self.features.values():
+        for issue_set in self.features.itervalues():
             num_issues += len(issue_set.issues)
+
+        return num_issues
+
+    def count_issues_by_level(self):
+        num_issues = defaultdict(lambda: 0)
+        for issue_set in self.features.itervalues():
+            for issue in issue_set.issues.itervalues():
+                num_issues[issue.level] += 1
+
         return num_issues
 
     def write(self, fn):

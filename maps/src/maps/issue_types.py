@@ -13,7 +13,7 @@ class IssueType(Enum):
     NON_EXISTANT_JUNCTION_REF = 1
 
     # Junction Issues
-    MULTIPLE_INFLOW_OUTFLOWS = 2
+    NO_OUTFLOW = 2
     SPLIT_MULTIPLE_NORMAL = 3
     SPLIT_NO_SPLIT_PROPERTY = 4
     SPLIT_NO_NORMAL = 5

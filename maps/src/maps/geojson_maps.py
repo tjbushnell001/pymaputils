@@ -63,7 +63,6 @@ class GeoJsonTiledMapLayer(JsonTiledMapLayer):
             return None
         with open(fn, 'r') as f:
             tile = TileDict(geojson.load(f))
-            print "Loaded tile: {}".format(fn)
             return tile
 
     def save_tile(self, tile_id, tile):
@@ -81,4 +80,8 @@ class GeoJsonTiledMapLayer(JsonTiledMapLayer):
             print "Saved tile: {}".format(fn)
 
     def get_feature(self, ref):
-        return self.get_tile(ref['tile_id']).get_features(ref['type'].replace('_ref', ''))[ref]
+        tile = self.get_tile(ref['tile_id'])
+        if tile is None:
+            return None
+        feature_type = ref['type'].replace('_ref', '')
+        return tile.get_features(feature_type).get(ref)

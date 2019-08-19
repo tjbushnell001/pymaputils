@@ -22,6 +22,14 @@ class ConvertedLaneMapLayer(JsonTiledMapLayer):
     # Disk Operations
     # --------------------------------------
 
+    def get_feature(self, ref):
+        tile = self.get_tile(ref['tile_id'])
+        if tile is None:
+            return None
+        
+        feature_type = ref['type'].replace('_ref', '')
+        return tile.get_features(feature_type).get(ref)
+
     def load_tile(self, tile_id):
         if not self.tile_exists(tile_id):
             return None
