@@ -31,7 +31,7 @@ class IssueLayer(object):
         issue_set = self.get_feature_issues(feature, create=True)
 
         if point is not None:
-            issue_set.update_point(point)s
+            issue_set.update_point(point)
 
         issue_set.add_issue(issue)
 

@@ -3,7 +3,7 @@
 from maps.issue_types import IssueType
 from maps.issues import Issue, IssueLayer
 from maps.utils import geojson_utils
-
+import geopy
 
 def lint_junction(junction, lane_map, issue_layer=None):
     """
@@ -71,4 +71,17 @@ def lint_junction(junction, lane_map, issue_layer=None):
             elif lane_group_counts["UNKNOWN"] > 1:
                 issue_layer.add_issue(junction, Issue(IssueType.MERGE_MULTIPLE_NORMAL.name))
 
+    junction_pt = tuple(reversed(junction.geometry['coordinates']))
+    junction_dist = None
+    for lanes, pt_idx in [(inflows, -1), (outflows, 0)]:
+        for lane in lanes:
+            lane_pt = tuple(reversed(lane.geometry['coordinates'][pt_idx]))
+
+            d = geopy.distance.distance(lane_pt, junction_pt).meters
+            if junction_dist is None or d > junction_dist:
+                junction_dist = d
+    if d is not None and d > 0.10:
+        issue_layer.add_issue(junction, Issue(IssueType.JUNCTION_TOO_FAR.name,
+                                              msg="{0:.2f}m".format(junction_dist)))
+   
     return issue_layer

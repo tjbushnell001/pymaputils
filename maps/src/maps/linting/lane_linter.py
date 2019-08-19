@@ -15,10 +15,9 @@ def lint_lane(lane, issue_layer=None):
     :return: the issue layer with any new issues added.
     """
     issue_layer = IssueLayer() if issue_layer is None else issue_layer
-    transition_props = [1 for k in TRANSITION_KEYS if lane.properties[k]]
-    valid = len(transition_props) <= 1
+    transition_props = [k for k in TRANSITION_KEYS if lane.properties[k]]
 
-    if not valid:
+    if len(transition_props) > 1:
         issue_layer.add_issue(feature=lane, issue=Issue(
             issue_type=IssueType.MULTIPLE_TRANSITION_PROPERTIES.name,
             level=IssueLevel.WARN,
