@@ -45,7 +45,9 @@ class RouteGenerationNode(object):
             rospy.logerr("Failed to generate route for [{}]".format(route_id.data))
             return
 
-        self.route_pub.publish(routing_utils.trip_to_msg(routes, all_waypoints))
+        route_msg = routing_utils.trip_to_msg(routes, all_waypoints)
+        route_msg.route_id = route_id.data
+        self.route_pub.publish(route_msg)
 
 
 if __name__ == '__main__':
