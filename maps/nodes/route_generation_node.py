@@ -53,7 +53,7 @@ if __name__ == '__main__':
     node = RouteGenerationNode()
 
     # generate initial route
-    initial_route = rospy.get_param("/lane_map_server/route")
+    initial_route = rospy.get_param("/route_id")
     node.generate_route_callback(String(initial_route))
 
     rospy.loginfo('spinning...')
