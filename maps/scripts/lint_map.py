@@ -73,7 +73,7 @@ def main():
     road_map = GeoJsonTiledMapLayer(os.path.join(map_dir, 'road_tiles'), tile_level=ROAD_GRAPH_TILE_LEVEL)
     issue_layer = IssueLayer()
 
-    route_failed = False
+    route_failures = 0
     for route_id in route_ids:
         print
         print "*****************************************"
@@ -83,7 +83,7 @@ def main():
         routes = maps.routing.find_route(road_map, all_waypoints, routing_utils.Capabilities())
 
         if routes is None:
-            route_failed = True
+            route_failures += 1
             print "Failed to generate route for [{}]".format(route_id)
             continue
 
@@ -97,7 +97,9 @@ def main():
     level_counts = issue_layer.count_issues_by_level()
 
     print
-    print "Num Issues:", issue_layer.count()
+    print "Num Issues:", issue_layer.count() + route_failures
+    if route_failures > 0:
+        print '  Route Failures: {}'.format(route_failures)
     for k in sorted(level_counts.keys()):
         print '  {}: {}'.format(k, level_counts[k])
 
@@ -106,7 +108,7 @@ def main():
         print "Writing Issues to File [{}]".format(args.out_file)
         issue_layer.write(args.out_file)
 
-    if route_failed or level_counts[IssueLevel.ERROR] > 0:
+    if route_failures > 0 or level_counts[IssueLevel.ERROR] > 0:
         sys.exit(1)
 
 
