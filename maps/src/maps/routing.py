@@ -34,16 +34,6 @@ def find_nearest(road_graph, feature_type, point):
 
     return None
 
-def intersects_any(feature, points):
-    boundary = shapely.geometry.shape(feature.geometry)
-    for point in points:
-        tmp = shapely.geometry.shape(point.geometry)
-
-        if boundary.intersects(tmp):
-            return point
-
-    return None
-
 
 def reconstruct_path(came_from, current):
     total_path = [current]
@@ -53,7 +43,8 @@ def reconstruct_path(came_from, current):
     total_path.reverse()
     return total_path
 
-def get_neighbors(road_graph, current, capabilities):
+
+def get_neighbors(road_graph, current):
     seg = road_graph.get_feature(current)
 
     current_is_ramp = seg.properties['is_ramp']
@@ -77,13 +68,6 @@ def get_neighbors(road_graph, current, capabilities):
         if neighbor.properties['invalid']:
             continue
 
-        neighbor_is_ramp = neighbor.properties['is_ramp']
-        if not current_is_ramp and neighbor_is_ramp and capabilities.allowed_ramps is not None:
-            allowed_ramp = intersects_any(neighbor, capabilities.allowed_ramps)
-            if allowed_ramp is None:
-                # not an allowed ramp
-                continue
-            
         # start with the actual length of the road segment
         dist = neighbor.properties['length']
 
@@ -97,7 +81,7 @@ def get_neighbors(road_graph, current, capabilities):
         cost = dist / speed_limit
 
         # penalize ramps by adding 30 seconds
-        if neighbor_is_ramp:
+        if neighbor.properties['is_ramp']:
             cost += 30.0
 
         yield neighbor_ref, cost
@@ -125,7 +109,7 @@ def heuristic_cost_estimate(map_tiles, src_id, dest_id):
     return cost
 
 
-def a_star(road_graph, start_id, goal_id, capabilities, ignore_set=None):
+def a_star(road_graph, start_id, goal_id, ignore_set=None):
     # The set of nodes already evaluated
     closedSet = set()
     if ignore_set is not None:
@@ -174,7 +158,7 @@ def a_star(road_graph, start_id, goal_id, capabilities, ignore_set=None):
         closedSet.add(current)
         del fScore[current]
 
-        for neighbor_id, neighbor_dist in get_neighbors(road_graph, current, capabilities):
+        for neighbor_id, neighbor_dist in get_neighbors(road_graph, current):
 
             if neighbor_id in closedSet:
                 # Ignore the neighbor which is already evaluated.
@@ -198,11 +182,16 @@ def a_star(road_graph, start_id, goal_id, capabilities, ignore_set=None):
     return None, gScore
 
 
+def coord_to_lat_lng(point):
+  return (point[1], point[0])
+
 def find_route(road_graph, waypoints, capabilities):
     routes = []
     route = []
     route_wps = []
     closed_set = set()
+
+    allowed_ramps = set()
 
     prev_segment_id = None
     prev_wp_id = None
@@ -213,9 +202,6 @@ def find_route(road_graph, waypoints, capabilities):
 
         waypoint_type = wp.properties['waypoint_type']
 
-        if waypoint_type == 'allowed_ramp':
-            continue
-
         # make sure waypoint tile is loaded
         road_segment = find_nearest(road_graph, 'road_segment', point)
 
@@ -224,11 +210,17 @@ def find_route(road_graph, waypoints, capabilities):
             print "Can't find segment for waypoint", wp_id
             return None
 
-        segment_id = road_segment['ref']
+        segment_id = road_segment.ref
+
+        if waypoint_type == 'allowed_ramp':
+            # these aren't _real_ waypoints, but they instead authorize us to take certain ramps
+	    # we need to keep track of them for later
+            allowed_ramps.add(segment_id)
+            continue
 
         if prev_segment_id is None:
             if waypoint_type not in ('trip_origin', 'sub_origin', 'reroute_origin'):
-                print "Not a start waypoint", wp_id
+                print "Not an origin waypoint", wp_id
                 return None
 
             # start route segment
@@ -243,17 +235,18 @@ def find_route(road_graph, waypoints, capabilities):
             # same segment. skip it
             continue
 
-        sub_route, progress = a_star(road_graph, prev_segment_id, segment_id, capabilities, ignore_set=closed_set)
+        sub_route, progress = a_star(road_graph, prev_segment_id, segment_id, ignore_set=closed_set)
 
         if sub_route is None:
-            print "No route from waypoint", prev_wp_id, prev_segment_id, tuple(reversed(prev_wp.geometry['coordinates'])), "to", wp_id, segment_id, tuple(reversed(wp.geometry['coordinates']))
+            print "No route from waypoint", prev_wp_id, prev_segment_id, coord_to_lat_lng(prev_wp.geometry['coordinates']), "to", wp_id, segment_id, coord_to_lat_lng(wp.geometry['coordinates'])
 
+            # print out the furthest point the router was able to reach, which is sometimes a useful debugging hint
             if len(progress) > 0:
                 furthest_ref, furthest_sec = max(progress.items(), key=lambda x: x[1])
                 furthest = road_graph.get_feature(furthest_ref)
                 coords = furthest.properties['left_boundary'][-1]
                 furthest_min = int(furthest_sec / 60)
-                print "Furthest: [{}] {:d}h:{:02d}m {}".format(furthest_ref, furthest_min / 60, furthest_min % 60, tuple(reversed(coords))) 
+                print "Furthest: [{}] {:d}h:{:02d}m {}".format(furthest_ref, furthest_min / 60, furthest_min % 60, coord_to_lat_lng(coords))
 
             return None
 
@@ -276,8 +269,35 @@ def find_route(road_graph, waypoints, capabilities):
         prev_wp_id = wp_id
         prev_wp = wp
 
+    # check for incomplete route
     if len(route) > 0:
-        print "Route must end on trip_end"
+        print "Route must end on a destination waypoint"
         return None
+
+    # make sure we didn't route across any non allowed ramps
+    # we could restrict the route so that it only takes allowed
+    # ramps, however this can be hard to debug.
+    # instead, we disincentive the router to take ramps in general,
+    # and expect it to only resort to them when absolutely nessecary.
+    # then, we reject any routes that use non-allowed ramps
+    if capabilities.whitelist_ramps:
+        ramp_error = False
+        for route, _ in routes:
+            prev_is_ramp = None
+            for rs_ref in route:
+                rs = road_graph.get_feature(rs_ref)
+                rs_is_ramp = rs.properties['is_ramp']
+
+                # we only care about transitions from non-ramps onto ramps
+                if (rs_is_ramp and
+                    prev_is_ramp == False and
+                    rs_ref not in allowed_ramps):
+                    coords = rs.properties['left_boundary'][-1]
+                    print "Error: Ramp [{}] is not allowed. {}".format(rs_ref, coord_to_lat_lng(coords))
+                    ramp_error = True
+
+                prev_is_ramp = rs_is_ramp
+        if ramp_error:
+            return None
 
     return routes

@@ -53,11 +53,10 @@ class RouteGenerationNode(object):
 
         routes = None
         if all_waypoints is not None:
-            route_capabilities = routing_utils.get_capabilities(all_waypoints)
 
             # find the route
             routes = maps.routing.find_route(self.road_graph, all_waypoints,
-                                             route_capabilities)
+                                             routing_utils.Capabilities())
             if routes is None:
                 route_error = "Failed to generate route for [{}]".format(route_id.data)
                 rospy.logerr(route_error)

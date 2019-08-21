@@ -29,11 +29,9 @@ if __name__ == '__main__':
         # load waypoints from map reader
         all_waypoints = routing_utils.load_waypoints_from_map_reader(map_reader_dir, route_id)
 
-        route_capabilities = routing_utils.get_capabilities(all_waypoints)
-
         # find the route
         routes = maps.routing.find_route(road_graph, all_waypoints,
-                                         route_capabilities)
+                                         routing_utils.Capabilities())
 
         if routes is None:
             print "Failed to generate route for route id {}".format(route_id)

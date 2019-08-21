@@ -18,14 +18,8 @@ WAYPOINT_TYPES = {
 }
 
 class Capabilities(object):
-    def __init__(self, allowed_ramps=None):
-        self.allowed_ramps = allowed_ramps
-
-def get_capabilities(waypoints):
-    allowed_ramps = [wp for wp in waypoints
-                     if wp.properties['waypoint_type'] == 'allowed_ramp']
-
-    return Capabilities(allowed_ramps = allowed_ramps)
+    def __init__(self):
+        self.whitelist_ramps = True
 
 def trip_to_msg(routes, all_waypoints):
     """

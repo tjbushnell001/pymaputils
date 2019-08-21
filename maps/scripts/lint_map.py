@@ -80,10 +80,7 @@ def main():
         print "Generating route for [{}]".format(route_id)
 
         all_waypoints = routing_utils.load_waypoints_from_map_reader(map_reader_dir, route_id)
-
-        route_capabilities = routing_utils.get_capabilities(all_waypoints)
-
-        routes = maps.routing.find_route(road_map, all_waypoints, route_capabilities)
+        routes = maps.routing.find_route(road_map, all_waypoints, routing_utils.Capabilities())
 
         if routes is None:
             route_failed = True
