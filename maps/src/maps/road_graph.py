@@ -59,8 +59,13 @@ def traverse_lane_groups(lane_group, all_lane_groups, all_connectors, reverse=Fa
     path = []
 
     property_keys = ['direction_of_travel', 'is_ramp', 'functional_class', 'is_controlled_access']
-    path_properties = lane_group.properties
+    path_properties = [lane_group.properties[k] for k in  property_keys]
     while lane_group is not None:
+        lg_properties = [lane_group.properties[k] for k in property_keys]
+        if path_properties != lg_properties:
+            # only traverse lane groups with the same propertiess
+            break
+
         path.append(lane_group)
 
         connector_ref = lane_group.properties['start_connector_ref' if reverse else 'end_connector_ref']
@@ -74,12 +79,6 @@ def traverse_lane_groups(lane_group, all_lane_groups, all_connectors, reverse=Fa
 
         lg_ref = connector.properties['inflow_refs' if reverse else 'outflow_refs'][0]
         lane_group = all_lane_groups.get(lg_ref)
-        if lane_group is not None:
-            for k in property_keys:
-                if lane_group.properties[k] != path_properties[k]:
-                    # only traverse FORWARD lane groups
-                    lane_group = None
-                    break
 
     return path
 

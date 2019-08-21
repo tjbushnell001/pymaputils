@@ -14,8 +14,18 @@ WAYPOINT_TYPES = {
     'route_point': MapWaypoint.WAYPOINT_ROUTE_POINT,
     'sub_destination': MapWaypoint.WAYPOINT_SUB_DESTINATION,
     'sub_origin': MapWaypoint.WAYPOINT_SUB_ORIGIN,
+    'allowed_ramp': MapWaypoint.WAYPOINT_ALLOWED_RAMP,
 }
 
+class Capabilities(object):
+    def __init__(self, allowed_ramps=None):
+        self.allowed_ramps = allowed_ramps
+
+def get_capabilities(waypoints):
+    allowed_ramps = [wp for wp in waypoints
+                     if wp.properties['waypoint_type'] == 'allowed_ramp']
+
+    return Capabilities(allowed_ramps = allowed_ramps)
 
 def trip_to_msg(routes, all_waypoints):
     """

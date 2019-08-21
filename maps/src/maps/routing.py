@@ -15,7 +15,7 @@ def point_to_bbox(point):
     return point.x, point.y, point.x, point.y
 
 
-def find_nearest(road_graph, feature_type, point, max_dist):
+def find_nearest(road_graph, feature_type, point):
 
     tile_id = maps.utils.tile_utils.lat_lng_to_tile_id(point.y, point.x, road_graph.tile_level)
     tile = road_graph.get_tile(tile_id)
@@ -34,6 +34,16 @@ def find_nearest(road_graph, feature_type, point, max_dist):
 
     return None
 
+def intersects_any(feature, points):
+    boundary = shapely.geometry.shape(feature.geometry)
+    for point in points:
+        tmp = shapely.geometry.shape(point.geometry)
+
+        if boundary.intersects(tmp):
+            return point
+
+    return None
+
 
 def reconstruct_path(came_from, current):
     total_path = [current]
@@ -43,16 +53,15 @@ def reconstruct_path(came_from, current):
     total_path.reverse()
     return total_path
 
+def get_neighbors(road_graph, current, capabilities):
+    seg = road_graph.get_feature(current)
 
-def get_neighbors(road_graph, current):
-    seg_tile = road_graph.get_tile(current['tile_id'])
-    seg = seg_tile.get_features('road_segment')[current]
+    current_is_ramp = seg.properties['is_ramp']
 
     connector_ref = geojson_utils.hashify(seg.properties['end_connector_ref'])
 
     # make sure junction tile is loaded
-    connector_tile = road_graph.get_tile(connector_ref['tile_id'])
-    connector = connector_tile.get_features('road_connector').get(connector_ref)
+    connector = road_graph.get_feature(connector_ref)
 
     # valid segments should have valid junctions
     if connector is None:
@@ -62,13 +71,19 @@ def get_neighbors(road_graph, current):
     neighbor_refs = map(geojson_utils.hashify, connector.properties['outflow_refs'])
     for neighbor_ref in neighbor_refs:
         # make sure neighbors are loaded
-        neighbor_tile = road_graph.get_tile(neighbor_ref['tile_id'])
-        neighbor = neighbor_tile.get_features('road_segment').get(neighbor_ref)
+        neighbor = road_graph.get_feature(neighbor_ref)
 
         # do not route over invalid route segments
         if neighbor.properties['invalid']:
             continue
 
+        neighbor_is_ramp = neighbor.properties['is_ramp']
+        if not current_is_ramp and neighbor_is_ramp and capabilities.allowed_ramps is not None:
+            allowed_ramp = intersects_any(neighbor, capabilities.allowed_ramps)
+            if allowed_ramp is None:
+                # not an allowed ramp
+                continue
+            
         # start with the actual length of the road segment
         dist = neighbor.properties['length']
 
@@ -82,7 +97,7 @@ def get_neighbors(road_graph, current):
         cost = dist / speed_limit
 
         # penalize ramps by adding 30 seconds
-        if neighbor.properties['is_ramp']:
+        if neighbor_is_ramp:
             cost += 30.0
 
         yield neighbor_ref, cost
@@ -110,7 +125,7 @@ def heuristic_cost_estimate(map_tiles, src_id, dest_id):
     return cost
 
 
-def a_star(road_graph, start_id, goal_id, ignore_set=None):
+def a_star(road_graph, start_id, goal_id, capabilities, ignore_set=None):
     # The set of nodes already evaluated
     closedSet = set()
     if ignore_set is not None:
@@ -150,17 +165,17 @@ def a_star(road_graph, start_id, goal_id, ignore_set=None):
                 current = None
 
         if current is None:
-            return None
+            return None, gScore
 
         elif current == goal_id:
-            return reconstruct_path(cameFrom, current)
+            return reconstruct_path(cameFrom, current), {}
 
         openSet.remove(current)
         closedSet.add(current)
         del fScore[current]
 
-        for neighbor_id, neighbor_dist in get_neighbors(road_graph, current):
-            # print 'NEIGHBOR', current, neighbor_id, neighbor_id not in closedSet
+        for neighbor_id, neighbor_dist in get_neighbors(road_graph, current, capabilities):
+
             if neighbor_id in closedSet:
                 # Ignore the neighbor which is already evaluated.
                 continue
@@ -180,10 +195,10 @@ def a_star(road_graph, start_id, goal_id, ignore_set=None):
             fScore[neighbor_id] = gScore[neighbor_id] + heuristic_cost_estimate(road_graph, neighbor_id, goal_id)
             heapq.heappush(min_fScore, (fScore[neighbor_id], neighbor_id))
 
-    return None
+    return None, gScore
 
 
-def find_route(road_graph, waypoints):
+def find_route(road_graph, waypoints, capabilities):
     routes = []
     route = []
     route_wps = []
@@ -191,14 +206,18 @@ def find_route(road_graph, waypoints):
 
     prev_segment_id = None
     prev_wp_id = None
+    prev_wp = None
     for wp in waypoints:
         wp_id = wp.ref
         point = shapely.geometry.shape(wp.geometry)
 
         waypoint_type = wp.properties['waypoint_type']
 
+        if waypoint_type == 'allowed_ramp':
+            continue
+
         # make sure waypoint tile is loaded
-        road_segment = find_nearest(road_graph, 'road_segment', point, 1.0)
+        road_segment = find_nearest(road_graph, 'road_segment', point)
 
         if road_segment is None:
             # issues.add_issue(wp, "Can't find segment for waypoint")
@@ -217,18 +236,25 @@ def find_route(road_graph, waypoints):
             route.append(segment_id)
             prev_segment_id = segment_id
             prev_wp_id = wp_id
+            prev_wp = wp
             continue
 
         if prev_segment_id == segment_id:
             # same segment. skip it
             continue
 
-        sub_route = a_star(road_graph, prev_segment_id, segment_id, ignore_set=closed_set)
+        sub_route, progress = a_star(road_graph, prev_segment_id, segment_id, capabilities, ignore_set=closed_set)
 
         if sub_route is None:
-            # issues.add_issue(wp, "No route to waypoint",
-            #                 details = "From road_seg {} to road_seg {}".format(prev_segment_id, segment_id))
-            print "No route from waypoint", prev_wp_id, prev_segment_id, "to", wp_id, segment_id
+            print "No route from waypoint", prev_wp_id, prev_segment_id, tuple(reversed(prev_wp.geometry['coordinates'])), "to", wp_id, segment_id, tuple(reversed(wp.geometry['coordinates']))
+
+            if len(progress) > 0:
+                furthest_ref, furthest_sec = max(progress.items(), key=lambda x: x[1])
+                furthest = road_graph.get_feature(furthest_ref)
+                coords = furthest.properties['left_boundary'][-1]
+                furthest_min = int(furthest_sec / 60)
+                print "Furthest: [{}] {:d}h:{:02d}m {}".format(furthest_ref, furthest_min / 60, furthest_min % 60, tuple(reversed(coords))) 
+
             return None
 
         assert route[-1] == sub_route[0]
@@ -243,10 +269,12 @@ def find_route(road_graph, waypoints):
             route_wps = []
             prev_segment_id = None
             prev_wp_id = None
+            prev_wp = None
             continue
 
         prev_segment_id = segment_id
         prev_wp_id = wp_id
+        prev_wp = wp
 
     if len(route) > 0:
         print "Route must end on trip_end"
