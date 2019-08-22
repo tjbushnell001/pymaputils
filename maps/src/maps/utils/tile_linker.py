@@ -1,7 +1,4 @@
-import shapely.geometry
-
 from maps import map_types
-from maps.utils import geojson_utils
 
 
 def relink_lane_tile(tile_id, lane_map, unlinked_lane_map, save_tiles=True):
@@ -167,8 +164,8 @@ def link_connector(lane_group, tile_id, connectors, is_start_connector, reverse_
 
 def link_junction(lane_segment, tile, is_start_junction, reverse_dot=False):
     """
-    Link a junction to it's lane segment, i.e. add the lane segment ref. If the junction does not exist,
-    create it.
+    Link a junction to it's lane segment, i.e. add the lane segment ref to the junction inflow / outflows.
+    If the junction does not exist, raise a ValueError.
 
     :param lane_segment: the lane being connected to the junction
     :param tile: the tile, used to get the junction list
@@ -178,15 +175,11 @@ def link_junction(lane_segment, tile, is_start_junction, reverse_dot=False):
     """
     tile_id = tile.tile.id
 
-    lane_points = lane_segment.geometry.coordinates
-
     if is_start_junction:
         junction_ref = lane_segment.properties['start_junction_ref']
-        junction_pt = lane_points[0]
         outflow = True
     else:
         junction_ref = lane_segment.properties['end_junction_ref']
-        junction_pt = lane_points[-1]
         outflow = False
 
     if reverse_dot:
@@ -209,6 +202,7 @@ def link_junction(lane_segment, tile, is_start_junction, reverse_dot=False):
         raise ValueError("Missing junction for ref! junction ref: {}".format(junction_ref))
 
     direction_key = 'outflow_refs' if outflow else 'inflow_refs'
-    junction.properties[direction_key].append(lane_segment.ref)
+    if lane_segment.ref not in junction.properties[direction_key]:
+        junction.properties[direction_key].append(lane_segment.ref)
     if not emergency_lane:
         junction.properties['emergency_lanes_only'] = False
