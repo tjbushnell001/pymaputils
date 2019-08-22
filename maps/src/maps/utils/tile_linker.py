@@ -206,15 +206,7 @@ def link_junction(lane_segment, tile, is_start_junction, reverse_dot=False):
 
     junction = tile.get_features('junction').get(junction_ref)
     if junction is None:
-        # create missing lane junction
-        junction = geojson_utils.create_feature(
-            'junction',
-            junction_ref,
-            shapely.geometry.Point(junction_pt),
-            junction_type="",
-            inflow_refs=[],
-            outflow_refs=[])
-        tile.add_feature(junction)
+        raise ValueError("Missing junction for ref! junction ref: {}".format(junction_ref))
 
     direction_key = 'outflow_refs' if outflow else 'inflow_refs'
     junction.properties[direction_key].append(lane_segment.ref)
