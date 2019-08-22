@@ -16,19 +16,25 @@ from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
 from maps.utils import routing_utils
 
 parser = argparse.ArgumentParser("Lint all da lanes")
-parser.add_argument("--route_id", dest='route_ids', action='append',
-                    help="a list of routes to lint")
-parser.add_argument("--map_dir", default=None,
-                    help="input dir for tiles, default to lane_map_server")
-parser.add_argument("--map_reader_dir", default=None,
-                    help="dir of map reader files")
-parser.add_argument("--out_file", default=None,
-                    help="file to write issue layer output")
+parser.add_argument("--route_ids", dest='route_ids', action='append', help="a list of routes to lint")
+parser.add_argument("--map_dir", default=None, help="input dir for tiles, default to lane_map_server")
+parser.add_argument("--map_reader_dir", default=None, help="dir of map reader files")
+parser.add_argument("--out_file", default=None, help="file to write issue layer output")
+
+UPDATE_INTERVAL_PERCENT = 20
 
 
-def lint_route_junctions(route, lane_map, road_map, issue_layer):
+def lint_route_junctions(route, route_id, lane_map, road_map, issue_layer):
     junction_set = set()
-    for lane_group in routing_utils.get_lane_groups_in_route(route, road_map, lane_map):
+    route_lane_groups = list(routing_utils.get_lane_groups_in_route(route, road_map, lane_map))
+    i = 0
+    next_interval = 0
+    for lane_group in route_lane_groups:
+        percent_complete = 100 * float(i) / float(len(route_lane_groups))
+        if percent_complete > next_interval:
+            next_interval += UPDATE_INTERVAL_PERCENT
+            print "Route: {}, Percent Complete: {}".format(route_id, percent_complete)
+        i += 1
         lane_tile = lane_map.get_tile(lane_group['ref']['tile_id'])
         for lane_segment_ref in lane_group.properties['lane_segment_refs']:
             lane = lane_tile.get_features('lane')[lane_segment_ref]
@@ -95,7 +101,7 @@ def main():
 
             print
             print 'Linting Junctions'
-            lint_route_junctions(routes, lane_map, road_map, issue_layer)
+            lint_route_junctions(routes, route_id, lane_map, road_map, issue_layer)
 
         curr_counts = issue_layer.count_issues_by_level()
 
