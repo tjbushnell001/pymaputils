@@ -1,9 +1,10 @@
 #! /usr/bin/env python
 """ Library to lint map junctions for "Issues" """
 from maps.issue_types import IssueType
-from maps.issues import Issue, IssueLayer
+from maps.issues import Issue, IssueLayer, IssueLevel
 from maps.utils import geojson_utils
 import geopy
+
 
 def lint_junction(junction, lane_map, issue_layer=None):
     """
@@ -80,6 +81,7 @@ def lint_junction(junction, lane_map, issue_layer=None):
 
     return issue_layer
 
+
 LANE_TRANSITION_TYPES = {"MERGE", "SPLIT", "UNKNOWN"}
 def junction_transition_summary(lane_map, lane_refs):
     summary = {
@@ -104,6 +106,7 @@ def junction_transition_summary(lane_map, lane_refs):
         summary[is_ramp][transition_type] += 1
 
     return summary
+
 
 def junction_transition_message(in_summary, out_summary):
     def summary_message(summary):

@@ -72,8 +72,7 @@ class IssueLayer(object):
         feature_collection = {'type': 'FeatureCollection', 'features': []}
         for issue_set in self.features.values():
             for ref, issue in issue_set.issues.iteritems():
-                if issue not in issue_set.ignore_issues:
-                    feature_collection['features'].append(convert_issue_to_geojson(issue, ref, issue_set))
+                feature_collection['features'].append(convert_issue_to_geojson(issue, ref, issue_set))
         with open(fn, 'w') as f:
             json.dump(feature_collection, f, indent=4)
 
