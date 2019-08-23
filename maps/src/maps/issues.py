@@ -8,9 +8,9 @@ from maps.utils import geojson_utils
 
 
 class IssueLevel(Enum):
-    IGNORE = "IGNORE"
-    WARN = "WARN"
-    ERROR = "ERROR"
+    WARN = 0
+    ERROR = 1
+    IGNORE = 2
 
 
 class IssueLayer(object):
@@ -104,21 +104,11 @@ class FeatureIssueSet(object):
         ref = geojson_utils.hashify({'feature_ref': self.id[1], 'type': issue.issue_type})
         if ref not in self.issues:
             self.issues[ref] = issue
+        elif issue.level.value > self.issues[ref].level.value:
+            self.issues[ref] = issue
 
     def get_issues(self):
         return self.issues
-
-    def get_issue_strings(self):
-        level_counts = defaultdict(lambda: 0)
-        for issue in self.issues.values():
-
-            level_counts[issue.level] += 1
-            key = "{}-{}".format(issue.level.value.lower(),
-                                 level_counts[issue.level])
-            value = issue.issue_type
-            if issue.msg != "":
-                value += ": " + issue.details
-            yield key, value
 
 
 class Issue(object):
