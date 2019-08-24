@@ -172,7 +172,8 @@ def create_waypoints_from_map_reader(map_reader, route_id):
 def get_lane_groups_in_route(route, road_map, lane_map):
     """
     Yield each lane group in a route.
-     :param route: a route generated using routing.find_route
+
+    :param route: a route generated using routing.find_route
     :param road_map: a tiled map layer containing road tiles
     :param lane_map: a tiled map layer containing lane tiles
     :return: yield a set of lane groups

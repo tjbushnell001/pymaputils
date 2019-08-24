@@ -66,18 +66,18 @@ def lint_junction(junction, lane_map, issue_layer=None):
 
     # 8. check junction distance from lanes
     junction_pt = tuple(reversed(junction.geometry['coordinates']))
-    junction_dist = None
+    max_junction_dist = None
     for lane_refs, pt_idx in [(inflows, -1), (outflows, 0)]:
         for lane_ref in lane_refs:
             lane = lane_map.get_feature(lane_ref)
             lane_pt = tuple(reversed(lane.geometry['coordinates'][pt_idx]))
 
             d = geopy.distance.distance(lane_pt, junction_pt).meters
-            if junction_dist is None or d > junction_dist:
-                junction_dist = d
-    if d is not None and d > 0.10:
+            if max_junction_dist is None or d > max_junction_dist:
+                max_junction_dist = d
+    if max_junction_dist is not None and max_junction_dist > 0.10:
         issue_layer.add_issue(junction, Issue(IssueType.JUNCTION_TOO_FAR.name,
-                                              msg="{0:.2f}m".format(junction_dist)))
+                                              msg="{0:.2f}m".format(max_junction_dist)))
 
     return issue_layer
 

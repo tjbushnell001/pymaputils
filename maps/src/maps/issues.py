@@ -22,7 +22,7 @@ class IssueLayer(object):
         self.features = {}
 
     def add_issue(self, feature, issue, point=None):
-        issue_set = self.get_feature_issue_set(feature, create=True)
+        issue_set = self.get_feature_issues(feature, create=True)
 
         if point is not None:
             issue_set.update_point(point)
@@ -30,15 +30,22 @@ class IssueLayer(object):
         issue_set.add_issue(issue)
 
     def add_ignore(self, feature, issue_type):
-        self.get_feature_issue_set(feature, create=True).add_ignore(issue_type)
+        self.get_feature_issues(feature, create=True).add_ignore(issue_type)
 
     def remove_ignore(self, feature, issue_type):
-        feature_issues = self.get_feature_issue_set(feature, create=False)
+        feature_issues = self.get_feature_issues(feature, create=False)
         if feature_issues is not None:
             feature_issues.add_ignore(issue_type)
 
-    def get_feature_issue_set(self, feature, create=False):
-        issue_set = self.features.get(feature.ref, None)
+    def get_all_issues(self):
+        issue_set = set()
+        for feature in self.features.values():
+            for issue in feature.get_issues().values():
+                issue_set.add(issue)
+        return issue_set
+
+    def get_feature_issues(self, feature, create=False):
+        issue_set = self.features.get(feature.ref)
         if issue_set is None and create:
             self.features[feature.ref] = issue_set = FeatureIssueSet(feature)
         return issue_set

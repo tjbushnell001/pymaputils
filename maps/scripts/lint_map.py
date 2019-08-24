@@ -52,7 +52,7 @@ def lint_route_junctions(route, route_id, lane_map, road_map, issue_layer):
                     issue_layer.add_issue(lane, Issue(IssueType.NON_EXISTANT_JUNCTION_REF.name,
                                           msg=str(lane)))
                 else:
-                    junction_linter.lint_junction(junction, lane_map, issue_layer)
+                    junction_linter.lint_route_junction(junction, lane_map, issue_layer)
 
 
 def main():
@@ -124,6 +124,17 @@ def main():
         print '  Route Failures: {}'.format(route_failures)
     for k in sorted(total_counts.keys()):
         print '  {}: {}'.format(k.name, total_counts[k])
+
+    issue_type_counts = {}
+    for issue in issue_layer.get_all_issues():
+        if issue.issue_type not in issue_type_counts:
+            issue_type_counts[issue.issue_type] = 0
+        issue_type_counts[issue.issue_type] += 1
+
+    print
+    print 'Issues by Type:'
+    for issue_type, count in issue_type_counts.iteritems():
+        print '    {} - {}'.format(issue_type, count)
 
     if args.out_file is not None:
         print
