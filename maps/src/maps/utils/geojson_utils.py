@@ -164,3 +164,13 @@ def write_geojson_tile(tile_id, prefix, feature_collection):
 
     geojson.dump(feature_collection, open(fn, 'w'),
                  sort_keys=True, separators=(',', ':'), indent=0)
+
+
+def connector_ref_from_junction_ref(junction_ref):
+    """
+    Return the connector ref from a junction ref.
+
+    :param junction_ref: the ref object of the junction within a connector
+    :return:
+    """
+    return hashify({'id': junction_ref['connector_id'], 'tile_id': junction_ref['tile_id'], 'type': 'connector_ref'})
