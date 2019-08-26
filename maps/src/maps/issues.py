@@ -93,7 +93,7 @@ class FeatureIssueSet(object):
 
         self.issues = {}
         self.ignore_issues = set()
-        for issue_type in feature.properties['ignore_issues']:
+        for issue_type in feature.properties.get('ignore_issues', []):
             self.ignore_issues.add(issue_type)
 
     def update_point(self, point):
@@ -104,11 +104,11 @@ class FeatureIssueSet(object):
 
     def add_issue(self, issue):
         if issue.issue_type in self.ignore_issues:
-            return
+            issue.level = IssueLevel.IGNORE
         ref = geojson_utils.hashify({'feature_ref': self.id[1], 'type': issue.issue_type})
         if ref not in self.issues:
             self.issues[ref] = issue
-        elif issue.level.value > self.issues[ref].level.value:
+        elif issue.level.value >= self.issues[ref].level.value:
             self.issues[ref] = issue
 
     def get_issues(self):
