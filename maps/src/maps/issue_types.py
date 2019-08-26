@@ -10,6 +10,7 @@ class IssueType(Enum):
 
     # Lane Issues
     NON_EXISTANT_JUNCTION_REF = 1
+    INVALID_DIRECTION_OF_TRAVEL = 12
 
     # Junction Issues
     NO_OUTFLOW = 2
