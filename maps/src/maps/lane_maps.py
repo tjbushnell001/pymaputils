@@ -48,8 +48,8 @@ class ConvertedLaneMapLayer(JsonTiledMapLayer):
         """
         Save a tile to disk in here maps format.
 
-        :param tile_id: id of the tile to fetch
-        :param tile: a tile dict in here maps format
+        :param tile_id: id of the tile to save
+        :param tile: a tile dict in here geojson format
         """
         if tile is None:
             return

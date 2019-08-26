@@ -26,7 +26,8 @@ def lint_junction(junction, lane_map, issue_layer=None):
 
     # 1. check that junction has any outflows
     if len(outflows) == 0:
-        issue_layer.add_issue(junction, Issue(IssueType.NO_OUTFLOW.name))
+        pass
+        # issue_layer.add_issue(junction, Issue(IssueType.NO_OUTFLOW.name))
 
     # 2. check outflow transitions
     for counts in out_transitions.values():

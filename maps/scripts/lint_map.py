@@ -49,8 +49,8 @@ def lint_route_junctions(route, route_id, lane_map, road_map, issue_layer):
 
                 junction = lane_map.get_feature(junction_ref)
                 if junction is None:
-                    issue_layer.add_issue(lane, Issue(IssueType.NON_EXISTANT_JUNCTION_REF.name,
-                                          msg=str(lane)))
+                    # issue_layer.add_issue(lane, Issue(IssueType.NON_EXISTANT_JUNCTION_REF.name, msg=str(lane)))
+                    pass
                 else:
                     junction_linter.lint_route_junction(junction, lane_map, issue_layer)
 

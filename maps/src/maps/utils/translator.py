@@ -186,6 +186,7 @@ def convert_tile_to_geojson(here_map_tile, tile_level, fix_dot=True):
 # Feature Translation - GeoJSON to Here Maps
 # -------------------------------------------
 
+
 def feature_to_connector(feature):
     """
     Converts a GeoJSON lane type feature to a lane dictionary in here maps json format.

@@ -47,7 +47,7 @@ class IssueLayer(object):
     def get_feature_issues(self, feature, create=False):
         issue_set = self.features.get(feature.ref)
         if issue_set is None and create:
-            self.features[feature.ref] = issue_set = FeatureIssueSet(feature)
+            self.features[feature.ref] = issue_set = FeatureIssueSet.from_feature(feature)
         return issue_set
 
     def has_issues(self, feature):
@@ -71,38 +71,59 @@ class IssueLayer(object):
 
         return num_issues
 
-    def write(self, fn):
+    def write(self, fp):
         """
         Write the issues layer to a json file in geojson.
-        :param fn: A file location where to write
+        :param fp: A file path to write to
         """
         feature_collection = {'type': 'FeatureCollection', 'features': []}
         for issue_set in self.features.values():
             for ref, issue in issue_set.issues.iteritems():
                 feature_collection['features'].append(convert_issue_to_geojson(issue, ref, issue_set))
-        with open(fn, 'w') as f:
+        with open(fp, 'w') as f:
             json.dump(feature_collection, f, indent=4)
+
+    def load(self, fp):
+        """
+        Read a set of issues from an issues file.
+        :param fp: a file path to read from
+        :return:
+        """
+        with open(fp, 'r') as f:
+            raw_issues = geojson.load(f)
+        for feature in raw_issues.features:
+            issue, ref, point = parse_geojson_issue(feature)
+            if ref not in self.features:
+                self.features[ref] = FeatureIssueSet(ref, point)
+            self.features[ref].add_issue(issue)
 
 
 class FeatureIssueSet(object):
     """ The set of all issues associated with a feature. """
-    def __init__(self, feature):
-        self.id = (feature.feature_type, feature.ref)
-        self.geom_type = feature.geometry['type']
+    def __init__(self, feature_ref, point):
+        self.point = point
+        self.feature_ref = feature_ref
+        self.issues = {}
+        self.ignore_issues = set()
 
-        if self.geom_type == 'LineString':
-            self.point = sg.LineString(feature.geometry['coordinates']).representative_point()
-        elif self.geom_type == 'Point':
-            self.point = sg.Point(feature.geometry['coordinates']).representative_point()
-        elif self.geom_type == 'Polygon':
-            self.point = sg.Polygon(feature.geometry['coordinates']).representative_point()
+    @classmethod
+    def from_feature(cls, feature):
+        geom_type = feature.geometry['type']
+
+        if geom_type == 'LineString':
+            point = sg.LineString(feature.geometry['coordinates']).representative_point()
+        elif geom_type == 'Point':
+            point = sg.Point(feature.geometry['coordinates']).representative_point()
+        elif geom_type == 'Polygon':
+            point = sg.Polygon(feature.geometry['coordinates']).representative_point()
         else:
             raise NotImplementedError("Geometry type {} not supported in Issues yet".format(feature.geometry['type']))
 
-        self.issues = {}
-        self.ignore_issues = set()
+        issue_set = cls(feature.ref, point)
         for issue_type in feature.properties.get('ignore_issues', []):
-            self.ignore_issues.add(issue_type)
+            issue_set.add_ignore(issue_type)
+
+        return issue_set
 
     def update_point(self, point):
         self.point = point
@@ -117,7 +138,7 @@ class FeatureIssueSet(object):
     def add_issue(self, issue):
         if issue.issue_type in self.ignore_issues:
             issue.level = IssueLevel.IGNORE
-        ref = geojson_utils.hashify({'feature_ref': self.id[1], 'type': issue.issue_type})
+        ref = geojson_utils.hashify({'feature_ref': self.feature_ref, 'type': issue.issue_type})
         if ref not in self.issues:
             self.issues[ref] = issue
         elif issue.level.value >= self.issues[ref].level.value:
@@ -155,3 +176,14 @@ def convert_issue_to_geojson(issue, ref, issue_set):
         geometry=geojson.Point(*issue_set.point.coords),
         msg=issue.msg,
         level=issue.level.name)
+
+
+def parse_geojson_issue(geojson_issue):
+    issue = Issue(
+        issue_type=geojson_issue.properties['type'],
+        level=IssueLevel[geojson_issue.properties['level']],
+        msg=geojson_issue.properties['msg']
+    )
+    ref = geojson_utils.hashify(geojson_issue.properties['ref']['feature_ref'])
+    point = geojson_issue.geometry['coordinates']
+    return issue, ref, point
