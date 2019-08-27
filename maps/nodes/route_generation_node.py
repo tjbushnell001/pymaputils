@@ -87,4 +87,8 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
         # publish diagnostics
         node.diagnostics.publish()
-        rate.sleep()
+
+        try:
+            rate.sleep()
+        except rospy.exceptions.ROSTimeMovedBackwardsException:
+            pass
