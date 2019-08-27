@@ -238,7 +238,11 @@ def find_route(road_graph, waypoints, capabilities):
         sub_route, progress = a_star(road_graph, prev_segment_id, segment_id, ignore_set=closed_set)
 
         if sub_route is None:
-            print "No route from waypoint", prev_wp_id, prev_segment_id, coord_to_lat_lng(prev_wp.geometry['coordinates']), "to", wp_id, segment_id, coord_to_lat_lng(wp.geometry['coordinates'])
+            print "No route from waypoint {} {} {} to {} {} {}".format(
+                prev_wp_id, prev_segment_id,
+                coord_to_lat_lng(prev_wp.geometry['coordinates']),
+                wp_id, segment_id,
+                coord_to_lat_lng(wp.geometry['coordinates']))
 
             # print out the furthest point the router was able to reach, which is sometimes a useful debugging hint
             if len(progress) > 0:
@@ -246,7 +250,10 @@ def find_route(road_graph, waypoints, capabilities):
                 furthest = road_graph.get_feature(furthest_ref)
                 coords = furthest.properties['left_boundary'][-1]
                 furthest_min = int(furthest_sec / 60)
-                print "Furthest: [{}] {:d}h:{:02d}m {}".format(furthest_ref, furthest_min / 60, furthest_min % 60, coord_to_lat_lng(coords))
+                print "Furthest: [{}] {:d}h:{:02d}m {}".format(
+                    furthest_ref,
+                    furthest_min / 60, furthest_min % 60,
+                    coord_to_lat_lng(coords))
 
             return None
 
@@ -290,7 +297,7 @@ def find_route(road_graph, waypoints, capabilities):
 
                 # we only care about transitions from non-ramps onto ramps
                 if (rs_is_ramp and
-                    prev_is_ramp == False and
+                    prev_is_ramp is False and
                     rs_ref not in allowed_ramps):
                     coords = rs.properties['left_boundary'][-1]
                     print "Error: Ramp [{}] is not allowed. {}".format(rs_ref, coord_to_lat_lng(coords))
