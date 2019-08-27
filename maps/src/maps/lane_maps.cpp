@@ -13,24 +13,25 @@ std::shared_ptr<lane_map::Tile> LaneMapLayer::loadTile(const std::string& dir_na
                                                        uint64_t tile_id,
                                                        const MapFrame& target_frame)
 {
-  assert(target_frame.type == MapFrameType::GCS_NED || target_frame.type == MapFrameType::UTM);
+  assert(target_frame.type == MapFrameType::GCS || target_frame.type == MapFrameType::GCS_NED || target_frame.type == MapFrameType::UTM);
 
   const std::string fn = dir_name + "/" + std::to_string(tile_id) + ".json";
   if (!file_utils::fileExists(fn)) {
     return nullptr;
   }
 
+  const bool use_NED = target_frame.type == MapFrameType::GCS_NED;
+
   Json::Value root;
   if (!utils_json::readJsonFile(fn, &root)) {
     return nullptr;
   }
 
-  auto tile = std::make_shared<lane_map::Tile>(lane_map::parseTile(root));
+  auto tile = std::make_shared<lane_map::Tile>(lane_map::parseTile(root, use_NED));
   tile->id = tile_id;
 
   if (target_frame.type == MapFrameType::UTM) {
     // convert tile to UTM
-    const bool use_NED = target_frame.type == maps::MapFrameType::GCS_NED;
     maps::transformTileGpsToUtm(tile.get(), target_frame.utm_zone, use_NED);
   }
 
