@@ -74,7 +74,7 @@ class TiledMapLayer : public MapLayer
     if (sub_map_->map_frame.type == MapFrameType::UTM && sub_map_->map_frame.utm_zone != utm_zone) {
       // utm zone has changed, clear all tiles. They will be reloaded below
       ROS_WARN_STREAM("Changed Utm zone from "
-                      << static_cast<int>(sub_map_->map_frame.utm_zone.zone) << "to "
+                      << static_cast<int>(sub_map_->map_frame.utm_zone.zone) << " to "
                       << static_cast<int>(utm_zone.zone) << ", clearing tiles");
       sub_map_->tiles.clear();
     }
@@ -119,6 +119,24 @@ class TiledMapLayer : public MapLayer
   MapFrame getMapFrame() const
   {
     return sub_map_->map_frame;
+  }
+
+  /**
+   * Change the map frame type.
+   *
+   * This will clear the currently loaded features, and may require a call to
+   * updateLocation() to reload them.
+   *
+   * @param[in] map_frame_type The new map frame type
+   **/
+  void resetFrame(const MapFrameType& map_frame_type)
+  {
+    ROS_WARN_STREAM("Changed map frame type from "
+                    << mapFrameTypeStrings.at(sub_map_->map_frame.type)
+                    << " to " << mapFrameTypeStrings.at(map_frame_type)
+                    << ", clearing tiles");
+
+    sub_map_->resetFrame(map_frame_type);
   }
 
   /**

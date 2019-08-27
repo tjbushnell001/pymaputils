@@ -20,6 +20,14 @@ enum class MapFrameType
   VEHICLE
 };
 
+static const std::map<MapFrameType, std::string> mapFrameTypeStrings = {
+    {MapFrameType::INVALID, ""},
+    {MapFrameType::GCS, "GCS"},
+    {MapFrameType::GCS_NED, "GCS_NED"},
+    {MapFrameType::UTM, "UTM"},
+    {MapFrameType::VEHICLE, "VEHICLE"},
+};
+
 struct MapFrame
 {
   /**

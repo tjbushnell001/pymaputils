@@ -78,6 +78,16 @@ class MapLayer
    **/
   virtual MapFrame getMapFrame() const = 0;
 
+  /**
+   * Change the map frame type.
+   *
+   * This will clear the currently loaded features, and may require a call to
+   * updateLocation() to reload them.
+   *
+   * @param[in] map_frame_type The new map frame type
+   **/
+  virtual void resetFrame(const MapFrameType& map_frame_type) = 0;
+
  private:
   MapLayerType layer_type_;
   std::string layer_name_;
