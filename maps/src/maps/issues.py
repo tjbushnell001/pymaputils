@@ -8,9 +8,9 @@ from maps.utils import geojson_utils
 
 
 class IssueLevel(Enum):
-    IGNORE = "IGNORE"
-    WARN = "WARN"
-    ERROR = "ERROR"
+    WARN = 0
+    ERROR = 1
+    IGNORE = 2
 
 
 class IssueLayer(object):
@@ -21,22 +21,24 @@ class IssueLayer(object):
     def __init__(self):
         self.features = {}
 
-    def issue_ignored(self, ref, ignore_key):
-        issue_set = self.features.get(ref)
-        if issue_set is None:
-            return False
-        return ignore_key in issue_set.ignore_issues
-
     def add_issue(self, feature, issue, point=None):
-        issue_set = self.get_feature_issues(feature, create=True)
+        issue_set = self.get_feature_issue_set(feature, create=True)
 
         if point is not None:
             issue_set.update_point(point)
 
         issue_set.add_issue(issue)
 
-    def get_feature_issues(self, feature, create=False):
-        issue_set = self.features.get(feature.ref)
+    def add_ignore(self, feature, issue_type):
+        self.get_feature_issue_set(feature, create=True).add_ignore(issue_type)
+
+    def remove_ignore(self, feature, issue_type):
+        feature_issues = self.get_feature_issue_set(feature, create=False)
+        if feature_issues is not None:
+            feature_issues.add_ignore(issue_type)
+
+    def get_feature_issue_set(self, feature, create=False):
+        issue_set = self.features.get(feature.ref, None)
         if issue_set is None and create:
             self.features[feature.ref] = issue_set = FeatureIssueSet(feature)
         return issue_set
@@ -44,7 +46,7 @@ class IssueLayer(object):
     def has_issues(self, feature):
         return feature.ref in self.features
 
-    def get_all_features(self):
+    def get_all_feature_sets(self):
         return self.features.itervalues()
 
     def count(self):
@@ -93,32 +95,30 @@ class FeatureIssueSet(object):
 
         self.issues = {}
         self.ignore_issues = set()
+        for issue_type in feature.properties.get('ignore_issues', []):
+            self.ignore_issues.add(issue_type)
 
     def update_point(self, point):
         self.point = point
 
-    def add_ignore(self, ignore_issues):
-        self.ignore_issues.update(ignore_issues)
+    def add_ignore(self, issue_type):
+        self.ignore_issues.add(issue_type)
+
+    def remove_ignore(self, issue_type):
+        if issue_type in self.ignore_issues:
+            self.ignore_issues.remove(issue_type)
 
     def add_issue(self, issue):
+        if issue.issue_type in self.ignore_issues:
+            issue.level = IssueLevel.IGNORE
         ref = geojson_utils.hashify({'feature_ref': self.id[1], 'type': issue.issue_type})
         if ref not in self.issues:
+            self.issues[ref] = issue
+        elif issue.level.value >= self.issues[ref].level.value:
             self.issues[ref] = issue
 
     def get_issues(self):
         return self.issues
-
-    def get_issue_strings(self):
-        level_counts = defaultdict(lambda: 0)
-        for issue in self.issues.values():
-
-            level_counts[issue.level] += 1
-            key = "{}-{}".format(issue.level.value.lower(),
-                                 level_counts[issue.level])
-            value = issue.issue_type
-            if issue.msg != "":
-                value += ": " + issue.details
-            yield key, value
 
 
 class Issue(object):
