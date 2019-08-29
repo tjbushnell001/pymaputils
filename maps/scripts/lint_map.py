@@ -75,6 +75,9 @@ def main():
 
     route_failures = 0
     for route_id in route_ids:
+        prev_counts = issue_layer.count_issues_by_level()
+        route_failed = False
+
         print
         print "*****************************************"
         print "Generating route for [{}]".format(route_id)
@@ -83,32 +86,45 @@ def main():
         routes = maps.routing.find_route(road_map, all_waypoints, routing_utils.Capabilities())
 
         if routes is None:
+            route_failed = True
             route_failures += 1
             print "Failed to generate route for [{}]".format(route_id)
-            continue
+        else:
+            print
+            print "Linting route [{}]".format(route_id)
+
+            print
+            print 'Linting Junctions'
+            lint_route_junctions(routes, lane_map, road_map, issue_layer)
+
+        curr_counts = issue_layer.count_issues_by_level()
 
         print
-        print "Linting route [{}]".format(route_id)
+        print "Route Issues:", sum(curr_counts.values()) - sum(prev_counts.values()) + int(route_failed)
+        if route_failed:
+            print '  Route Failures: 1'
+        for k in sorted(curr_counts.keys()):
+            curr_count = curr_counts[k] - prev_counts.get(k, 0)
+            if curr_count > 0:
+                print '  {}: {}'.format(k.name, curr_count)
+        prev_counts = curr_counts
 
-        print
-        print 'Linting Junctions'
-        lint_route_junctions(routes, lane_map, road_map, issue_layer)
-
-    level_counts = issue_layer.count_issues_by_level()
+    total_counts = issue_layer.count_issues_by_level()
 
     print
-    print "Num Issues:", issue_layer.count() + route_failures
+    print "*****************************************"
+    print "Total Issues:", issue_layer.count() + route_failures
     if route_failures > 0:
         print '  Route Failures: {}'.format(route_failures)
-    for k in sorted(level_counts.keys()):
-        print '  {}: {}'.format(k, level_counts[k])
+    for k in sorted(total_counts.keys()):
+        print '  {}: {}'.format(k.name, total_counts[k])
 
     if args.out_file is not None:
         print
         print "Writing Issues to File [{}]".format(args.out_file)
         issue_layer.write(args.out_file)
 
-    if route_failures > 0 or level_counts[IssueLevel.ERROR] > 0:
+    if route_failures > 0 or total_counts[IssueLevel.ERROR] > 0:
         sys.exit(1)
 
 
