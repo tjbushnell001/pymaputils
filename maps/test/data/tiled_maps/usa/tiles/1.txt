@@ -1,0 +1,13 @@
+Documentation for 1.json
+
+This tile contains a set of lanes and junctions connected to create a N/0 -> N/0 junction.
+
+        N
+        |
+        |
+        J
+        |
+        |
+        N
+
+See: https://docs.google.com/spreadsheets/d/12HoFzSO6pgPgKWjJKCYHsIHyRPTkVa18EbqPjoLoePc/edit?usp=sharing

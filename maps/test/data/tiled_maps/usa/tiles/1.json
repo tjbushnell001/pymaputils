@@ -1,0 +1,115 @@
+{
+  "connectors": [
+    {
+      "boundary_geometry": [[0, 0]],
+      "connected_lane_groups": [
+          {
+              "id": 1,
+              "tile_id": 1,
+              "type": "lane_group_ref"
+          }
+      ],
+      "id": 1,
+      "inflow_refs": [
+        {
+          "id": 1,
+          "tile_id": 1,
+          "type": "lane_group_ref"
+        }
+      ],
+      "junctions": [
+          {
+              "id": 1,
+              "inflow_refs": [
+                {
+                  "id": 1,
+                  "lane_group_id": 1,
+                  "tile_id": 1,
+                  "type": "lane_ref"
+                }
+              ],
+              "junction_type": "",
+              "outflow_refs": [],
+              "pt": [0, 0],
+              "type": "junction"
+          }
+      ],
+      "outflow_refs": [],
+      "type": "connector"
+    }
+  ],
+  "id": 1,
+  "lane_groups": [
+    {
+      "boundaries": [
+        {
+          "altitude_pts": [[0, 0]],
+          "color": null,
+          "id": 1,
+          "is_only_emergency_boundary": false,
+          "marking_width": null,
+          "material": null,
+          "pts": [[0, 0]],
+          "style": null,
+          "type": "lane_boundary"
+        },
+        {
+          "altitude_pts": [[0, 0]],
+          "color": null,
+          "id": 2,
+          "is_only_emergency_boundary": false,
+          "marking_width": null,
+          "material": null,
+          "pts": [[0, 0]],
+          "style": null,
+          "type": "lane_boundary"
+        }
+      ],
+      "end_connector_ref": {
+        "id": 1,
+        "tile_id": 1,
+        "type": "connector_ref"
+      },
+      "functional_class": 4,
+      "id": 1,
+      "intersecting_tiles": null,
+      "is_accessible_by_pedestrians": false,
+      "is_built_up_area_road": false,
+      "is_controlled_access": false,
+      "is_limited_access": false,
+      "is_multiply_digitized": false,
+      "is_ramp": true,
+      "is_tunnel": false,
+      "is_urban": true,
+      "is_within_interchange": false,
+      "lanes": [
+        {
+          "altitude_pts": [0],
+          "direction_of_travel": "BACKWARD",
+          "end_connector_lane_number": 1,
+          "from_split": false,
+          "id": 1,
+          "is_emergency_lane": false,
+          "is_transitioning": false,
+          "lane_transition_type": "UNKNOWN",
+          "lane_type": "UNKNOWN",
+          "left_boundary_id": 1,
+          "merged": false,
+          "merging": false,
+          "pts": [[0, 0]],
+          "right_boundary_id": 2,
+          "start_connector_lane_number": 1,
+          "type": "lane",
+          "upcoming_split": true
+        }
+      ],
+      "left_boundary": [[0, 0]],
+      "length": 0,
+      "right_boundary": [[0, 0]],
+      "route_type": 0,
+      "start_connector_id": 1,
+      "type": "lane_group"
+    }
+  ],
+  "type": "tile"
+}
