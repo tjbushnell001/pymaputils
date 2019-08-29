@@ -60,11 +60,12 @@ def main():
     if map_reader_dir is None:
         map_reader_dir = os.path.join(rospkg.RosPack().get_path('map_reader'), 'maps')
 
+    routes_dir = os.path.join(rospkg.RosPack().get_path('brain'), 'params/routes')
     route_ids = args.route_ids
     if route_ids is None:
         route_ids = []
         # default to all routes
-        for fn in glob.glob(os.path.join(map_reader_dir, '*.json')):
+        for fn in glob.glob(os.path.join(routes_dir, '*.yaml')):
             route_id = os.path.splitext(os.path.basename(fn))[0]
             route_ids.append(route_id)
 
