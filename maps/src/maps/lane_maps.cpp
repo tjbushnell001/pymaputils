@@ -1,17 +1,19 @@
 #include <maps/lane_maps.h>
 #include "maps/utils/lane_map_transform.h"
 #include "utils/map/lane_map_parser.h"
+#include <diagnostics_utils/instrumentation.h>
 
 using namespace maps;
+using namespace diagnostics_utils;
 
-LaneMapLayer::LaneMapLayer(const std::string& dir_name, size_t tile_radius)
-  : TiledMapLayer(MapLayerType::LANE, "", dir_name, 14, tile_radius)
+LaneMapLayer::LaneMapLayer(const std::string& dir_name, size_t tile_radius, bool preload)
+  : TiledMapLayer(MapLayerType::LANE, "", dir_name, 14, tile_radius, preload)
 {
 }
 
 std::shared_ptr<lane_map::Tile> LaneMapLayer::loadTile(const std::string& dir_name,
                                                        uint64_t tile_id,
-                                                       const MapFrame& target_frame)
+                                                       const MapFrame& target_frame) const
 {
   assert(target_frame.type == MapFrameType::GCS || target_frame.type == MapFrameType::GCS_NED || target_frame.type == MapFrameType::UTM);
 
@@ -22,16 +24,22 @@ std::shared_ptr<lane_map::Tile> LaneMapLayer::loadTile(const std::string& dir_na
 
   const bool use_NED = target_frame.type == MapFrameType::GCS_NED;
 
+  SequentialExecution exec_timing;
+  exec_timing.trace();
+
+  exec_timing.start("readJsonFile", CALLER_INFO());
   Json::Value root;
   if (!utils_json::readJsonFile(fn, &root)) {
     return nullptr;
   }
 
+  exec_timing.start("parseTile", CALLER_INFO());
   auto tile = std::make_shared<lane_map::Tile>(lane_map::parseTile(root, use_NED));
   tile->id = tile_id;
 
   if (target_frame.type == MapFrameType::UTM) {
     // convert tile to UTM
+    exec_timing.start("transformTileGpsToUtm", CALLER_INFO());
     maps::transformTileGpsToUtm(tile.get(), target_frame.utm_zone, use_NED);
   }
 
@@ -40,6 +48,54 @@ std::shared_ptr<lane_map::Tile> LaneMapLayer::loadTile(const std::string& dir_na
 
 LaneSubMap::LaneSubMap(const MapFrameType frame_type) : SubMap(frame_type)
 {
+}
+
+bool LaneSubMap::transformFrame(const MapFrame& target_frame)
+{
+  ScopedExecution exec_guard(CALLER_INFO());
+  exec_guard.trace();
+
+  const MapFrame& source_frame = map_frame;
+  bool success = false;
+  if (source_frame.type == MapFrameType::GCS ||
+      source_frame.type == MapFrameType::GCS_NED) {
+    const bool use_NED = target_frame.type == MapFrameType::GCS_NED;
+
+    if (target_frame.type == source_frame.type) {
+      success = true;
+
+    } else if (target_frame.type == MapFrameType::UTM) {
+      for (const auto& tile : tiles) {
+        maps::transformTileGpsToUtm(tile.second.get(), target_frame.utm_zone, use_NED);
+      }
+      success = true;
+    }
+  } else if (source_frame.type == MapFrameType::UTM) {
+    if (target_frame.type == MapFrameType::GCS ||
+        target_frame.type == MapFrameType::GCS_NED) {
+
+      const bool use_NED = target_frame.type == MapFrameType::GCS_NED;
+      for (const auto& tile : tiles) {
+        maps::transformTileUtmToGps(tile.second.get(), source_frame.utm_zone, use_NED);
+      }
+      success = true;
+
+    } else if (target_frame.type == MapFrameType::UTM) {
+      if (source_frame.utm_zone != target_frame.utm_zone) {
+        for (const auto& tile : tiles) {
+          maps::transformTileUtmToGps(tile.second.get(), source_frame.utm_zone, false);
+          maps::transformTileGpsToUtm(tile.second.get(), target_frame.utm_zone, false);
+        }
+      }
+      success = true;
+    }
+  }
+
+  if (success) {
+    map_frame = target_frame;
+  }
+
+  return success;
 }
 
 const lane_map::LaneGroup* LaneSubMap::getLaneGroup(const lane_map::LaneGroupRef& ref) const

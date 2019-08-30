@@ -48,9 +48,9 @@ struct MapFrame
    *                    Heading may be 0.
    * VEHICLE: GCS to vehicle frame transform
    **/
-  double origin_latitude;
-  double origin_longitude;
-  double origin_heading;
+  double origin_latitude = 0;
+  double origin_longitude = 0;
+  double origin_heading = 0;
 
   /**
    * UTM translation of origin latitude/longitude/heading above.
@@ -62,6 +62,56 @@ struct MapFrame
   map_utils::UtmZone utm_zone;
 };
 
+ static bool operator==(const MapFrame& frame1, const MapFrame& frame2) {
+   if (frame1.type != frame2.type) {
+     return false;
+   }
+
+   switch (frame1.type) {
+   case MapFrameType::GCS:
+   case MapFrameType::GCS_NED:
+      return true;
+   case MapFrameType::UTM:
+     // UTM must have matching zones
+     return frame1.utm_zone == frame2.utm_zone;
+   case MapFrameType::VEHICLE:
+     // vehicle frame must have matching localization
+     return (frame1.origin_latitude == frame2.origin_latitude &&
+           frame1.origin_longitude == frame2.origin_longitude &&
+           frame1.origin_heading == frame2.origin_heading);
+   }
+   return false;
+ }
+
+  static bool operator!=(const MapFrame& frame1, const MapFrame& frame2) {
+    return !(frame1 == frame2);
+  }
+
+  static bool operator<(const MapFrame& frame1, const MapFrame& frame2) {
+    if (frame1.type != frame2.type) {
+      return frame1.type < frame2.type;
+    }
+
+   switch (frame1.type) {
+   case MapFrameType::GCS:
+   case MapFrameType::GCS_NED:   
+      return false;
+   case MapFrameType::UTM:
+     return frame1.utm_zone.zone < frame2.utm_zone.zone;
+   case MapFrameType::VEHICLE:
+     if (frame1.origin_latitude < frame2.origin_latitude)
+       return true;
+     if (frame1.origin_latitude == frame2.origin_latitude &&
+         frame1.origin_longitude < frame2.origin_longitude)
+       return true;
+     if (frame1.origin_latitude == frame2.origin_latitude &&
+         frame1.origin_longitude == frame2.origin_longitude &&
+         frame1.origin_heading < frame2.origin_heading)
+       return true;
+     break;
+   }
+   return false;
+ }
 }; // namespace maps
 
 #endif // MAPS_MAP_FRAME_H_

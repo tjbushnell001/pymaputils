@@ -75,6 +75,20 @@ class SubMap
     tiles.clear();
   }
 
+  /**
+   * Transforms the current tiles into a new map frame.
+   *
+   * This leaves it to sub-classes to decide what sort of conversions they support.
+   * The default implementation coverts nothing.
+   *
+   * @param[in] target_frame The new map frame
+   * @returns bool indicating whether conversion was successful.
+   **/
+  virtual bool transformFrame(const MapFrame& target_frame)
+  {
+    return false;
+  }
+
   MapFrame map_frame;
   std::unordered_map<uint64_t, std::shared_ptr<MapTileType>> tiles;
   std::unordered_set<uint64_t> missing_tiles;
