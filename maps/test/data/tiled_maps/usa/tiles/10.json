@@ -9,7 +9,7 @@
                         {
                             "id": 1, 
                             "lane_group_id": 1, 
-                            "tile_id": 3, 
+                            "tile_id": 10, 
                             "type": "lane_ref"
                         }
                     ], 
@@ -17,7 +17,7 @@
                         {
                             "id": 1, 
                             "lane_group_id": 100, 
-                            "tile_id": 3, 
+                            "tile_id": 10, 
                             "type": "lane_ref"
                         }
                     ], 
@@ -27,15 +27,15 @@
             "type": "connector"
         }
     ], 
-    "id": 3, 
+    "id": 10, 
     "lane_groups": [
         {
             "id": 1, 
-            "is_ramp": true, 
+            "is_ramp": false, 
             "lanes": [
                 {
                     "id": 1, 
-                    "lane_transition_type": "UNKNOWN", 
+                    "lane_transition_type": "MERGE", 
                     "type": "lane"
                 }
             ], 

@@ -45,21 +45,15 @@ void testJunction(uint64_t tile_id) {
     const auto lane_sub_map = getLaneSubMapFromTile(tile_id);
 
     const auto junction_ref = lane_map::JunctionRef(tile_id, JUNCTION_CONNECTOR_ID, JUNCTION_ID);
-
-        std::cout << "test0.0" << std::endl << std::endl;
     auto junction = lane_sub_map->getJunction(junction_ref);
-        std::cout << "test0.1" << std::endl << std::endl;
-
     const auto in_nominal_lanes = ego_lane_finder::getNominalLanes(*lane_sub_map, junction->inflow_refs, lane_map_utils::TraverseDirection::IN);
 
     // Assert the size is 1 and the lane we get is the answer lane (always lg id 1, id 1)
     EXPECT_EQ(in_nominal_lanes.size(), 1);
     auto answer_lane_ref(lane_map::LaneRef(tile_id, IN_LANE_LG_ID, IN_LANE_ID));
     EXPECT_EQ(in_nominal_lanes[0], answer_lane_ref);
-    std::cout << "test1" << std::endl << std::endl;
 
     const auto out_nominal_lanes = ego_lane_finder::getNominalLanes(*lane_sub_map, junction->outflow_refs, lane_map_utils::TraverseDirection::OUT);
-    std::cout << "test2" << std::endl << std::endl;
 
     // Assert the size is 1 and the lane we get is the answer lane (always lg id 100, id 1)
     EXPECT_EQ(out_nominal_lanes.size(), 1);
@@ -67,29 +61,19 @@ void testJunction(uint64_t tile_id) {
     EXPECT_EQ(out_nominal_lanes[0], answer_lane_ref);
 }
 
+// Standard case, N/0 -> N/0
 TEST(MapTileLoader, _N_0__N_0)
 {
   const uint64_t TILE_ID = 1;
   testJunction(TILE_ID);
 }
 
+// Standard ramp exit, N/0 -> N/N
 TEST(MapTileLoader, _N_0__N_N)
 {
   const uint64_t TILE_ID = 2;
   testJunction(TILE_ID);
 }
-
-//TEST(MapTileLoader, _0_N__N_0)
-//{
-//  const uint64_t _0_N__N_0_TILE_ID = 3;
-//  testInflowOutflows(_0_N__N_0_TILE_ID);
-//}
-//
-//TEST(MapTileLoader, N_0__N_0)
-//{
-//  const uint64_t N_0__N_0_TILE_ID = 1;
-//  testInflowOutflows(N_0__N_0_TILE_ID);
-//}
 
 int main(int argc, char** argv)
 {

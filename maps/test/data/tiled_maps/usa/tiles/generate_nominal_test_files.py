@@ -69,98 +69,89 @@ def main():
             # First three lines are comments
             infile.readline()
         line = infile.readline()
-        tile_id = 4
+        tile_id = 1
         while line:
             line = line[:-1]
             tile = create_tile(tile_id)
             tile['id'] = tile_id
-            properties = line.split("\t")
-            print properties
+            properties = line.split()
             in_lg_count = int(properties[0])
             out_lg_count = int(properties[1])
 
-            if in_lg_count == 0 or out_lg_count == 0:
-                # logic doesn't handle this case yet
-                tile_id += 1
-                continue
-
-            if properties[2] in seen_cases:
-                # already dealt with this case. The only difference is the number
-                # of incoming / outgoing lane groups and the current notation elaves
-                # ambiguity in such cases
-                tile_id += 1
-                continue
-
-            seen_cases.add(properties[2])
-
-            # --------------
-            # In Lane Groups
-            # --------------
-            # In LG's are based on id's starting at 1
-            lg_id = 1
-
-            in_fw_lanes = sum([int(i) for i in properties[3:6]])
-            if in_fw_lanes > 0:
-                lg = create_lane_group(lg_id)
-                lg_id += 1
+            # logic doesn't handle this case yet
+            if in_lg_count != 0 and out_lg_count != 0 and properties[2] not in seen_cases:
+                # The only difference is the number of incoming / outgoing lane groups and
+                # the current notation leaves ambiguity in such cases
+                seen_cases.add(properties[2])
 
                 # --------------
-                # Fw In Lanes
+                # In Lane Groups
                 # --------------
-                add_lanes(tile, lg, int(properties[3]), "inflow_refs", "UNKNOWN")
-                add_lanes(tile, lg, int(properties[4]), "inflow_refs", "MERGE")
-                add_lanes(tile, lg, int(properties[5]), "inflow_refs", "SPLIT")
+                # In LG's are based on id's starting at 1
+                lg_id = 1
 
-                tile['lane_groups'].append(lg)
+                in_fw_lanes = sum([int(i) for i in properties[3:6]])
+                if in_fw_lanes > 0:
+                    lg = create_lane_group(lg_id)
+                    lg_id += 1
 
-            in_ramp_lanes = sum([int(i) for i in properties[6:9]])
-            if in_ramp_lanes > 0:
-                lg = create_lane_group(lg_id, is_ramp=True)
+                    # --------------
+                    # Fw In Lanes
+                    # --------------
+                    add_lanes(tile, lg, int(properties[3]), "inflow_refs", "UNKNOWN")
+                    add_lanes(tile, lg, int(properties[4]), "inflow_refs", "MERGE")
+                    add_lanes(tile, lg, int(properties[5]), "inflow_refs", "SPLIT")
 
-                # --------------
-                # Ramp In Lanes
-                # --------------
-                add_lanes(tile, lg, int(properties[6]), "inflow_refs", "UNKNOWN")
-                add_lanes(tile, lg, int(properties[7]), "inflow_refs", "MERGE")
-                add_lanes(tile, lg, int(properties[8]), "inflow_refs", "SPLIT")
+                    tile['lane_groups'].append(lg)
 
-                tile['lane_groups'].append(lg)
+                in_ramp_lanes = sum([int(i) for i in properties[6:9]])
+                if in_ramp_lanes > 0:
+                    lg = create_lane_group(lg_id, is_ramp=True)
 
-            # ---------------
-            # Out Lane Groups
-            # ---------------
-            # Out LG's are based on id's starting at 100
-            lg_id = 100
+                    # --------------
+                    # Ramp In Lanes
+                    # --------------
+                    add_lanes(tile, lg, int(properties[6]), "inflow_refs", "UNKNOWN")
+                    add_lanes(tile, lg, int(properties[7]), "inflow_refs", "MERGE")
+                    add_lanes(tile, lg, int(properties[8]), "inflow_refs", "SPLIT")
 
-            out_fw_lanes = sum([int(i) for i in properties[9:12]])
-            if out_fw_lanes > 0:
-                lg = create_lane_group(lg_id)
-                lg_id += 1
+                    tile['lane_groups'].append(lg)
 
-                # --------------
-                # Fw Out Lanes
-                # --------------
-                add_lanes(tile, lg, int(properties[9]), "outflow_refs", "UNKNOWN")
-                add_lanes(tile, lg, int(properties[10]), "outflow_refs", "MERGE")
-                add_lanes(tile, lg, int(properties[11]), "outflow_refs", "SPLIT")
+                # ---------------
+                # Out Lane Groups
+                # ---------------
+                # Out LG's are based on id's starting at 100
+                lg_id = 100
 
-                tile['lane_groups'].append(lg)
+                out_fw_lanes = sum([int(i) for i in properties[9:12]])
+                if out_fw_lanes > 0:
+                    lg = create_lane_group(lg_id)
+                    lg_id += 1
 
-            out_ramp_lanes = sum([int(i) for i in properties[12:15]])
-            if out_ramp_lanes > 0:
-                lg = create_lane_group(lg_id, is_ramp=True)
+                    # --------------
+                    # Fw Out Lanes
+                    # --------------
+                    add_lanes(tile, lg, int(properties[9]), "outflow_refs", "UNKNOWN")
+                    add_lanes(tile, lg, int(properties[10]), "outflow_refs", "MERGE")
+                    add_lanes(tile, lg, int(properties[11]), "outflow_refs", "SPLIT")
 
-                # --------------
-                # Ramp Out Lanes
-                # --------------
-                add_lanes(tile, lg, int(properties[12]), "outflow_refs", "UNKNOWN")
-                add_lanes(tile, lg, int(properties[13]), "outflow_refs", "MERGE")
-                add_lanes(tile, lg, int(properties[14]), "outflow_refs", "SPLIT")
-                tile['lane_groups'].append(lg)
+                    tile['lane_groups'].append(lg)
 
-            # Write the tile
-            with open("{}.json".format(tile_id), "w") as outfile:
-                json.dump(tile, outfile, indent=4, sort_keys=True)
+                out_ramp_lanes = sum([int(i) for i in properties[12:15]])
+                if out_ramp_lanes > 0:
+                    lg = create_lane_group(lg_id, is_ramp=True)
+
+                    # --------------
+                    # Ramp Out Lanes
+                    # --------------
+                    add_lanes(tile, lg, int(properties[12]), "outflow_refs", "UNKNOWN")
+                    add_lanes(tile, lg, int(properties[13]), "outflow_refs", "MERGE")
+                    add_lanes(tile, lg, int(properties[14]), "outflow_refs", "SPLIT")
+                    tile['lane_groups'].append(lg)
+
+                # Write the tile
+                with open("{}.json".format(tile_id), "w") as outfile:
+                    json.dump(tile, outfile, indent=4, sort_keys=True)
 
             line = infile.readline()
             tile_id += 1

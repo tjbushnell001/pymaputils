@@ -1,58 +1,58 @@
 {
-  "connectors": [
-    {
-      "id": 1,
-      "junctions": [
-          {
-              "id": 1,
-              "inflow_refs": [
-                {
-                  "id": 1,
-                  "lane_group_id": 1,
-                  "tile_id": 1,
-                  "type": "lane_ref"
-                }
-              ],
-              "outflow_refs": [
-                {
-                  "id": 1,
-                  "lane_group_id": 100,
-                  "tile_id": 1,
-                  "type": "lane_ref"
-                }
-              ],
-              "type": "junction"
-          }
-      ],
-      "type": "connector"
-    }
-  ],
-  "id": 1,
-  "lane_groups": [
-    {
-      "id": 1,
-      "is_ramp": false,
-      "lanes": [
+    "connectors": [
         {
-          "id": 1,
-          "lane_transition_type": "UNKNOWN",
-          "type": "lane"
+            "id": 1, 
+            "junctions": [
+                {
+                    "id": 1, 
+                    "inflow_refs": [
+                        {
+                            "id": 1, 
+                            "lane_group_id": 1, 
+                            "tile_id": 1, 
+                            "type": "lane_ref"
+                        }
+                    ], 
+                    "outflow_refs": [
+                        {
+                            "id": 1, 
+                            "lane_group_id": 100, 
+                            "tile_id": 1, 
+                            "type": "lane_ref"
+                        }
+                    ], 
+                    "type": "junction"
+                }
+            ], 
+            "type": "connector"
         }
-      ],
-      "type": "lane_group"
-    },
-    {
-      "id": 100,
-      "is_ramp": false,
-      "lanes": [
+    ], 
+    "id": 1, 
+    "lane_groups": [
         {
-          "id": 1,
-          "lane_transition_type": "UNKNOWN",
-          "type": "lane"
+            "id": 1, 
+            "is_ramp": false, 
+            "lanes": [
+                {
+                    "id": 1, 
+                    "lane_transition_type": "UNKNOWN", 
+                    "type": "lane"
+                }
+            ], 
+            "type": "lane_group"
+        }, 
+        {
+            "id": 100, 
+            "is_ramp": false, 
+            "lanes": [
+                {
+                    "id": 1, 
+                    "lane_transition_type": "UNKNOWN", 
+                    "type": "lane"
+                }
+            ], 
+            "type": "lane_group"
         }
-      ],
-      "type": "lane_group"
-    }
-  ],
-  "type": "tile"
+    ], 
+    "type": "tile"
 }

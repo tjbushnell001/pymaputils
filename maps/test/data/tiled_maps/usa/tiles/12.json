@@ -9,7 +9,7 @@
                         {
                             "id": 1, 
                             "lane_group_id": 1, 
-                            "tile_id": 3, 
+                            "tile_id": 12, 
                             "type": "lane_ref"
                         }
                     ], 
@@ -17,7 +17,13 @@
                         {
                             "id": 1, 
                             "lane_group_id": 100, 
-                            "tile_id": 3, 
+                            "tile_id": 12, 
+                            "type": "lane_ref"
+                        }, 
+                        {
+                            "id": 2, 
+                            "lane_group_id": 100, 
+                            "tile_id": 12, 
                             "type": "lane_ref"
                         }
                     ], 
@@ -27,11 +33,11 @@
             "type": "connector"
         }
     ], 
-    "id": 3, 
+    "id": 12, 
     "lane_groups": [
         {
             "id": 1, 
-            "is_ramp": true, 
+            "is_ramp": false, 
             "lanes": [
                 {
                     "id": 1, 
@@ -47,6 +53,11 @@
             "lanes": [
                 {
                     "id": 1, 
+                    "lane_transition_type": "UNKNOWN", 
+                    "type": "lane"
+                }, 
+                {
+                    "id": 2, 
                     "lane_transition_type": "UNKNOWN", 
                     "type": "lane"
                 }
