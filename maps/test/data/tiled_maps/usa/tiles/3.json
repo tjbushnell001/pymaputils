@@ -29,9 +29,11 @@
   ],
   "id": 1,
   "lane_groups": [
+
+
     {
       "id": 1,
-      "is_ramp": false,
+      "is_ramp": true,
       "lanes": [
         {
           "id": 1,
@@ -41,6 +43,8 @@
       ],
       "type": "lane_group"
     },
+
+
     {
       "id": 100,
       "is_ramp": false,
@@ -53,6 +57,7 @@
       ],
       "type": "lane_group"
     }
+
   ],
   "type": "tile"
 }

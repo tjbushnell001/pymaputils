@@ -57,7 +57,6 @@ class LaneMapLayer : public TiledMapLayer<LaneSubMap>
    **/
   LaneMapLayer(const std::string& dir_name, size_t tile_radius, bool preload = true);
 
- private:
   std::shared_ptr<lane_map::Tile> loadTile(const std::string& dir_name, uint64_t tile_id,
                                            const MapFrame& target_frame) const;
 };

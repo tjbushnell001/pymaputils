@@ -25,9 +25,19 @@ getNominalLanes(const maps::LaneSubMap& map,
                 const std::unordered_set<lane_map::LaneRef>& candidate_lanes,
                 const lane_map_utils::TraverseDirection direction)
 {
+    std::cout << "0" << std::endl << std::endl;
+
+  if (candidate_lanes.size() > 0) {
+    std::cout << "candidate lanes is not empty " << candidate_lanes.size() << std::endl;
+  }
+
+  std::cout << "size:" << candidate_lanes.size() << std::endl;
+
   if (candidate_lanes.empty()) {
+    std::cout << "1" << std::endl << std::endl;
     return {};
   }
+    std::cout << "2" << std::endl << std::endl;
 
   struct LanePriority {
     lane_map::LaneRef lane_ref;
@@ -36,19 +46,23 @@ getNominalLanes(const maps::LaneSubMap& map,
     lane_map::LaneGroupRef lane_group_ref;
     bool is_ramp;
   };
+    std::cout << "3" << std::endl << std::endl;
 
   const auto& transition_priority = direction == lane_map_utils::TraverseDirection::OUT ? FORWARD_TRANSITION_PRIORITY : BACKWARD_TRANSITION_PRIORITY;
+    std::cout << "4" << std::endl << std::endl;
 
   auto priority_fn = [&map, &transition_priority](const LanePriority& a, const LanePriority& b) {
     if (a.is_ramp < b.is_ramp) {
       // all non-ramps before all ramps
       return true;
     }
+    std::cout << "5" << std::endl << std::endl;
 
     if (transition_priority.at(a.lane_transition_type) <
         transition_priority.at(b.lane_transition_type)) {
       return true;
     }
+    std::cout << "6" << std::endl << std::endl;
 
     if (a.lane_group_ref == b.lane_group_ref &&
         a.lane_order < b.lane_order) {
@@ -59,14 +73,19 @@ getNominalLanes(const maps::LaneSubMap& map,
                a.lane_group_ref.id < b.lane_group_ref.id) {
       return true;
     }
+    std::cout << "7" << std::endl << std::endl;
 
     return false;
   };
+
+  std::cout << "8" << std::endl << std::endl;
+
 
   auto is_equivalent = [&map](const LanePriority& a, const LanePriority& b) {
     return (a.is_ramp == b.is_ramp &&
             a.lane_transition_type == b.lane_transition_type);
   };
+    std::cout << "9" << std::endl << std::endl;
 
   std::vector<LanePriority> lane_priorities;
   for (const auto& lane_ref : candidate_lanes) {
@@ -77,6 +96,7 @@ getNominalLanes(const maps::LaneSubMap& map,
       // lane not found
       continue;
     }
+    std::cout << "10" << std::endl << std::endl;
 
     const LanePriority priority = {lane_ref, lane->lane_transition_type,
                              lane->lane_order, lg_ref, lg->is_ramp};
@@ -85,6 +105,7 @@ getNominalLanes(const maps::LaneSubMap& map,
   if (lane_priorities.empty()) {
     return {};
   }
+    std::cout << "11" << std::endl << std::endl;
 
   std::sort(lane_priorities.begin(), lane_priorities.end(), priority_fn);
 
@@ -96,6 +117,7 @@ getNominalLanes(const maps::LaneSubMap& map,
     }
     results.push_back(current_priority.lane_ref);
   }
+    std::cout << "12" << std::endl << std::endl;
 
   return results;
 }

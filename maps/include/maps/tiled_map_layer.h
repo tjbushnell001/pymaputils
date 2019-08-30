@@ -208,7 +208,6 @@ class TiledMapLayer : public MapLayer
     tile_radius_ = tile_radius;
   }
 
- protected:
   /**
    * Load the specified tile.
    *
