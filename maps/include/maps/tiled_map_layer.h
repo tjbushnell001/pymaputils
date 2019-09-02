@@ -5,8 +5,8 @@
 #include <memory>
 #include <mutex>
 #include <thread>
-#include <set>
-#include <map>
+#include <unordered_set>
+#include <unordered_map>
 
 #include <maps/map_layer.h>
 #include <maps/sub_map.h>
@@ -290,14 +290,21 @@ class TiledMapLayer : public MapLayer
       const double lng = target_frame.origin_longitude;
       const auto current_tiles = map_utils::getSurroundingTiles(lat, lng, tile_radius_ + 1, tile_level_);
 
-      std::set<MapFrame> all_frames = {target_frame};
+      // always add the target frame
+      std::unordered_set<MapFrame> all_frames = {target_frame};
       if (target_frame.type == MapFrameType::UTM) {
-        std::set<map_utils::UtmZone> all_zones = {target_frame.utm_zone};
+        // if the target is UTM and we're near to a UTM zone boundary, we want
+        // to load multiple frames so we're ready for the switch over
+
+        // include the target UTM zone
+        std::unordered_set<map_utils::UtmZone> all_zones = {target_frame.utm_zone};
+        // as well as any others for other tiles we're about to load
         for (const auto tile_id : current_tiles) {
           const auto ll = map_utils::tileIdToLatLng(tile_id, tile_level_);
           const auto utm_zone = map_utils::getUtmZone(ll.first, ll.second);
           
           if (all_zones.count(utm_zone) == 0) {
+            // this is a new UTM zone, add it as a new frame to preload
             MapFrame map_frame;
             map_frame.type  = MapFrameType::UTM;
             map_frame.utm_zone = utm_zone;
@@ -368,7 +375,7 @@ class TiledMapLayer : public MapLayer
   size_t tile_radius_;
   std::shared_ptr<SubMapType> sub_map_;
   bool preload_ = false;
-  std::map<MapFrame, std::shared_ptr<SubMapType>> preload_maps_;
+  std::unordered_map<MapFrame, std::shared_ptr<SubMapType>> preload_maps_;
   MapFrame preload_map_frame_;
   std::shared_ptr<std::thread> preload_thread_;
   std::mutex preload_mutex_;

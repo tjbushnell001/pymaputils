@@ -4,6 +4,7 @@
 #include <geometry_msgs/Pose.h>
 #include <ros/ros.h>
 #include "utils/map/utils.h"
+#include <boost/functional/hash.hpp>
 
 namespace maps {
 
@@ -87,31 +88,43 @@ struct MapFrame
     return !(frame1 == frame2);
   }
 
-  static bool operator<(const MapFrame& frame1, const MapFrame& frame2) {
-    if (frame1.type != frame2.type) {
-      return frame1.type < frame2.type;
+}; // namespace maps
+
+namespace std {
+
+template <>
+struct hash<maps::MapFrame>
+{
+  std::size_t operator()(const maps::MapFrame& k) const
+  {
+    bool include_zone = false;
+    bool include_origin = false;
+    switch (k.type) {
+    case maps::MapFrameType::GCS:
+    case maps::MapFrameType::GCS_NED:
+      break;
+    case maps::MapFrameType::UTM:
+      include_zone = true;
+      break;
+    case maps::MapFrameType::VEHICLE:
+      include_zone = true;
+      include_origin = true;
+      break;
     }
 
-   switch (frame1.type) {
-   case MapFrameType::GCS:
-   case MapFrameType::GCS_NED:   
-      return false;
-   case MapFrameType::UTM:
-     return frame1.utm_zone.zone < frame2.utm_zone.zone;
-   case MapFrameType::VEHICLE:
-     if (frame1.origin_latitude < frame2.origin_latitude)
-       return true;
-     if (frame1.origin_latitude == frame2.origin_latitude &&
-         frame1.origin_longitude < frame2.origin_longitude)
-       return true;
-     if (frame1.origin_latitude == frame2.origin_latitude &&
-         frame1.origin_longitude == frame2.origin_longitude &&
-         frame1.origin_heading < frame2.origin_heading)
-       return true;
-     break;
-   }
-   return false;
- }
-}; // namespace maps
+    std::size_t result = 0;
+    boost::hash_combine(result, static_cast<int>(k.type));
+
+    boost::hash_combine(result, std::hash<map_utils::UtmZone>()(include_zone ? k.utm_zone : map_utils::UtmZone()));
+    
+    boost::hash_combine(result, include_origin ? k.origin_latitude : 0.);
+    boost::hash_combine(result, include_origin ? k.origin_longitude : 0.);
+    boost::hash_combine(result, include_origin ? k.origin_heading : 0.);
+
+   return result;
+  }
+};
+
+} // namespace std
 
 #endif // MAPS_MAP_FRAME_H_
