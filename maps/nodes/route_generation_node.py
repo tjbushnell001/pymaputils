@@ -42,7 +42,7 @@ class RouteGenerationNode(object):
 
         route_ok = False
         route_error = None
-        
+
         # load waypoints from map reader
         all_waypoints = None
         try:
