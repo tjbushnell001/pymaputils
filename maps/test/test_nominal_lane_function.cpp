@@ -23,20 +23,12 @@ const std::shared_ptr<maps::LaneSubMap> getLaneSubMapFromTile(uint64_t tile_id) 
 
   // get lane map
   auto lane_map = map.getLayerAs<maps::LaneMapLayer>(maps::MapLayerType::LANE);
-
   EXPECT_NE(lane_map, nullptr);
 
-  std::string map_dir;
-  ros_params::getRequiredParam("/maps/map_dir", map_dir);
-
-  auto utm_zone = map_utils::getUtmZone(0, 0);
-  const auto map_frame = maps::mapFrameFromLatLng(maps::MapFrameType::GCS_NED, 0, 0, utm_zone);
-  const auto tile_ptr = lane_map->loadTile(map_dir + "/tiles", tile_id, map_frame);
-
-  EXPECT_NE(tile_ptr, nullptr);
+  lane_map->loadTiles({tile_id});
 
   auto lane_sub_map = lane_map->getSubMap();
-  lane_sub_map->tiles[tile_id] = tile_ptr;
+  EXPECT_NE(lane_sub_map->getTile(tile_id), nullptr);
 
   return lane_sub_map;
 }

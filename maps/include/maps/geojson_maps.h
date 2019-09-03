@@ -33,6 +33,7 @@ class GeoJsonTileMapLayer : public TiledMapLayer<GeoJsonSubMap>
   GeoJsonTileMapLayer(MapLayerType layer_type, const std::string& layer_name,
                       const std::string& dir_name, uint8_t tile_level, size_t tile_radius, bool preload = true);
 
+ private:
   std::shared_ptr<Json::Value> loadTile(const std::string& dir_name, uint64_t tile_id,
                                         const MapFrame& target_frame) const;
 };
