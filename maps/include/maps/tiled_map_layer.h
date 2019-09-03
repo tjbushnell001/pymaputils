@@ -58,6 +58,16 @@ class TiledMapLayer : public MapLayer
     }
   }
 
+  ~TiledMapLayer()
+  {
+     // if we have a preload thread running, stop it
+     if (preload_thread_) {
+       running_ = false;
+       preload_thread_->join();
+       preload_thread_ = nullptr;
+     }
+  }
+
   /**
    * This will be called once when a layer is loaded.
    **/
@@ -272,7 +282,7 @@ class TiledMapLayer : public MapLayer
 
     ROS_INFO("Started map preloading thread.");
 
-    while (ros::ok()) {
+    while (running_ && ros::ok()) {
       std::unique_lock<std::mutex> lock(preload_mutex_);
       auto target_frame = preload_map_frame_;
       lock.unlock();
@@ -374,6 +384,7 @@ class TiledMapLayer : public MapLayer
   uint8_t tile_level_;
   size_t tile_radius_;
   std::shared_ptr<SubMapType> sub_map_;
+  bool running_ = false;
   bool preload_ = false;
   std::unordered_map<MapFrame, std::shared_ptr<SubMapType>> preload_maps_;
   MapFrame preload_map_frame_;
