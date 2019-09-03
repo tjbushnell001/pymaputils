@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   std_msgs
   utils
+  diagnostics_utils
 )
 
 ## System dependencies are found with CMake's conventions
@@ -109,7 +110,7 @@ catkin_python_setup()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES maps
-  CATKIN_DEPENDS geometry_msgs std_msgs utils
+  CATKIN_DEPENDS geometry_msgs std_msgs utils diagnostics_utils
 )
 
 ###########

@@ -1,21 +1,23 @@
 #include <maps/road_maps.h>
 #include "utils/map/road_graph_parser.h"
+#include <diagnostics_utils/instrumentation.h>
 
 using namespace maps;
+using namespace diagnostics_utils;
 
 
 RoadSubMap::RoadSubMap(const MapFrameType frame_type) : SubMap(frame_type)
 {
 }
 
-RoadMapLayer::RoadMapLayer(const std::string& dir_name, size_t tile_radius)
-  : TiledMapLayer(MapLayerType::ROAD, "", dir_name, 10, tile_radius)
+RoadMapLayer::RoadMapLayer(const std::string& dir_name, size_t tile_radius, bool preload)
+  : TiledMapLayer(MapLayerType::ROAD, "", dir_name, 10, tile_radius, preload)
 {
 }
 
 std::shared_ptr<road_map::RoadTile> RoadMapLayer::loadTile(const std::string& dir_name,
                                                            uint64_t tile_id,
-                                                           const MapFrame& target_frame)
+                                                           const MapFrame& target_frame) const
 {
   assert(target_frame.type == MapFrameType::GCS);
 
@@ -24,6 +26,10 @@ std::shared_ptr<road_map::RoadTile> RoadMapLayer::loadTile(const std::string& di
     return nullptr;
   }
 
+  SequentialExecution exec_timing;
+  exec_timing.trace();
+
+  exec_timing.start("readJsonFile", CALLER_INFO());
   Json::Value root;
   if (!utils_json::readJsonFile(fn, &root)) {
     return nullptr;

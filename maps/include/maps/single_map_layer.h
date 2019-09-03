@@ -102,6 +102,31 @@ class SingleMapLayer : public MapLayer
   }
 
   /**
+   * Change the map frame type.
+   *
+   * This will clear the currently loaded features, and may require a call to
+   * updateLocation() to reload them.
+   *
+   * @param[in] map_frame_type The new map frame type
+   **/
+  void resetFrame(const MapFrameType& map_frame_type)
+  {
+    ROS_WARN_STREAM("Changed map frame type from "
+                    << mapFrameTypeStrings.at(map_frame_.type)
+                    << " to " << mapFrameTypeStrings.at(map_frame_type)
+                    << ", clearing features");
+
+    loaded_ = false;
+    features_ = nullptr;
+
+    MapFrame new_map_frame;
+    new_map_frame.type = map_frame_type;
+    map_frame_ = new_map_frame;
+
+    initialLoad();
+  }
+
+  /**
    * Get features for this layer.
    * @returns features
    **/

@@ -22,6 +22,17 @@ class LaneSubMap : public SubMap<lane_map::Tile>
    **/
   LaneSubMap(const MapFrameType frame_type = MapFrameType::GCS_NED);
 
+  /**
+   * Transforms the current tiles into a new map frame.
+   *
+   * This leaves it to sub-classes to decide what sort of conversions they support.
+   * The default implementation coverts nothing.
+   *
+   * @param[in] target_frame The new map frame
+   * @returns bool indicating whether conversion was successful.
+   **/
+  virtual bool transformFrame(const MapFrame& target_frame);
+
   const lane_map::LaneGroup* getLaneGroup(const lane_map::LaneGroupRef& ref) const;
   const lane_map::Lane* getLane(const lane_map::LaneRef& ref) const;
   const lane_map::Connector* getConnector(const lane_map::ConnectorRef& ref) const;
@@ -41,12 +52,13 @@ class LaneMapLayer : public TiledMapLayer<LaneSubMap>
    *
    * @param[in] dir_name The directory where tiles are stored.
    * @param[in] tile_radius The tile radius at which we keep tiles loaded.
+   * @param[in] preload Asyncronously and preemptively load tiles.
    **/
-  LaneMapLayer(const std::string& dir_name, size_t tile_radius);
+  LaneMapLayer(const std::string& dir_name, size_t tile_radius, bool preload = true);
 
  private:
   std::shared_ptr<lane_map::Tile> loadTile(const std::string& dir_name, uint64_t tile_id,
-                                           const MapFrame& target_frame);
+                                           const MapFrame& target_frame) const;
 };
 
 class PolygonFeatureMapLayer : public SingleMapLayer<std::vector<lane_map::PolygonFeature>>

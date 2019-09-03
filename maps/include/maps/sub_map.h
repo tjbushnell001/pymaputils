@@ -64,12 +64,29 @@ class SubMap
    * tiles.  While underwhelming, this is nonetheless useful for users which
    * are managing the frame conversion process.
    *
-   * @param[in] map_frame The new map frame
+   * @param[in] map_frame_type The new map frame type
    **/
-  void resetFrame(const MapFrame& map_frame)
+  void resetFrame(const MapFrameType& map_frame_type)
   {
-    map_frame = map_frame;
+    MapFrame new_map_frame;
+    new_map_frame.type = map_frame_type;
+
+    map_frame = new_map_frame;
     tiles.clear();
+  }
+
+  /**
+   * Transforms the current tiles into a new map frame.
+   *
+   * This leaves it to sub-classes to decide what sort of conversions they support.
+   * The default implementation coverts nothing.
+   *
+   * @param[in] target_frame The new map frame
+   * @returns bool indicating whether conversion was successful.
+   **/
+  virtual bool transformFrame(const MapFrame& target_frame)
+  {
+    return false;
   }
 
   MapFrame map_frame;
