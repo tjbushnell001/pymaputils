@@ -75,6 +75,370 @@ TEST(MapTileLoader, _N_0__N_N)
   testJunction(TILE_ID);
 }
 
+// Standard ramp entrance to normal lane, 0/N->N/0
+TEST(MapTileLoader, _0_N__N_0)
+{
+  const uint64_t TILE_ID = 3;
+  testJunction(TILE_ID);
+}
+
+// N/0->0/N
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 4;
+  testJunction(TILE_ID);
+}
+
+// N/N->N/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 5;
+  testJunction(TILE_ID);
+}
+
+// NM/0->N/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 6;
+  testJunction(TILE_ID);
+}
+
+// 0/N->0/N
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 7;
+  testJunction(TILE_ID);
+}
+
+// N/0->M/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 8;
+  testJunction(TILE_ID);
+}
+
+// 0/N->M/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 9;
+  testJunction(TILE_ID);
+}
+
+// S/0->N/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 10;
+  testJunction(TILE_ID);
+}
+
+// N/0->NS/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 11;
+  testJunction(TILE_ID);
+}
+
+// N/0->2N/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 12;
+  testJunction(TILE_ID);
+}
+
+// 2N/0->N/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 13;
+  testJunction(TILE_ID);
+}
+
+// N/0->0/0
+//TEST(MapTileLoader, _)
+//{
+//  const uint64_t TILE_ID = 14;
+//  testJunction(TILE_ID);
+//}
+
+// N/0->0/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 15;
+  testJunction(TILE_ID);
+}
+
+// N/0->0/NS
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 16;
+  testJunction(TILE_ID);
+}
+
+// 0/N->N/N
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 17;
+  testJunction(TILE_ID);
+}
+
+// 0/NM->N/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 18;
+  testJunction(TILE_ID);
+}
+
+// 0/NM->0/N
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 19;
+  testJunction(TILE_ID);
+}
+
+// 0/0->N/0
+//TEST(MapTileLoader, _)
+//{
+//  const uint64_t TILE_ID = 20;
+//  testJunction(TILE_ID);
+//}
+
+// 0/N->0/2N
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 21;
+  testJunction(TILE_ID);
+}
+
+// 0/S->0/N
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 22;
+  testJunction(TILE_ID);
+}
+
+// 0/N->0/M
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 23;
+  testJunction(TILE_ID);
+}
+
+// 0/2N->0/N
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 24;
+  testJunction(TILE_ID);
+}
+
+// NM/0->N/N
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 25;
+  testJunction(TILE_ID);
+}
+
+// 0/N->0/NS
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 26;
+  testJunction(TILE_ID);
+}
+
+// N/0->N2S/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 27;
+  testJunction(TILE_ID);
+}
+
+// NM/0->NS/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 28;
+  testJunction(TILE_ID);
+}
+
+// N/0->N/NS
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 29;
+  testJunction(TILE_ID);
+}
+
+// N/NM->N/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 30;
+  testJunction(TILE_ID);
+}
+
+// 0/0->0/N
+//TEST(MapTileLoader, _)
+//{
+//  const uint64_t TILE_ID = 31;
+//  testJunction(TILE_ID);
+//}
+
+// 0/N->0/0
+//TEST(MapTileLoader, _)
+//{
+//  const uint64_t TILE_ID = 32;
+//  testJunction(TILE_ID);
+//}
+
+// N2M/0->N/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 33;
+  testJunction(TILE_ID);
+}
+
+// 0/2N->0/M
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 34;
+  testJunction(TILE_ID);
+}
+
+// N/N->S/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 35;
+  testJunction(TILE_ID);
+}
+
+// S/0->M/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 36;
+  testJunction(TILE_ID);
+}
+
+// 0/N->0/S
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 37;
+  testJunction(TILE_ID);
+}
+
+// M/0->N/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 38;
+  testJunction(TILE_ID);
+}
+
+// N/0->2NS/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 39;
+  testJunction(TILE_ID);
+}
+
+// 2N/0->N/0
+//TEST(MapTileLoader, _)
+//{
+//  const uint64_t TILE_ID = 40;
+//  testJunction(TILE_ID);
+//}
+
+// NM/0->0/N
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 41;
+  testJunction(TILE_ID);
+}
+
+// N/N->M/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 42;
+  testJunction(TILE_ID);
+}
+
+// N/0->NS/N
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 43;
+  testJunction(TILE_ID);
+}
+
+// 0/N2M->N/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 44;
+  testJunction(TILE_ID);
+}
+
+// NM/0->N/0
+//TEST(MapTileLoader, _)
+//{
+//  const uint64_t TILE_ID = 45;
+//  testJunction(TILE_ID);
+//}
+
+// 0/0->0/M
+//TEST(MapTileLoader, _)
+//{
+//  const uint64_t TILE_ID = 46;
+//  testJunction(TILE_ID);
+//}
+
+// 0/S->N/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 47;
+  testJunction(TILE_ID);
+}
+
+// NM/N->N/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 48;
+  testJunction(TILE_ID);
+}
+
+// N/0->N/S
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 49;
+  testJunction(TILE_ID);
+}
+
+// NM/N->NS/0
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 50;
+  testJunction(TILE_ID);
+}
+
+// 0/0->M/0
+//TEST(MapTileLoader, _)
+//{
+//  const uint64_t TILE_ID = 51;
+//  testJunction(TILE_ID);
+//}
+
+// N/0->2NS/N
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 52;
+  testJunction(TILE_ID);
+}
+
+// N/N->N/N
+TEST(MapTileLoader, _)
+{
+  const uint64_t TILE_ID = 53;
+  testJunction(TILE_ID);
+}
+
+// N/0->NS/0
+//TEST(MapTileLoader, _)
+//{
+//  const uint64_t TILE_ID = 54;
+//  testJunction(TILE_ID);
+//}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
