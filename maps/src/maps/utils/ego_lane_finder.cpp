@@ -12,12 +12,14 @@ namespace ego_lane_finder {
     {lane_map::LaneTransitionType::UNKNOWN, 0},
     {lane_map::LaneTransitionType::MERGE, 1},
     {lane_map::LaneTransitionType::SPLIT, 2},
+    {lane_map::LaneTransitionType::INVALID, 3},
   };
 
   const static std::map<lane_map::LaneTransitionType, size_t> BACKWARD_TRANSITION_PRIORITY = {
     {lane_map::LaneTransitionType::UNKNOWN, 0},
     {lane_map::LaneTransitionType::SPLIT, 1},
     {lane_map::LaneTransitionType::MERGE, 2},
+    {lane_map::LaneTransitionType::INVALID, 3},
   };
 
 std::vector<lane_map::LaneRef>
