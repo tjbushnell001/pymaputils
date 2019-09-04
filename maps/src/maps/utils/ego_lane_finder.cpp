@@ -39,17 +39,21 @@ getNominalLanes(const maps::LaneSubMap& map,
 
   const auto& transition_priority = direction == lane_map_utils::TraverseDirection::OUT ? FORWARD_TRANSITION_PRIORITY : BACKWARD_TRANSITION_PRIORITY;
 
+  // first, sort by priority
   auto priority_fn = [&map, &transition_priority](const LanePriority& a, const LanePriority& b) {
+    // all non-ramps before all ramps
     if (a.is_ramp < b.is_ramp) {
-      // all non-ramps before all ramps
       return true;
     }
 
+    // then order by transition priority (normal first)
     if (transition_priority.at(a.lane_transition_type) <
         transition_priority.at(b.lane_transition_type)) {
       return true;
     }
 
+    // then by lane group id (arbitrary)
+    // then by lane order within a lane group (not arbitrary, prefer left most)
     if (a.lane_group_ref == b.lane_group_ref &&
         a.lane_order < b.lane_order) {
       return true;
@@ -61,11 +65,6 @@ getNominalLanes(const maps::LaneSubMap& map,
     }
 
     return false;
-  };
-
-  auto is_equivalent = [&map](const LanePriority& a, const LanePriority& b) {
-    return (a.is_ramp == b.is_ramp &&
-            a.lane_transition_type == b.lane_transition_type);
   };
 
   std::vector<LanePriority> lane_priorities;
@@ -87,6 +86,13 @@ getNominalLanes(const maps::LaneSubMap& map,
   }
 
   std::sort(lane_priorities.begin(), lane_priorities.end(), priority_fn);
+
+  // then, keep as many lanes as are equivalent to the best choice
+  auto is_equivalent = [&map](const LanePriority& a, const LanePriority& b) {
+    // we only look at is_ramp and lane_transition_type
+    return (a.is_ramp == b.is_ramp &&
+            a.lane_transition_type == b.lane_transition_type);
+  };
 
   const auto& top_priority = lane_priorities.front();
   std::vector<lane_map::LaneRef> results;
