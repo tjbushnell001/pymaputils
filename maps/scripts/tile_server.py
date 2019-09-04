@@ -6,6 +6,7 @@ import glob
 import maps
 import os
 import re
+import time
 
 from flask_cors import cross_origin
 import maps.road_graph
@@ -192,6 +193,13 @@ def update_tile(tile_id):
     """
     print "Saving tile [{}], please wait...".format(tile_id)
     tile = TileDict(geojson.loads(flask.request.data))
+    for feature_set in tile.features.values():
+        for feature_ref in feature_set.keys():
+            old_feature = lane_map.get_feature(feature_ref)
+            if old_feature != feature_set[feature_ref]:
+                # Use standard time since epoch
+                feature_set[feature_ref].properties['last_edited'] = int(time.time())
+
     lane_map.save_tile(tile_id, tile)
 
     print "Rebuilding road tiles, please wait..."

@@ -18,6 +18,9 @@ class TileDict(object):
             f.properties = geojson_utils.hashify(f.properties)
             self.features[f.feature_type][f.ref] = f
 
+    def get_feature(self, ref):
+        return self.get_features(ref['type'].replace('_ref', '')).get(ref)
+
     def get_features(self, feature_type):
         return self.features.get(feature_type, {})
 
@@ -73,6 +76,7 @@ class GeoJsonTiledMapLayer(JsonTiledMapLayer):
         """
         if tile is None:
             return
+        self.add_tile(tile_id, tile)
 
         fn = self.get_tile_filename(tile_id)
         with open(fn, 'w') as f:
@@ -83,5 +87,4 @@ class GeoJsonTiledMapLayer(JsonTiledMapLayer):
         tile = self.get_tile(ref['tile_id'])
         if tile is None:
             return None
-        feature_type = ref['type'].replace('_ref', '')
-        return tile.get_features(feature_type).get(ref)
+        return tile.get_feature(ref)

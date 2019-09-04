@@ -79,7 +79,7 @@ def convert_geojson_to_tile(geojson_tile):
     # Associate each junction with it's connector
     connectors = [feature_to_connector(v)
                   for v in geojson_tile.get_features('connector').values()]
-    connectors_by_id = {c['id'] : c for c in connectors}
+    connectors_by_id = {c['id']: c for c in connectors}
 
     for feature in geojson_tile.get_features('junction').values():
         conn_id = feature.ref['connector_id']
@@ -90,7 +90,7 @@ def convert_geojson_to_tile(geojson_tile):
     # Associate lanes with their lane groups
     lane_groups = [feature_to_lane_group(v)
                    for v in geojson_tile.get_features('lane_group').values()]
-    lane_groups_by_id = {lg['id'] : lg for lg in lane_groups}
+    lane_groups_by_id = {lg['id']: lg for lg in lane_groups}
     for feature in geojson_tile.get_features('lane').values():
         lg_id = feature.ref['lane_group_id']
         lane = feature_to_lane(feature)
@@ -110,6 +110,7 @@ def convert_geojson_to_tile(geojson_tile):
         'lane_groups': lane_groups,
         'type': 'tile',
     }
+
 
 def convert_tile_to_geojson(here_map_tile, tile_level, fix_dot=True):
     """
@@ -180,6 +181,7 @@ def convert_tile_to_geojson(here_map_tile, tile_level, fix_dot=True):
     )
     return tile
 
+
 # -------------------------------------------
 # Feature Translation - GeoJSON to Here Maps
 # -------------------------------------------
@@ -192,15 +194,18 @@ def feature_to_connector(feature):
     :return: converted dict object
     """
     assert feature['feature_type'] == 'connector'
-    return {
+    obj = {
         'id': feature.ref['id'],
         'type': feature['feature_type'],
         'boundary_geometry': feature.geometry.coordinates,
         'connected_lane_groups': feature.properties['connected_lane_groups'],
         'inflow_refs': feature.properties['inflow_refs'],
         'outflow_refs': feature.properties['outflow_refs'],
-        'junctions': []  # empty list of junctions to be populated during reassembly
+        'junctions': [],  # empty list of junctions to be populated during reassembly
     }
+    if 'last_edited' in feature.properties:
+        obj['last_edited'] = feature.properties['last_edited']
+    return obj
 
 
 def feature_to_lane(feature):
@@ -219,8 +224,10 @@ def feature_to_lane(feature):
         'left_boundary_id': feature.properties['left_boundary_ref']['id'],
         'right_boundary_id': feature.properties['right_boundary_ref']['id'],
         'start_connector_lane_number': feature.properties['start_junction_ref']['id'],
-        'type': feature['feature_type']
+        'type': feature['feature_type'],
     }
+    if 'last_edited' in feature.properties:
+        obj['last_edited'] = feature.properties['last_edited']
     obj.update({key: feature.properties[key] for key in LANE_FEATURE_LIST})
     return obj
 
@@ -239,8 +246,10 @@ def feature_to_lane_boundary(feature):
         'pts': feature.geometry.coordinates,
         'id': feature.ref['id'],
         'altitude_pts': feature.properties['altitudes'],
-        'type': feature['feature_type']
+        'type': feature['feature_type'],
     }
+    if 'last_edited' in feature.properties:
+        obj['last_edited'] = feature.properties['last_edited']
     obj.update({key: feature.properties[key] for key in LANE_BOUNDARY_FEATURE_LIST})
     return obj
 
@@ -259,8 +268,10 @@ def feature_to_lane_group(feature):
         'id': feature.ref['id'],
         'lanes': [],  # empty list of lanes to be populated during reassembly
         'start_connector_id': feature.properties['start_connector_ref']['id'],
-        'type': feature['feature_type']
+        'type': feature['feature_type'],
     }
+    if 'last_edited' in feature.properties:
+        obj['last_edited'] = feature.properties['last_edited']
     obj.update({key: feature.properties[key] for key in LANE_GROUP_FEATURE_LIST})
     return obj
 
@@ -273,7 +284,7 @@ def feature_to_junction(feature):
     :return: pair-wise tuple where the first value is the parent connector id and the second value is the json
     """
     assert feature['feature_type'] == 'junction'
-    return {
+    obj = {
         'id': feature.ref['id'],
         'pt': feature.geometry.coordinates,
         'junction_type': feature.properties['junction_type'],
@@ -281,12 +292,14 @@ def feature_to_junction(feature):
         'inflow_refs': feature.properties['inflow_refs'],
         'outflow_refs': feature.properties['outflow_refs'],
     }
+    if 'last_edited' in feature.properties:
+        obj['last_edited'] = feature.properties['last_edited']
+    return obj
 
 
 # -------------------------------------------
 # Feature Translation - Here Maps to GeoJSON
 # -------------------------------------------
-
 
 def convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone):
     assert raw_lg['type'] == 'lane_group', raw_lg['type']
@@ -337,6 +350,9 @@ def convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone):
         is_urban=raw_lg.get('is_urban'),
         is_within_interchange=raw_lg.get('is_within_interchange'),
         lane_segment_refs=[])
+
+    if 'last_edited' in raw_lg:
+        lane_group.properties['last_edited'] = raw_lg['last_edited']
 
     return lane_group
 
@@ -397,6 +413,9 @@ def convert_lane_to_geojson(raw_lane, tile_id, lane_group_id, lane_idx, start_co
         lane_type=lane_type,
         merged=raw_lane['merged'])
 
+    if 'last_edited' in raw_lane:
+        lane_seg.properties['last_edited'] = raw_lane['last_edited']
+
     return lane_seg
 
 
@@ -427,6 +446,9 @@ def convert_boundary_to_geojson(raw_boundary, tile_id, lane_group_id):
         is_only_emergency_boundary=raw_boundary['is_only_emergency_boundary'],
         altitudes=raw_boundary['altitude_pts'])
 
+    if 'last_edited' in raw_boundary:
+        boundary.properties['last_edited'] = raw_boundary['last_edited']
+
     return boundary
 
 
@@ -443,6 +465,9 @@ def convert_connector_to_geojson(raw_conn, tile_id):
         inflow_refs=raw_conn.get('inflow_refs', []),
         outflow_refs=raw_conn.get('outflow_refs', []))
 
+    if 'last_edited' in raw_conn:
+        connector.properties['last_edited'] = raw_conn['last_edited']
+
     return connector
 
 
@@ -457,6 +482,9 @@ def convert_junction_to_geojson(raw_junction, tile_id, connector_id):
         junction_type=raw_junction['junction_type'],
         inflow_refs=raw_junction.get('inflow_refs', []),
         outflow_refs=raw_junction.get('outflow_refs', []))
+
+    if 'last_edited' in raw_junction:
+        junction.properties['last_edited'] = raw_junction['last_edited']
 
     return junction
 
@@ -478,8 +506,10 @@ def determine_direction_of_travel(raw_lg):
 
     return dot
 
+
 def swap_properties(feature, prop1, prop2):
     feature.properties[prop1], feature.properties[prop2] = feature.properties[prop2], feature.properties[prop1]
+
 
 def correct_direction_of_travel(lane_group, boundaries, lanes):
     lg_dot = lane_group.properties['direction_of_travel']

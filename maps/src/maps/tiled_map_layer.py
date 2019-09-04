@@ -108,7 +108,7 @@ class TiledMapLayer(object):
     def remove_tiles(self):
         """ Remove all tiles on disk. """
         # clear cache
-        self.tiles = {}
+        self.clear_cache()
 
     def tile_exists(self, tile_id):
         """
@@ -157,6 +157,7 @@ class JsonTiledMapLayer(TiledMapLayer):
         """
         if tile is None:
             return
+        self.add_tile(tile_id, tile)
 
         fn = self.get_tile_filename(tile_id)
         with open(fn, 'w') as f:
