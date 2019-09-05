@@ -50,6 +50,7 @@ class TiledMapLayer : public MapLayer
     , tile_level_(tile_level)
     , tile_radius_(tile_radius)
     , sub_map_(std::make_shared<SubMapType>())
+    , running_(true)
     , preload_(preload)
   {
     if (preload_) {
