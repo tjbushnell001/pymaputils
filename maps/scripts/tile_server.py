@@ -193,6 +193,8 @@ def update_tile(tile_id):
     """
     print "Saving tile [{}], please wait...".format(tile_id)
     tile = TileDict(geojson.loads(flask.request.data))
+
+    # Checks all features in tile, and updates last_edited property if there are differences between disk and editor
     for feature_set in tile.features.values():
         for feature_ref in feature_set.keys():
             old_feature = lane_map.get_feature(feature_ref)

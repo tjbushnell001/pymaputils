@@ -203,8 +203,7 @@ def feature_to_connector(feature):
         'outflow_refs': feature.properties['outflow_refs'],
         'junctions': [],  # empty list of junctions to be populated during reassembly
     }
-    if 'last_edited' in feature.properties:
-        obj['last_edited'] = feature.properties['last_edited']
+    add_last_edited(feature.properties, obj)
     return obj
 
 
@@ -226,8 +225,7 @@ def feature_to_lane(feature):
         'start_connector_lane_number': feature.properties['start_junction_ref']['id'],
         'type': feature['feature_type'],
     }
-    if 'last_edited' in feature.properties:
-        obj['last_edited'] = feature.properties['last_edited']
+    add_last_edited(feature.properties, obj)
     obj.update({key: feature.properties[key] for key in LANE_FEATURE_LIST})
     return obj
 
@@ -248,8 +246,7 @@ def feature_to_lane_boundary(feature):
         'altitude_pts': feature.properties['altitudes'],
         'type': feature['feature_type'],
     }
-    if 'last_edited' in feature.properties:
-        obj['last_edited'] = feature.properties['last_edited']
+    add_last_edited(feature.properties, obj)
     obj.update({key: feature.properties[key] for key in LANE_BOUNDARY_FEATURE_LIST})
     return obj
 
@@ -270,8 +267,7 @@ def feature_to_lane_group(feature):
         'start_connector_id': feature.properties['start_connector_ref']['id'],
         'type': feature['feature_type'],
     }
-    if 'last_edited' in feature.properties:
-        obj['last_edited'] = feature.properties['last_edited']
+    add_last_edited(feature.properties, obj)
     obj.update({key: feature.properties[key] for key in LANE_GROUP_FEATURE_LIST})
     return obj
 
@@ -292,8 +288,7 @@ def feature_to_junction(feature):
         'inflow_refs': feature.properties['inflow_refs'],
         'outflow_refs': feature.properties['outflow_refs'],
     }
-    if 'last_edited' in feature.properties:
-        obj['last_edited'] = feature.properties['last_edited']
+    add_last_edited(feature.properties, obj)
     return obj
 
 
@@ -351,9 +346,7 @@ def convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone):
         is_within_interchange=raw_lg.get('is_within_interchange'),
         lane_segment_refs=[])
 
-    if 'last_edited' in raw_lg:
-        lane_group.properties['last_edited'] = raw_lg['last_edited']
-
+    add_last_edited(raw_lg, lane_group.properties)
     return lane_group
 
 
@@ -413,9 +406,7 @@ def convert_lane_to_geojson(raw_lane, tile_id, lane_group_id, lane_idx, start_co
         lane_type=lane_type,
         merged=raw_lane['merged'])
 
-    if 'last_edited' in raw_lane:
-        lane_seg.properties['last_edited'] = raw_lane['last_edited']
-
+    add_last_edited(raw_lane, lane_seg.properties)
     return lane_seg
 
 
@@ -446,9 +437,7 @@ def convert_boundary_to_geojson(raw_boundary, tile_id, lane_group_id):
         is_only_emergency_boundary=raw_boundary['is_only_emergency_boundary'],
         altitudes=raw_boundary['altitude_pts'])
 
-    if 'last_edited' in raw_boundary:
-        boundary.properties['last_edited'] = raw_boundary['last_edited']
-
+    add_last_edited(raw_boundary, boundary.properties)
     return boundary
 
 
@@ -465,9 +454,7 @@ def convert_connector_to_geojson(raw_conn, tile_id):
         inflow_refs=raw_conn.get('inflow_refs', []),
         outflow_refs=raw_conn.get('outflow_refs', []))
 
-    if 'last_edited' in raw_conn:
-        connector.properties['last_edited'] = raw_conn['last_edited']
-
+    add_last_edited(raw_conn, connector.properties)
     return connector
 
 
@@ -483,15 +470,18 @@ def convert_junction_to_geojson(raw_junction, tile_id, connector_id):
         inflow_refs=raw_junction.get('inflow_refs', []),
         outflow_refs=raw_junction.get('outflow_refs', []))
 
-    if 'last_edited' in raw_junction:
-        junction.properties['last_edited'] = raw_junction['last_edited']
-
+    add_last_edited(raw_junction, junction.properites)
     return junction
 
 
 # -------------------------------------------
 # Helper Methods
 # -------------------------------------------
+
+def add_last_edited(source, dest):
+    if 'last_edited' in source:
+        dest['last_edited'] = source['last_edited']
+
 
 def determine_direction_of_travel(raw_lg):
     # find the DOT for all non-emergency lanes (which have NONE) in this lane group
