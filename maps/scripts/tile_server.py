@@ -196,7 +196,7 @@ def update_tile(tile_id):
     for feature_set in tile.features.values():
         for feature_ref in feature_set.keys():
             old_feature = lane_map.get_feature(feature_ref)
-            if old_feature != feature_set[feature_ref]:
+            if old_feature is None or old_feature != feature_set[feature_ref]:
                 # Use standard time since epoch
                 feature_set[feature_ref].properties['last_edited'] = int(time.time())
 
