@@ -106,7 +106,7 @@ def convert_geojson_to_tile(geojson_tile):
 
     return {
         'connectors': connectors,
-        'id': geojson_tile.collection.id,
+        'id': geojson_tile.id,
         'lane_groups': lane_groups,
         'type': 'tile',
     }

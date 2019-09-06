@@ -1,6 +1,6 @@
 import os
 
-from maps.map_layer import MapLayerType
+from maps.map_layer import MapType
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
 from maps.lane_maps import ConvertedLaneMapLayer
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
@@ -23,21 +23,21 @@ class MapLayers(object):
     # ----------------------------------------------
 
     def get_layer(self, layer_type, layer_name=''):
-        if layer_type == MapLayerType.LANE:
-            if MapLayerType.LANE not in self.layers:
-                self.layers[MapLayerType.LANE] = self.create_lane_map_layer()
-            return self.layers[MapLayerType.LANE]
+        if layer_type == MapType.LANE:
+            if MapType.LANE not in self.layers:
+                self.layers[MapType.LANE] = self.create_lane_map_layer()
+            return self.layers[MapType.LANE]
 
-        elif layer_type == MapLayerType.ROAD:
-            if MapLayerType.ROAD not in self.layers:
-                self.layers[MapLayerType.ROAD] = self.create_road_graph_layer()
-            return self.layers[MapLayerType.ROAD]
+        elif layer_type == MapType.ROAD:
+            if MapType.ROAD not in self.layers:
+                self.layers[MapType.ROAD] = self.create_road_graph_layer()
+            return self.layers[MapType.ROAD]
 
-        elif layer_type == MapLayerType.DISENGAGE_ZONE:
-            if MapLayerType.DISENGAGE_ZONE not in self.layers:
-                self.layers[MapLayerType.DISENGAGE_ZONE] = {'single_layers': {}}
+        elif layer_type == MapType.DISENGAGE_ZONE:
+            if MapType.DISENGAGE_ZONE not in self.layers:
+                self.layers[MapType.DISENGAGE_ZONE] = {'single_layers': {}}
 
-            disengage_zones = self.layers[MapLayerType.DISENGAGE_ZONE]
+            disengage_zones = self.layers[MapType.DISENGAGE_ZONE]
 
             if layer_name not in disengage_zones['single_layers']:
                 fn = os.path.join(self.map_dir, "annotations", "{}.json".format(layer_name))
@@ -45,19 +45,16 @@ class MapLayers(object):
 
             return disengage_zones['single_layers'][layer_name]
 
-        elif layer_type == MapLayerType.MAP_READER:
+        elif layer_type == MapType.MAP_READER:
             raise NotImplementedError()
 
-        elif layer_type == MapLayerType.FREE_SPACE:
+        elif layer_type == MapType.FREE_SPACE:
             raise NotImplementedError()
 
-        elif layer_type == MapLayerType.RADAR_ZONES:
+        elif layer_type == MapType.RADAR_ZONES:
             raise NotImplementedError()
 
-        elif layer_type == MapLayerType.LOCALIZATION_ZONES:
-            raise NotImplementedError()
-
-        elif layer_type == MapLayerType.ISSUE:
+        elif layer_type == MapType.LOCALIZATION_ZONES:
             raise NotImplementedError()
 
     # ----------------------------------------------
@@ -70,4 +67,4 @@ class MapLayers(object):
 
     def create_road_graph_layer(self, cache_tiles=False, load_tiles=True):
         tile_dir = os.path.join(self.map_dir, 'road_tiles')
-        return GeoJsonTiledMapLayer(tile_dir, ROAD_GRAPH_TILE_LEVEL, cache_tiles, load_tiles, MapLayerType.ROAD)
+        return GeoJsonTiledMapLayer(tile_dir, ROAD_GRAPH_TILE_LEVEL, cache_tiles, load_tiles, MapType.ROAD)

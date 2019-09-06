@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class MapLayerType(Enum):
+class MapType(Enum):
     LANE = "LANE"
     LANE_ANNOTATION = "LANE_ANNOTATION"
     ROAD = "ROAD"
@@ -9,7 +9,6 @@ class MapLayerType(Enum):
     FREE_SPACE = "FREE_SPACE"
     RADAR_ZONE = "RADAR_ZONE"
     LOCALIZATION_ZONE = "LOCALIZATION_ZONE"
-    ISSUE = "ISSUE"
     DISENGAGE_ZONE = "DISENGAGE_ZONE"
 
 
