@@ -7,7 +7,7 @@ import argparse
 import os
 import rospkg
 
-from maps.geojson_maps import GeoJsonTiledMapLayer
+from maps.geojson_tiled_map import GeoJsonTiledMapLayer
 from maps.utils import geojson_utils, routing_utils
 import maps.routing
 import maps.road_graph

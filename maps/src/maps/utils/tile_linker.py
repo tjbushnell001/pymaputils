@@ -185,7 +185,7 @@ def link_junction(lane_segment, tile, is_start_junction, reverse_dot=False):
 
     emergency_lane = lane_segment.properties['is_emergency_lane']
 
-    if junction_ref['tile_id'] != tile.tile.id:
+    if junction_ref['tile_id'] != tile.id:
         # not for this tile
         return
 

@@ -3,6 +3,7 @@ import glob
 import json
 import os
 
+from maps.map_layer import MapLayer
 from maps.utils import tile_utils
 
 
@@ -35,20 +36,21 @@ class LRUCache(object):
         self.cache = collections.OrderedDict()
 
 
-class JsonTiledMapLayer(object):
+class JsonTiledMapLayer(MapLayer):
     """
     Class that represents a tiled map and it's directory structure. No longer loads a single monolithic map. Instead
     this edits individual map files.
     """
     MAX_CACHE_SIZE = 100
 
-    def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True):
+    def __init__(self, layer_type, layer_name, map_dir, tile_level, cache_tiles=True, load_tiles=True):
         """
         :param map_dir: The root directory of this tiled map (usually lives one level below tiled_maps)
         :param cache_tiles: Whether or not to cache tiles
         :param tile_level: the here_maps tile level. This basically defines the resolution of the tiles (larger number
             means smaller tiles).
         """
+        super(JsonTiledMapLayer, self).__init__(layer_type, layer_name)
         self.map_dir = map_dir
         self.tile_level = tile_level
 

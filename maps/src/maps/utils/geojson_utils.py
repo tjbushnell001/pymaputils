@@ -5,6 +5,8 @@ import shapely.validation
 import os
 import utm
 
+from collections import OrderedDict
+
 
 class HashableDict(dict):
     """ Add a hashing function for dicts. """
@@ -26,6 +28,72 @@ def hashify(obj):
     elif isinstance(obj, dict):
         return HashableDict({key: hashify(value) for key, value in obj.iteritems()})
     return obj
+
+
+class FeatureDict(object):
+    """
+    Our custom representation of a geojson FeatureCollection. All of our geojson features have "ref" objects that we
+    parse and add a hash function to.
+    """
+    def __init__(self, collection):
+        self.collection = collection
+        assert collection is None or isinstance(collection, geojson.FeatureCollection)
+        self.features = {}
+        for f in collection.features:
+            if f.feature_type not in self.features:
+                self.features[f.feature_type] = OrderedDict()
+            f.ref = hashify(f.ref)
+            f.properties = hashify(f.properties)
+            self.features[f.feature_type][f.ref] = f
+
+    def get_feature(self, ref):
+        return self.get_features(ref['type'].replace('_ref', '')).get(ref)
+
+    def get_features(self, feature_type):
+        return self.features.get(feature_type, {})
+
+    def all_features(self):
+        return self.features.values()
+
+    def add_feature(self, feature):
+        if feature.feature_type not in self.features:
+            self.features[feature.feature_type] = OrderedDict()
+
+        assert feature.ref not in self.features[feature.feature_type]
+
+        self.features[feature.feature_type][feature.ref] = feature
+        self.collection.features.append(feature)
+
+    def write(self, file_path, msg=None):
+        """
+        Write this feature collection to a file.
+
+        :param file_path:
+        :param msg: An optional confirmation message
+        :return:
+        """
+        with open(file_path, 'w') as f:
+            geojson.dump(self.collection, f, sort_keys=True, separators=(',', ':'), indent=1)
+            if msg:
+                print(msg)
+
+    # --------------
+    # Properties
+    # --------------
+
+    @property
+    def id(self):
+        return self.collection.get('id', None)
+
+
+def get_feature_type(ref):
+    """
+    Given a ref, return the type of feature that this refers to.
+
+    :param ref: a ref id
+    :return: a string of feature_type
+    """
+    return ref['type'].replace('_ref', '')
 
 
 def create_feature(feature_type, feature_ref, geometry, **properties):
@@ -149,6 +217,19 @@ def lane_group_ref_from_lane_ref(lane_ref):
     :return: a hashable ref key for the lane group
     """
     return hashify({'id': lane_ref['lane_group_id'], 'tile_id': lane_ref['tile_id'], 'type': 'lane_group_ref'})
+
+
+def load_geojson_collection(file_path):
+    """
+    Load a geojson file adding our custom ref parsing logic.
+
+    :param file_path: the full file path of the file to load
+    :return: a FeatureDict object with fully index-able refs
+    """
+    if not os.path.exists(file_path):
+        return None
+    with open(file_path, 'r') as f:
+        return FeatureDict(geojson.load(f))
 
 
 def write_geojson_tile(tile_id, prefix, feature_collection):

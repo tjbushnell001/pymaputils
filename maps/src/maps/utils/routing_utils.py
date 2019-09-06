@@ -99,8 +99,8 @@ def create_route_feature(road_graph, road_seg_refs, route_wp_ids):
     right_boundary = []
     for ref in road_seg_refs:
         ref_tile = road_graph.get_tile(ref['tile_id'])
-        utm_zone = ref_tile.tile.properties['utm_zone']
-        utm_lat_band = ref_tile.tile.properties['utm_lat_band']
+        utm_zone = ref_tile.collection.properties['utm_zone']
+        utm_lat_band = ref_tile.collection.properties['utm_lat_band']
 
         road_seg = ref_tile.get_features('road_segment')[ref]
         left_line = geojson_utils.downsample_line(road_seg.properties['left_boundary'],

@@ -73,7 +73,7 @@ def convert_geojson_to_tile(geojson_tile):
     """
     Converts a GeoJSON formatted feature group tile into a here maps json formatted tile
 
-    :param geojson_tile: the GeoJSON feature group (a python dict, NOT TileDict)
+    :param geojson_tile: the GeoJSON feature group (a python dict, NOT FeatureDict)
     :return: json object
     """
     # Associate each junction with it's connector
@@ -106,7 +106,7 @@ def convert_geojson_to_tile(geojson_tile):
 
     return {
         'connectors': connectors,
-        'id': geojson_tile.tile.id,
+        'id': geojson_tile.collection.id,
         'lane_groups': lane_groups,
         'type': 'tile',
     }

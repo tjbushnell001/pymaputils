@@ -8,7 +8,7 @@ import rospkg
 import tempfile
 import shutil
 
-from maps.geojson_maps import GeoJsonTiledMapLayer
+from maps.geojson_tiled_map import GeoJsonTiledMapLayer
 from maps.lane_maps import ConvertedLaneMapLayer
 import maps.road_graph
 from maps.utils import tile_linker

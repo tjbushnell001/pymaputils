@@ -10,11 +10,12 @@ import time
 
 from flask_cors import cross_origin
 import maps.road_graph
-from maps.geojson_maps import GeoJsonTiledMapLayer, TileDict
+from maps.geojson_tiled_map import GeoJsonTiledMapLayer
 from maps.lane_maps import ConvertedLaneMapLayer
 from maps.utils import geojson_utils
 from maps.utils import tile_linker
 from maps.utils import tile_utils
+from maps.utils.geojson_utils import FeatureDict
 
 
 # ------------------------------------
@@ -87,7 +88,7 @@ def get_lane_tile(tile_id):
     if not tile:
         flask.abort(404)
         return
-    return flask.jsonify(tile.tile)
+    return flask.jsonify(tile.collection)
 
 
 @app.route("/road_tiles", methods=['GET'])
@@ -118,7 +119,7 @@ def get_road_tile(tile_id):
         flask.abort(404)
         return
 
-    return flask.jsonify(tile.tile)
+    return flask.jsonify(tile.collection)
 
 
 @app.route("/routes", methods=['GET'])
@@ -192,8 +193,8 @@ def update_tile(tile_id):
     :return: a flask response object
     """
     print "Saving tile [{}], please wait...".format(tile_id)
-    tile = TileDict(geojson.loads(flask.request.data))
 
+    tile = FeatureDict(geojson.loads(flask.request.data))
     lane_map.save_tile(tile_id, tile)
 
     print "Rebuilding road tiles, please wait..."
