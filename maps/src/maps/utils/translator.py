@@ -470,7 +470,7 @@ def convert_junction_to_geojson(raw_junction, tile_id, connector_id):
         inflow_refs=raw_junction.get('inflow_refs', []),
         outflow_refs=raw_junction.get('outflow_refs', []))
 
-    add_last_edited(raw_junction, junction.properites)
+    add_last_edited(raw_junction, junction.properties)
     return junction
 
 
