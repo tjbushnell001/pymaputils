@@ -6,12 +6,12 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-flask = "*"
-flask-cors = "*"
-geojson = "*"
-utm = "*"
-shapely = "*"
-numpy = "*"
+flask = "~=1.0.3"
+flask-cors = "~=3.0.8"
+geojson = "~=2.4.1"
+utm = "~=0.4.2"
+shapely = "~=1.6.4.post2"
+numpy = "~=1.16.4"
 
 [requires]
 python_version = "2.7"
