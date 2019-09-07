@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 """ Library to lint map junctions for "Issues" """
 from maps.issue_types import IssueType
-from maps.issues import Issue, IssueLayer, IssueLevel
+from maps.issues import Issue, IssueLayer
 from maps.utils import geojson_utils
 import geopy
 
@@ -26,8 +26,7 @@ def lint_junction(junction, lane_map, issue_layer=None):
 
     # 1. check that junction has any outflows
     if len(outflows) == 0:
-        pass
-        # issue_layer.add_issue(junction, Issue(IssueType.NO_OUTFLOW.name))
+        issue_layer.add_issue(junction, Issue(IssueType.NO_OUTFLOW.name))
 
     # 2. check outflow transitions
     for counts in out_transitions.values():
@@ -68,6 +67,7 @@ def lint_junction(junction, lane_map, issue_layer=None):
     # 8. check junction distance from lanes
     junction_pt = tuple(reversed(junction.geometry['coordinates']))
     max_junction_dist = None
+
     for lane_refs, pt_idx in [(inflows, -1), (outflows, 0)]:
         for lane_ref in lane_refs:
             lane = lane_map.get_feature(lane_ref)
