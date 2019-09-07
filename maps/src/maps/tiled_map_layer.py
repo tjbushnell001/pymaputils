@@ -113,7 +113,7 @@ class JsonTiledMapLayer(MapLayer):
         """
         Return a list of tile id's that exist in this map.
         """
-        return [int(fn.split('/')[-1][:-5]) for fn in glob.glob(os.path.join(self.map_dir, '*.json'))]
+        return [int(fn.split('/')[-1].replace('.json', '')) for fn in glob.glob(os.path.join(self.map_dir, '*.json'))]
 
     # ---------------------------------------
     # Other API Methods

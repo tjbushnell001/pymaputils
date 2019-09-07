@@ -18,5 +18,5 @@ class MapLayer(object):
         self.layer_name = layer_name
 
     # TODO: Open Questions:
-    #  Do we want the generic get_feature / get_features method here? This would essentially become SingleMapLayer
+    #  Do we want the generic get_feature / get_features method here? This would essentially become FeatureLayer
     #  Restrict all map layers to be geojson user facing?

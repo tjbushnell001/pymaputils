@@ -3,12 +3,10 @@ from maps.utils import geojson_utils
 
 
 class GeoJsonTiledMapLayer(JsonTiledMapLayer):
-    """
-    Class that represents a tiled map of GeoJSON tiles
-
-    """
     def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True, layer_type=None, layer_name=''):
         """
+        Class that represents a tiled map of GeoJSON tiles.
+
         :param map_dir: The root directory of this tiled map (usually lives one level below tiled_maps)
         :param tile_level: the here_maps tile level. This basically defines the resolution of the tiles (larger number
             means smaller tiles).
@@ -23,7 +21,7 @@ class GeoJsonTiledMapLayer(JsonTiledMapLayer):
         :param tile_id: int id of the tile (used to name / fetch json tile files)
         """
         fn = self.get_tile_filename(tile_id)
-        return geojson_utils.load_geojson_collection(fn)
+        return geojson_utils.load_geojson_layer(fn)
 
     def save_tile(self, tile_id, tile):
         """
@@ -34,7 +32,8 @@ class GeoJsonTiledMapLayer(JsonTiledMapLayer):
         if tile is None:
             return
         fn = self.get_tile_filename(tile_id)
-        tile.write(fn, msg="Saved tile: {}".format(fn))
+        tile.write(fn)
+        print("Saved tile: {}".format(fn))
 
     def get_feature(self, ref):
         tile = self.get_tile(ref['tile_id'])

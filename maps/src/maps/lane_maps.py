@@ -1,7 +1,7 @@
 from maps.map_layer import MapType
 from maps.tiled_map_layer import JsonTiledMapLayer
 from maps.utils import translator
-from maps.utils.geojson_utils import FeatureDict
+from maps.feature_layer import FeatureLayer
 
 LANE_MAP_TILE_LEVEL = 14
 
@@ -42,7 +42,7 @@ class ConvertedLaneMapLayer(JsonTiledMapLayer):
         tile = translator.convert_tile_to_geojson(raw_tile, self.tile_level, self.fix_dot)
 
         if tile is not None:
-            tile = FeatureDict(tile)
+            tile = FeatureLayer.from_collection(tile)
         return tile
 
     def save_tile(self, tile_id, tile):

@@ -4,6 +4,7 @@ import shapely.geometry as sg
 
 from collections import defaultdict
 from enum import Enum
+from maps import feature_layer
 from maps.utils import geojson_utils
 
 
@@ -138,7 +139,7 @@ class FeatureIssueSet(object):
     def add_issue(self, issue):
         if issue.issue_type in self.ignore_issues:
             issue.level = IssueLevel.IGNORE
-        ref = geojson_utils.hashify({'feature_ref': self.feature_ref, 'type': issue.issue_type})
+        ref = feature_layer.hashify({'feature_ref': self.feature_ref, 'type': issue.issue_type})
         if ref not in self.issues:
             self.issues[ref] = issue
         elif issue.level.value >= self.issues[ref].level.value:

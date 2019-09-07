@@ -5,6 +5,7 @@ import shapely.geometry
 import heapq
 import geopy.distance
 import maps
+from maps import feature_layer
 from maps.utils import geojson_utils
 
 MPH_TO_MPS = 0.44704
@@ -50,7 +51,7 @@ def get_neighbors(road_graph, current):
 
     current_is_ramp = seg.properties['is_ramp']
 
-    connector_ref = geojson_utils.hashify(seg.properties['end_connector_ref'])
+    connector_ref = feature_layer.hashify(seg.properties['end_connector_ref'])
 
     # make sure junction tile is loaded
     connector = road_graph.get_feature(connector_ref)
@@ -60,7 +61,7 @@ def get_neighbors(road_graph, current):
         return
     # assert connector is not None
 
-    neighbor_refs = map(geojson_utils.hashify, connector.properties['outflow_refs'])
+    neighbor_refs = map(feature_layer.hashify, connector.properties['outflow_refs'])
     for neighbor_ref in neighbor_refs:
         # make sure neighbors are loaded
         neighbor = road_graph.get_feature(neighbor_ref)

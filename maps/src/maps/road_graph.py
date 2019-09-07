@@ -5,7 +5,7 @@ import utm
 from maps.utils import ref_utils
 from maps.utils import geojson_utils
 from maps.utils import tile_utils
-from maps.utils.geojson_utils import FeatureDict
+from maps.feature_layer import FeatureLayer
 
 from maps.lane_maps import LANE_MAP_TILE_LEVEL
 ROAD_GRAPH_TILE_LEVEL = 10
@@ -33,7 +33,7 @@ def generate_road_tile(road_tile_id, road_graph, lane_map, save_tiles=True):
 
     road_tile = build_road_tile(road_graph, road_tile_id, sub_tiles)
     if road_tile is not None:
-        road_tile = FeatureDict(road_tile)
+        road_tile = FeatureLayer.from_collection(road_tile)
 
     road_graph.add_tile(road_tile_id, road_tile)
     if save_tiles:

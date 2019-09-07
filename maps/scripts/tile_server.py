@@ -15,7 +15,7 @@ from maps.lane_maps import ConvertedLaneMapLayer
 from maps.utils import geojson_utils
 from maps.utils import tile_linker
 from maps.utils import tile_utils
-from maps.utils.geojson_utils import FeatureDict
+from maps.feature_layer import FeatureLayer
 
 
 # ------------------------------------
