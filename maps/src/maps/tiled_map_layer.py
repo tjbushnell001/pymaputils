@@ -35,7 +35,7 @@ class LRUCache(object):
         self.cache = collections.OrderedDict()
 
 
-class TiledMapLayer(object):
+class JsonTiledMapLayer(object):
     """
     Class that represents a tiled map and it's directory structure. No longer loads a single monolithic map. Instead
     this edits individual map files.
@@ -45,7 +45,7 @@ class TiledMapLayer(object):
     def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True):
         """
         :param map_dir: The root directory of this tiled map (usually lives one level below tiled_maps)
-        :param caching: Whether or not to cache tiles
+        :param cache_tiles: Whether or not to cache tiles
         :param tile_level: the here_maps tile level. This basically defines the resolution of the tiles (larger number
             means smaller tiles).
         """
@@ -63,7 +63,7 @@ class TiledMapLayer(object):
         if self.cache_tiles and self.cache.contains(tile_id):
             tile = self.cache.get(tile_id)
 
-        elif self.load_tiles:
+        if self.load_tiles and tile is None:
             tile = self.load_tile(tile_id)
             if self.cache_tiles:
                 self.cache.set(tile_id, tile)
@@ -85,63 +85,6 @@ class TiledMapLayer(object):
         Load a here map tile and return it.
         :param tile_id: int id of the tile (used to name / fetch json tile files)
         """
-        raise NotImplementedError()
-
-    def save_tile(self, tile_id, tile):
-        """
-        Save a tile to disk in here maps format.
-        :param tile_id: id of the tile to fetch
-        :param tile: a tile dict in here maps format
-        """
-        raise NotImplementedError()
-
-    def get_tile_list(self):
-        """
-        Return a list of tile id's that exist in this map.
-        """
-        raise NotImplementedError()
-
-    # ---------------------------------------
-    # Other API Methods
-    # ---------------------------------------
-
-    def remove_tiles(self):
-        """ Remove all tiles on disk. """
-        # clear cache
-        self.clear_cache()
-
-    def tile_exists(self, tile_id):
-        """
-        Return true if the tile exists
-        :param tile_id: The id of the tile to check for
-        :return: boolean
-        """
-        raise NotImplementedError()
-
-    def yield_adjacent_tiles(self, tile_id):
-        """
-        Yield a tile in the adjacency set of tile with id tile_id.
-        :param tile_id: id of tile around which to search
-        """
-        for adjacent_tile_id in tile_utils.adjacent_tile_ids(tile_id, self.tile_level, include_self=True):
-            tile = self.get_tile(adjacent_tile_id)
-            if tile is not None:
-                yield tile
-
-
-class JsonTiledMapLayer(TiledMapLayer):
-    def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True):
-        super(JsonTiledMapLayer, self).__init__(map_dir, tile_level, cache_tiles=cache_tiles, load_tiles=load_tiles)
-
-    # ---------------------------------------
-    # Disk operations to access map files
-    # ---------------------------------------
-    def load_tile(self, tile_id):
-        """
-        Load a here map tile and return it.
-        :param tile_id: int id of the tile (used to name / fetch json tile files)
-        """
-
         fn = self.get_tile_filename(tile_id)
         if not os.path.exists(fn):
             return None
@@ -174,13 +117,21 @@ class JsonTiledMapLayer(TiledMapLayer):
     # Other API Methods
     # ---------------------------------------
 
+    def yield_adjacent_tiles(self, tile_id):
+        """
+        Yield a tile in the adjacency set of tile with id tile_id.
+        :param tile_id: id of tile around which to search
+        """
+        for adjacent_tile_id in tile_utils.adjacent_tile_ids(tile_id, self.tile_level, include_self=True):
+            tile = self.get_tile(adjacent_tile_id)
+            if tile is not None:
+                yield tile
+
     def remove_tiles(self):
         """ Remove all tiles on disk. """
         for fn in glob.glob(os.path.join(self.map_dir, '*.json')):
             os.unlink(fn)
-
-        # make sure to clear the cache
-        super(JsonTiledMapLayer, self).remove_tiles()
+        self.cache.clear()
 
     def tile_exists(self, tile_id):
         """

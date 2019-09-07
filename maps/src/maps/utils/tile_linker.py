@@ -1,4 +1,4 @@
-from maps import map_types
+from maps.utils import ref_utils
 
 
 def relink_lane_tile(tile_id, lane_map, unlinked_lane_map, save_tiles=True):
@@ -190,7 +190,7 @@ def link_junction(lane_segment, tile, is_start_junction, reverse_dot=False):
         return
 
     # make sure connector exists
-    connector_ref = map_types.create_connector_ref(junction_ref['tile_id'], junction_ref['connector_id'])
+    connector_ref = ref_utils.create_connector_ref(junction_ref['tile_id'], junction_ref['connector_id'])
     if connector_ref not in tile.get_features('connector'):
         # connector doesn't exist
         return

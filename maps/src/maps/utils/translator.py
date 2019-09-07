@@ -6,7 +6,7 @@ import utm
 import geojson
 import numpy as np
 
-from maps import map_types
+from maps.utils import ref_utils
 from maps.utils import geojson_utils
 from maps.utils import tile_utils
 
@@ -300,10 +300,10 @@ def feature_to_junction(feature):
 def convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone):
     assert raw_lg['type'] == 'lane_group', raw_lg['type']
 
-    start_connector_ref = map_types.create_connector_ref(tile_id, raw_lg['start_connector_id'])
+    start_connector_ref = ref_utils.create_connector_ref(tile_id, raw_lg['start_connector_id'])
     end_connector_ref = geojson_utils.hashify(raw_lg['end_connector_ref'])
 
-    lane_group_ref = map_types.create_lane_group_ref(tile_id, raw_lg['id'])
+    lane_group_ref = ref_utils.create_lane_group_ref(tile_id, raw_lg['id'])
 
     left_boundary = list(raw_lg['left_boundary'])
     right_boundary = list(raw_lg['right_boundary'])
@@ -367,19 +367,19 @@ def convert_lane_to_geojson(raw_lane, tile_id, lane_group_id, lane_idx, start_co
     center_line = raw_lane['pts']
     altitude_pts = raw_lane['altitude_pts']
 
-    left_boundary_ref = map_types.create_lane_boundary_ref(tile_id, lane_group_id, raw_lane['left_boundary_id'])
-    right_boundary_ref = map_types.create_lane_boundary_ref(tile_id, lane_group_id, raw_lane['right_boundary_id'])
+    left_boundary_ref = ref_utils.create_lane_boundary_ref(tile_id, lane_group_id, raw_lane['left_boundary_id'])
+    right_boundary_ref = ref_utils.create_lane_boundary_ref(tile_id, lane_group_id, raw_lane['right_boundary_id'])
 
-    start_junction_ref = map_types.create_junction_ref_from_connector_ref(start_connector_ref,
+    start_junction_ref = ref_utils.create_junction_ref_from_connector_ref(start_connector_ref,
                                                                           raw_lane['start_connector_lane_number'])
-    end_junction_ref = map_types.create_junction_ref_from_connector_ref(end_connector_ref,
+    end_junction_ref = ref_utils.create_junction_ref_from_connector_ref(end_connector_ref,
                                                                         raw_lane['end_connector_lane_number'])
 
     # we actually ignore the per lane direction of travel, and look at
     # the presumed DOT for the lane group instead
     dot = raw_lane['direction_of_travel']
 
-    lane_seg_ref = map_types.create_lane_segment_ref(tile_id, lane_group_id, raw_lane['id'])
+    lane_seg_ref = ref_utils.create_lane_segment_ref(tile_id, lane_group_id, raw_lane['id'])
 
     lane_type = raw_lane['lane_type']
     assert lane_type in VALID_LANE_TYPES
@@ -414,7 +414,7 @@ def convert_lane_to_geojson(raw_lane, tile_id, lane_group_id, lane_idx, start_co
 def convert_boundary_to_geojson(raw_boundary, tile_id, lane_group_id):
     assert raw_boundary['type'] == 'lane_boundary', raw_boundary['type']
 
-    lane_boundary_ref = map_types.create_lane_boundary_ref(tile_id, lane_group_id, raw_boundary['id'])
+    lane_boundary_ref = ref_utils.create_lane_boundary_ref(tile_id, lane_group_id, raw_boundary['id'])
 
     style = raw_boundary['style']
     assert style in {None, 'UNKNOWN', 'SOLID', 'DASHED'}, style
@@ -445,7 +445,7 @@ def convert_boundary_to_geojson(raw_boundary, tile_id, lane_group_id):
 def convert_connector_to_geojson(raw_conn, tile_id):
     assert raw_conn['type'] == 'connector', raw_conn['type']
 
-    connector_ref = map_types.create_connector_ref(tile_id, raw_conn['id'])
+    connector_ref = ref_utils.create_connector_ref(tile_id, raw_conn['id'])
 
     connector = geojson_utils.create_feature(
         'connector',
@@ -462,7 +462,7 @@ def convert_connector_to_geojson(raw_conn, tile_id):
 def convert_junction_to_geojson(raw_junction, tile_id, connector_id):
     assert raw_junction['type'] == 'junction', raw_junction['type']
 
-    junction_ref = map_types.create_junction_ref(tile_id, connector_id, raw_junction['id'])
+    junction_ref = ref_utils.create_junction_ref(tile_id, connector_id, raw_junction['id'])
     junction = geojson_utils.create_feature(
         'junction',
         junction_ref,

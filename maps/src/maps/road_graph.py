@@ -2,7 +2,7 @@ import geojson
 import itertools
 import utm
 
-from maps import map_types
+from maps.utils import ref_utils
 from maps.utils import geojson_utils
 from maps.utils import tile_utils
 from maps.geojson_maps import TileDict
@@ -89,9 +89,9 @@ def retile_ref(ref):
 
     ref_type = ref['type']
     if ref_type == 'lane_group_ref':
-        new_ref = map_types.create_road_segment_ref(road_tile_id, ref['id'])
+        new_ref = ref_utils.create_road_segment_ref(road_tile_id, ref['id'])
     elif ref_type == 'connector_ref':
-        new_ref = map_types.create_road_connector_ref(road_tile_id, ref['id'])
+        new_ref = ref_utils.create_road_connector_ref(road_tile_id, ref['id'])
     else:
         assert False, 'Invalid ref type: %s' % ref_type
 
