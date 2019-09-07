@@ -1,10 +1,11 @@
 import geojson
-import maps.feature_layer
 import shapely
 import shapely.geometry
 import shapely.validation
 import os
 import utm
+
+from maps.utils import ref_utils
 
 
 from maps.feature_layer import FeatureLayer
@@ -130,7 +131,7 @@ def lane_group_ref_from_lane_ref(lane_ref):
     :param lane_ref: the full lane.ref of the lane
     :return: a hashable ref key for the lane group
     """
-    return maps.feature_layer.hashify(
+    return ref_utils.hashify(
         {'id': lane_ref['lane_group_id'], 'tile_id': lane_ref['tile_id'], 'type': 'lane_group_ref'})
 
 

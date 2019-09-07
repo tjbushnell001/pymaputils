@@ -3,39 +3,8 @@ import os
 
 from collections import OrderedDict
 from maps.map_layer import MapLayer
+from maps.utils import ref_utils
 
-
-# ----------------------------------------
-# Custom Ref Hashing Logic
-# ----------------------------------------
-
-class HashableDict(dict):
-    """
-    Add a hashing function for dicts. This allows us to use refs as fully index-able id's.
-    """
-    def __hash__(self):
-        return hash(tuple(sorted(self.values())))
-
-
-def hashify(obj):
-    """
-    Recursively convert all dicts to HashableDicts. Does a deep search into all lists and dicts.
-
-    :param obj: the object to be hashified
-    :return: the updated object
-    """
-    if isinstance(obj, HashableDict):
-        return obj
-    elif isinstance(obj, list):
-        return [hashify(i) for i in obj]
-    elif isinstance(obj, dict):
-        return HashableDict({key: hashify(value) for key, value in obj.iteritems()})
-    return obj
-
-
-# ----------------------------------------
-# Base GeoJSON Interface
-# ----------------------------------------
 
 class FeatureLayer(MapLayer):
     """
@@ -122,7 +91,7 @@ class FeatureLayer(MapLayer):
         for f in self.collection.features:
             if f.feature_type not in self.feature_type_map:
                 self.feature_type_map[f.feature_type] = OrderedDict()
-            f.ref = hashify(f.ref)
+            f.ref = ref_utils.hashify(f.ref)
             # We hashify the properties as many features have nested refs
-            f.properties = hashify(f.properties)
+            f.properties = ref_utils.hashify(f.properties)
             self.feature_type_map[f.feature_type][f.ref] = f

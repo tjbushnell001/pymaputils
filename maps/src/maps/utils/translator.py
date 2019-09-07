@@ -6,7 +6,6 @@ import utm
 import geojson
 import numpy as np
 
-from maps import feature_layer
 from maps.utils import ref_utils
 from maps.utils import geojson_utils
 from maps.utils import tile_utils
@@ -302,7 +301,7 @@ def convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone):
     assert raw_lg['type'] == 'lane_group', raw_lg['type']
 
     start_connector_ref = ref_utils.create_connector_ref(tile_id, raw_lg['start_connector_id'])
-    end_connector_ref = feature_layer.hashify(raw_lg['end_connector_ref'])
+    end_connector_ref = ref_utils.hashify(raw_lg['end_connector_ref'])
 
     lane_group_ref = ref_utils.create_lane_group_ref(tile_id, raw_lg['id'])
 
