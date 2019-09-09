@@ -5,6 +5,8 @@ from maps.issues import Issue, IssueLayer
 from maps.utils import geojson_utils
 import geopy
 
+LANE_TRANSITION_TYPES = {"MERGE": "M", "SPLIT": "S", "UNKNOWN": "N"}
+
 
 def lint_junction(junction, lane_map, issue_layer=None):
     """
@@ -83,12 +85,11 @@ def lint_junction(junction, lane_map, issue_layer=None):
     return issue_layer
 
 
-LANE_TRANSITION_TYPES = {"MERGE", "SPLIT", "UNKNOWN"}
 def junction_transition_summary(lane_map, lane_refs):
     summary = {
-        is_ramp : {
-            trans_type : 0
-            for trans_type in LANE_TRANSITION_TYPES
+        is_ramp: {
+            trans_type: 0
+            for trans_type in LANE_TRANSITION_TYPES.keys()
         }
         for is_ramp in (False, True)
         }
@@ -102,7 +103,7 @@ def junction_transition_summary(lane_map, lane_refs):
         assert is_ramp in (True, False)
 
         transition_type = lane.properties['lane_transition_type'] or "UNKNOWN"
-        assert transition_type in LANE_TRANSITION_TYPES
+        assert transition_type in LANE_TRANSITION_TYPES.keys()
 
         summary[is_ramp][transition_type] += 1
 
@@ -112,9 +113,7 @@ def junction_transition_summary(lane_map, lane_refs):
 def junction_transition_message(in_summary, out_summary):
     def summary_message(summary):
         parts = []
-        for trans_type, display_letter in [('UNKNOWN', 'N'),
-                                           ('SPLIT', 'S'),
-                                           ('MERGE', 'M')]:
+        for trans_type, display_letter in LANE_TRANSITION_TYPES.iteritems():
             count = summary[trans_type]
             if count > 0:
                 if count > 1:
