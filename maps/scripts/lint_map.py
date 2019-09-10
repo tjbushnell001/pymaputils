@@ -16,16 +16,20 @@ from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
 from maps.utils import routing_utils
 
 parser = argparse.ArgumentParser("Lint all da lanes")
-parser.add_argument("--route_ids", dest='route_ids', action='append', help="a list of routes to lint")
+parser.add_argument("--route_ids", action='append', help="a list of routes to lint")
 parser.add_argument("--map_dir", default=None, help="input dir for tiles, default to lane_map_server")
 parser.add_argument("--map_reader_dir", default=None, help="dir of map reader files")
 parser.add_argument("--out_file", default=None, help="file to write issue layer output")
+parser.add_argument("--issue_types", default=None, help="list of issue types to search for, comma separated")
 
 UPDATE_INTERVAL_PERCENT = 20
 
 
-def lint_route_junctions(route, route_id, lane_map, road_map, issue_layer):
+def lint_route_junctions(route, route_id, lane_map, road_map, issue_layer, issue_types=None):
     junction_set = set()
+
+    print("Getting LaneGroups in Route: {}".format(route_id))
+
     route_lane_groups = list(routing_utils.get_lane_groups_in_route(route, road_map, lane_map))
     i = 0
     next_interval = 0
@@ -49,13 +53,25 @@ def lint_route_junctions(route, route_id, lane_map, road_map, issue_layer):
 
                 junction = lane_map.get_feature(junction_ref)
                 if junction is None:
-                    issue_layer.add_issue(lane, Issue(IssueType.NON_EXISTANT_JUNCTION_REF.name, msg=str(lane)))
+                    if IssueType.NON_EXISTANT_JUNCTION_REF in issue_types:
+                        issue_layer.add_issue(lane, Issue(IssueType.NON_EXISTANT_JUNCTION_REF.name, msg=str(lane)))
                 else:
-                    junction_linter.lint_junction(junction, lane_map, issue_layer)
+                    junction_linter.lint_junction(junction, lane_map, issue_layer, issue_types)
 
 
 def main():
     args = parser.parse_args()
+    issue_types = set()
+    if args.issue_types:
+        for itype in args.issue_types.split(','):
+            try:
+                issue_types.add(IssueType[itype])
+            except KeyError:
+                print('Type [{}] is not a valid IssueType'.format(itype))
+                return
+    else:
+        for itype in IssueType:
+            issue_types.add(itype)
 
     map_dir = args.map_dir
     if map_dir is None:
@@ -100,7 +116,7 @@ def main():
 
             print
             print 'Linting Junctions'
-            lint_route_junctions(routes, route_id, lane_map, road_map, issue_layer)
+            lint_route_junctions(routes, route_id, lane_map, road_map, issue_layer, issue_types)
 
         curr_counts = issue_layer.count_issues_by_level()
 
@@ -112,7 +128,6 @@ def main():
             curr_count = curr_counts[k] - prev_counts.get(k, 0)
             if curr_count > 0:
                 print '  {}: {}'.format(k.name, curr_count)
-        prev_counts = curr_counts
 
     total_counts = issue_layer.count_issues_by_level()
 
@@ -132,8 +147,11 @@ def main():
 
     print
     print 'Issues by Type:'
-    for issue_type, count in issue_type_counts.iteritems():
-        print '    {} - {}'.format(issue_type, count)
+    if len(issue_type_counts) == 0:
+        print '    None'
+    else:
+        for issue_type, count in issue_type_counts.iteritems():
+            print '    {} - {}'.format(issue_type, count)
 
     if args.out_file is not None:
         print

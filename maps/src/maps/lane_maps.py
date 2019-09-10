@@ -53,8 +53,9 @@ class ConvertedLaneMapLayer(JsonTiledMapLayer):
         """
         if tile is None:
             return
-        self.add_tile(tile_id, tile)
 
         # translate tile to here maps json and save it
         raw_tile = translator.convert_geojson_to_tile(tile)
         super(ConvertedLaneMapLayer, self).save_tile(tile_id, raw_tile)
+
+        self.add_tile(tile_id, tile)
