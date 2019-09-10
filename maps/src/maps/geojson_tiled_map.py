@@ -33,7 +33,7 @@ class GeoJsonTiledMapLayer(JsonTiledMapLayer):
             return
         fn = self.get_tile_filename(tile_id)
         tile.write(fn)
-        print("Saved tile: {}".format(fn))
+        print "Saved tile: {}".format(fn)
 
     def get_feature(self, ref):
         tile = self.get_tile(ref['tile_id'])
