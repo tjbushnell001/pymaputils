@@ -40,6 +40,8 @@ def lint_junction(junction, lane_map, issue_layer=None, issue_types=None):
 
     for lane_ref in outflows:
         lane = lane_map.get_feature(lane_ref)
+        if lane.properties['is_emergency_lane']:
+            continue
         # 3. check outflow direction of travel
         lane_dot = lane.properties['direction_of_travel']
         if lane_dot != "FORWARD" and IssueType.INVALID_DIRECTION_OF_TRAVEL in issue_types:
@@ -60,6 +62,8 @@ def lint_junction(junction, lane_map, issue_layer=None, issue_types=None):
 
     for lane_ref in inflows:
         lane = lane_map.get_feature(lane_ref)
+        if lane.properties['is_emergency_lane']:
+            continue
         # 6. check inflow direction of travel
         lane_dot = lane.properties['direction_of_travel']
         if lane_dot != "FORWARD" and IssueType.INVALID_DIRECTION_OF_TRAVEL in issue_types:

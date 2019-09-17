@@ -141,17 +141,21 @@ def main():
 
     issue_type_counts = {}
     for issue in issue_layer.get_all_issues():
-        if issue.issue_type not in issue_type_counts:
-            issue_type_counts[issue.issue_type] = 0
-        issue_type_counts[issue.issue_type] += 1
+        if issue.level not in issue_type_counts:
+            issue_type_counts[issue.level] = {}
+        if issue.issue_type not in issue_type_counts[issue.level]:
+            issue_type_counts[issue.level][issue.issue_type] = 0
+        issue_type_counts[issue.level][issue.issue_type] += 1
 
     print
     print 'Issues by Type:'
     if len(issue_type_counts) == 0:
         print '    None'
     else:
-        for issue_type, count in issue_type_counts.iteritems():
-            print '    {} - {}'.format(issue_type, count)
+        for issue_level, issue_types in issue_type_counts.iteritems():
+            print '  Level: {}'.format(issue_level.name)
+            for issue_type, count in issue_types.iteritems():
+                print '    {} - {}'.format(issue_type, count)
 
     if args.out_file is not None:
         print
