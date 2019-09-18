@@ -80,7 +80,7 @@ class GeoJsonTiledMapLayer(JsonTiledMapLayer):
 
         fn = self.get_tile_filename(tile_id)
         with open(fn, 'w') as f:
-            geojson.dump(tile.tile, f, sort_keys=True, separators=(',', ': '), indent=1)
+            geojson.dump(tile.tile, f, sort_keys=True, separators=(',', ':'), indent=1)
             print "Saved tile: {}".format(fn)
 
     def get_feature(self, ref):
