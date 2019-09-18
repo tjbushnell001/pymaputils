@@ -18,7 +18,7 @@ def lint_junction(junction, lane_map, issue_layer=None, issue_types=None):
     :return: the issue layer with any new issues added.
     """
     issue_layer = IssueLayer() if issue_layer is None else issue_layer
-    issue_types = {itype for itype in IssueType} if issue_types is None else issue_types
+    issue_types = set(IssueType) if issue_types is None else issue_types
 
     inflows = junction.properties['inflow_refs']
     outflows = junction.properties['outflow_refs']

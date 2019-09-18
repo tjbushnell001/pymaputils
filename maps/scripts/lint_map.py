@@ -69,8 +69,7 @@ def main():
                 print 'Type [{}] is not a valid IssueType'.format(itype)
                 return
     else:
-        for itype in IssueType:
-            issue_types.add(itype)
+        issue_types = set(IssueType)
 
     map_dir = args.map_dir
     if map_dir is None:
