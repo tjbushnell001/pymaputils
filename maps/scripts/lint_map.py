@@ -23,15 +23,18 @@ parser.add_argument("--out_file", default=None, help="file to write issue layer 
 parser.add_argument("--issue_type", dest="issue_types", action='append', default=None,
                     help="list of issue types to search for")
 
-UPDATE_INTERVAL_PERCENT = 20
+UPDATE_INTERVAL_PERCENT = 25
 
 
 def lint_route_junctions(route, route_id, lane_map, road_map, issue_layer, issue_types=None):
     junction_set = set()
 
-    print "Getting LaneGroups in Route: {}".format(route_id)
+    print "Getting LaneGroups in route: {}".format(route_id)
 
     route_lane_groups = list(routing_utils.get_lane_groups_in_route(route, road_map, lane_map))
+
+    print "Linting lane groups..."
+
     next_interval = 0
     for count, lane_group in enumerate(route_lane_groups, 1):
         percent_complete = 100 * float(count) / float(len(route_lane_groups))
@@ -58,35 +61,17 @@ def lint_route_junctions(route, route_id, lane_map, road_map, issue_layer, issue
                     junction_linter.lint_junction(junction, lane_map, issue_layer, issue_types)
 
 
-def main():
-    args = parser.parse_args()
-    issue_types = set()
-    if args.issue_types is not None:
-        for itype in args.issue_types:
+def lint_map(map_dir, map_reader_dir, route_ids, issue_types=None):
+    issue_set = set()
+    if issue_types is not None:
+        for itype in issue_types:
             try:
-                issue_types.add(IssueType[itype])
+                issue_set.add(IssueType[itype])
             except KeyError:
                 print 'Type [{}] is not a valid IssueType'.format(itype)
                 return
     else:
-        issue_types = set(IssueType)
-
-    map_dir = args.map_dir
-    if map_dir is None:
-        map_dir = os.path.join(rospkg.RosPack().get_path('lane_map_server'), 'maps/tiled_maps/usa')
-
-    map_reader_dir = args.map_reader_dir
-    if map_reader_dir is None:
-        map_reader_dir = os.path.join(rospkg.RosPack().get_path('map_reader'), 'maps')
-
-    routes_dir = os.path.join(rospkg.RosPack().get_path('brain'), 'params/routes')
-    route_ids = args.route_ids
-    if route_ids is None:
-        route_ids = []
-        # default to all routes
-        for fn in glob.glob(os.path.join(routes_dir, '*.yaml')):
-            route_id = os.path.splitext(os.path.basename(fn))[0]
-            route_ids.append(route_id)
+        issue_set = set(IssueType)
 
     lane_map = ConvertedLaneMapLayer(os.path.join(map_dir, 'tiles'), fix_dot=True)
     road_map = GeoJsonTiledMapLayer(os.path.join(map_dir, 'road_tiles'), tile_level=ROAD_GRAPH_TILE_LEVEL)
@@ -114,7 +99,7 @@ def main():
 
             print
             print 'Linting Junctions'
-            lint_route_junctions(routes, route_id, lane_map, road_map, issue_layer, issue_types)
+            lint_route_junctions(routes, route_id, lane_map, road_map, issue_layer, issue_set)
 
         curr_counts = issue_layer.count_issues_by_level()
 
@@ -146,18 +131,51 @@ def main():
         if route_failures > 0:
             print '  Route Failures: {}'.format(route_failures)
             print
-        for issue_level in sorted(total_counts.keys()):
+        for issue_level in sorted(total_counts):
             print '  {}: {}'.format(issue_level.name, total_counts[issue_level])
             for issue_type, count in issue_type_counts[issue_level].iteritems():
                 print '    {} - {}'.format(issue_type, count)
             print
+
+    failures = route_failures > 0
+    for failure_level in (IssueLevel.WARN, IssueLevel.ERROR):
+        if failure_level in total_counts and total_counts[failure_level] != 0:
+            failures = True
+
+    return issue_layer, failures
+
+
+def main():
+    args = parser.parse_args()
+
+    map_dir = args.map_dir
+    if map_dir is None:
+        map_dir = os.path.join(rospkg.RosPack().get_path('lane_map_server'), 'maps/tiled_maps/usa')
+
+    map_reader_dir = args.map_reader_dir
+    if map_reader_dir is None:
+        map_reader_dir = os.path.join(rospkg.RosPack().get_path('map_reader'), 'maps')
+
+    routes_dir = os.path.join(rospkg.RosPack().get_path('brain'), 'params/routes')
+    route_ids = args.route_ids
+    if route_ids is None:
+        route_ids = []
+        # default to all routes
+        for fn in glob.glob(os.path.join(routes_dir, '*.yaml')):
+            route_id = os.path.splitext(os.path.basename(fn))[0]
+            route_ids.append(route_id)
+
+    issue_layer, failures = lint_map(map_dir, map_reader_dir, route_ids, args.issue_types)
 
     if args.out_file is not None:
         print
         print "Writing Issues to File [{}]".format(args.out_file)
         issue_layer.write(args.out_file)
 
-    if route_failures > 0 or total_counts[IssueLevel.ERROR] > 0:
+    if failures:
+        print "**************************************"
+        print "Linting FAILED!"
+        print "**************************************"
         sys.exit(1)
 
 
