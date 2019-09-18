@@ -8,9 +8,6 @@ import utm
 from maps.utils import ref_utils
 
 
-from maps.feature_layer import FeatureLayer
-
-
 def create_feature(feature_type, feature_ref, geometry, **properties):
     """
     Create a geojson Feature object with the given fields.
@@ -133,19 +130,6 @@ def lane_group_ref_from_lane_ref(lane_ref):
     """
     return ref_utils.hashify(
         {'id': lane_ref['lane_group_id'], 'tile_id': lane_ref['tile_id'], 'type': 'lane_group_ref'})
-
-
-def load_geojson_layer(file_path):
-    """
-    Load a geojson file adding our custom ref parsing logic.
-
-    :param file_path: the full file path of the file to load
-    :return: a FeatureLayer object with fully index-able refs
-    """
-    if not os.path.exists(file_path):
-        return None
-    with open(file_path, 'r') as f:
-        return FeatureLayer.from_collection(geojson.load(f))
 
 
 def write_geojson_tile(tile_id, prefix, feature_collection):

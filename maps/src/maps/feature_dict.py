@@ -2,41 +2,38 @@ import geojson
 import os
 
 from collections import OrderedDict
-from maps.map_layer import MapLayer
 from maps.utils import ref_utils
 
 
-class FeatureLayer(MapLayer):
+class FeatureDict(object):
     """
     Our custom representation of a geojson FeatureCollection. All of our geojson features have "ref" objects that we
-    parse and add a hash functions to. Some map layers are just simple geojson files and exist only as FeatureLayers
+    parse and add hash functions to. Some map layers are just simple geojson files and exist only as FeatureDicts
     """
 
     # -----------------------------
     # Constructors
     # -----------------------------
 
-    def __init__(self, layer_type=None, layer_name='', file_path=''):
-        """ Initializes a feature layer from a geojson FeatureCollection object. """
-        super(FeatureLayer, self).__init__(layer_type, layer_name)
-        self.file_path = file_path
-        self.collection = None
+    def __init__(self, collection):
+        """ Initializes a feature dict from a geojson FeatureCollection object. """
+        self.collection = collection
         self.feature_type_map = {}
+        self._hash_refs()
 
     @classmethod
-    def from_geojson(cls, file_path, layer_type=None, layer_name=''):
-        """ Initializes a feature layer from a geojson file """
-        layer = cls(layer_type, layer_name, file_path)
-        layer.load()
-        return layer
+    def from_file(cls, file_path):
+        """
+        Load a geojson file adding our custom ref parsing logic.
 
-    @classmethod
-    def from_collection(cls, feature_collection, layer_type=None, layer_name='', file_path=''):
-        assert feature_collection is None or isinstance(feature_collection, geojson.FeatureCollection)
-        layer = cls(layer_type, layer_name, file_path)
-        layer.collection = feature_collection
-        layer._hash_refs()
-        return layer
+        :param file_path: the full file path of the file to load
+        :return: a FeatureDict object with fully index-able refs
+        """
+        if not os.path.exists(file_path):
+            return None
+        with open(file_path, 'r') as f:
+            collection = geojson.load(f)
+        return cls(collection)
 
     # -----------------------------
     # Feature Accessor Methods
@@ -75,13 +72,6 @@ class FeatureLayer(MapLayer):
     def write(self, file_path):
         with open(file_path, 'w') as f:
             geojson.dump(self.collection, f, sort_keys=True, separators=(',', ':'), indent=1)
-
-    def load(self):
-        if not os.path.exists(self.file_path):
-            return None
-        with open(self.file_path, 'r') as f:
-            self.collection = geojson.load(f)
-            self._hash_refs()
 
     # -----------------------------
     # Helper Methods

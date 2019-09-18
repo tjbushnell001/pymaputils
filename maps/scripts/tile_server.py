@@ -4,18 +4,18 @@ import flask_cors
 import geojson
 import glob
 import maps
+import maps.road_graph
 import os
 import re
 import time
 
 from flask_cors import cross_origin
-import maps.road_graph
+from maps.feature_dict import FeatureDict
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
 from maps.lane_maps import ConvertedLaneMapLayer
 from maps.utils import geojson_utils
 from maps.utils import tile_linker
 from maps.utils import tile_utils
-from maps.feature_layer import FeatureLayer
 
 
 # ------------------------------------

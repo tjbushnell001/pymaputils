@@ -1,61 +1,32 @@
-import collections
 import glob
 import json
 import os
 
-from maps.map_layer import MapLayer
+from maps.utils.lru_cache import LRUCache
 from maps.utils import tile_utils
 
 
-class LRUCache(object):
-    """ Elegant implementation from https://www.kunxi.org/2014/05/lru-cache-in-python/ """
-    def __init__(self, capacity):
-        self.capacity = capacity
-        self.cache = collections.OrderedDict()
-
-    def get(self, key):
-        try:
-            value = self.cache.pop(key)
-            self.cache[key] = value
-            return value
-        except KeyError:
-            return None
-
-    def set(self, key, value):
-        try:
-            self.cache.pop(key)
-        except KeyError:
-            if len(self.cache) >= self.capacity:
-                self.cache.popitem(last=False)
-        self.cache[key] = value
-
-    def contains(self, key):
-        return key in self.cache
-
-    def clear(self):
-        self.cache = collections.OrderedDict()
-
-
-class JsonTiledMapLayer(MapLayer):
+class JsonTiledMapLayer(object):
     """
     Class that represents a tiled map and it's directory structure. No longer loads a single monolithic map. Instead
     this edits individual map files.
     """
     MAX_CACHE_SIZE = 100
 
-    def __init__(self, layer_type, layer_name, map_dir, tile_level, cache_tiles=True, load_tiles=True):
+    def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True, layer_type=None):
         """
         :param map_dir: The root directory of this tiled map (usually lives one level below tiled_maps)
         :param cache_tiles: Whether or not to cache tiles
         :param tile_level: the here_maps tile level. This basically defines the resolution of the tiles (larger number
-            means smaller tiles).
+               means smaller tiles).
+        :param layer_type: the MapLayer type.
         """
-        super(JsonTiledMapLayer, self).__init__(layer_type, layer_name)
         self.map_dir = map_dir
         self.tile_level = tile_level
 
         self.cache_tiles = cache_tiles
         self.load_tiles = load_tiles
+        self.layer_type = layer_type
 
         # tile cache
         self.cache = LRUCache(self.MAX_CACHE_SIZE)

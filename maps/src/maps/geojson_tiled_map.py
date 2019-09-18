@@ -1,9 +1,9 @@
 from maps.tiled_map_layer import JsonTiledMapLayer
-from maps.utils import geojson_utils
+from maps.feature_dict import FeatureDict
 
 
 class GeoJsonTiledMapLayer(JsonTiledMapLayer):
-    def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True, layer_type=None, layer_name=''):
+    def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True, layer_type=None):
         """
         Class that represents a tiled map of GeoJSON tiles.
 
@@ -11,8 +11,8 @@ class GeoJsonTiledMapLayer(JsonTiledMapLayer):
         :param tile_level: the here_maps tile level. This basically defines the resolution of the tiles (larger number
             means smaller tiles).
         """
-        super(GeoJsonTiledMapLayer, self).__init__(layer_type, layer_name, map_dir, tile_level,
-                                                   cache_tiles=cache_tiles, load_tiles=load_tiles)
+        self.layer_type = layer_type
+        super(GeoJsonTiledMapLayer, self).__init__(map_dir, tile_level, cache_tiles=cache_tiles, load_tiles=load_tiles)
 
     def load_tile(self, tile_id):
         """
@@ -21,7 +21,7 @@ class GeoJsonTiledMapLayer(JsonTiledMapLayer):
         :param tile_id: int id of the tile (used to name / fetch json tile files)
         """
         fn = self.get_tile_filename(tile_id)
-        return geojson_utils.load_geojson_layer(fn)
+        return FeatureDict.from_file(fn)
 
     def save_tile(self, tile_id, tile):
         """

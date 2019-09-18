@@ -1,10 +1,10 @@
 import os
 
-from maps.map_layer import MapType
+from maps.feature_dict import FeatureDict
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
 from maps.lane_maps import ConvertedLaneMapLayer
+from maps.map_types import MapType
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
-from maps.feature_layer import FeatureLayer
 
 
 class MapLayers(object):
@@ -41,7 +41,7 @@ class MapLayers(object):
 
             if layer_name not in disengage_zones['single_layers']:
                 fn = os.path.join(self.map_dir, "annotations", "{}.json".format(layer_name))
-                disengage_zones['single_layers'][layer_name] = FeatureLayer.from_geojson(fn, layer_type, layer_name)
+                disengage_zones['single_layers'][layer_name] = FeatureDict.from_file(fn)
 
             return disengage_zones['single_layers'][layer_name]
 

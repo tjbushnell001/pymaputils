@@ -1,7 +1,7 @@
-from maps.map_layer import MapType
+from maps.map_types import MapType
 from maps.tiled_map_layer import JsonTiledMapLayer
 from maps.utils import translator
-from maps.feature_layer import FeatureLayer
+from maps.feature_dict import FeatureDict
 
 LANE_MAP_TILE_LEVEL = 14
 
@@ -15,8 +15,8 @@ class ConvertedLaneMapLayer(JsonTiledMapLayer):
         :param load_tiles: Whether to load tiles from disk if none are cached
         :param fix_dot: Whether to fix the direction of travel on loaded tiles
         """
-        super(ConvertedLaneMapLayer, self).__init__(MapType.LANE, '', lane_tile_dir, LANE_MAP_TILE_LEVEL,
-                                                    cache_tiles=cache_tiles, load_tiles=load_tiles)
+        super(ConvertedLaneMapLayer, self).__init__(lane_tile_dir, LANE_MAP_TILE_LEVEL, cache_tiles=cache_tiles,
+                                                    load_tiles=load_tiles, layer_type=MapType.LANE)
         self.fix_dot = fix_dot
 
     # --------------------------------------
@@ -42,7 +42,7 @@ class ConvertedLaneMapLayer(JsonTiledMapLayer):
         tile = translator.convert_tile_to_geojson(raw_tile, self.tile_level, self.fix_dot)
 
         if tile is not None:
-            tile = FeatureLayer.from_collection(tile)
+            tile = FeatureDict(tile)
         return tile
 
     def save_tile(self, tile_id, tile):
