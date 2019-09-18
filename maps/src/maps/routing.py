@@ -64,6 +64,9 @@ def get_neighbors(road_graph, current):
     for neighbor_ref in neighbor_refs:
         # make sure neighbors are loaded
         neighbor = road_graph.get_feature(neighbor_ref)
+        if neighbor is None:
+            print "None?? ref:", neighbor_ref
+            continue
 
         # do not route over invalid route segments
         if neighbor.properties['invalid']:

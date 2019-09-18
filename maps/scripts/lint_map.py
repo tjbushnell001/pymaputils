@@ -16,11 +16,12 @@ from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
 from maps.utils import routing_utils
 
 parser = argparse.ArgumentParser("Lint all da lanes")
-parser.add_argument("--route_ids", action='append', help="a list of routes to lint")
+parser.add_argument("--route_id", action='append', dest="route_ids", help="a list of routes to lint")
 parser.add_argument("--map_dir", default=None, help="input dir for tiles, default to lane_map_server")
 parser.add_argument("--map_reader_dir", default=None, help="dir of map reader files")
 parser.add_argument("--out_file", default=None, help="file to write issue layer output")
-parser.add_argument("--issue_types", default=None, help="list of issue types to search for, comma separated")
+parser.add_argument("--issue_type", dest="issue_types", action='append', default=None,
+                    help="list of issue types to search for")
 
 UPDATE_INTERVAL_PERCENT = 20
 
@@ -31,14 +32,12 @@ def lint_route_junctions(route, route_id, lane_map, road_map, issue_layer, issue
     print("Getting LaneGroups in Route: {}".format(route_id))
 
     route_lane_groups = list(routing_utils.get_lane_groups_in_route(route, road_map, lane_map))
-    i = 0
     next_interval = 0
-    for lane_group in route_lane_groups:
-        percent_complete = 100 * float(i) / float(len(route_lane_groups))
+    for count, lane_group in enumerate(route_lane_groups, 1):
+        percent_complete = 100 * float(count) / float(len(route_lane_groups))
         if percent_complete > next_interval:
             next_interval += UPDATE_INTERVAL_PERCENT
             print "Route: {}, Percent Complete: {}".format(route_id, percent_complete)
-        i += 1
         lane_tile = lane_map.get_tile(lane_group['ref']['tile_id'])
         for lane_segment_ref in lane_group.properties['lane_segment_refs']:
             lane = lane_tile.get_features('lane')[lane_segment_ref]
@@ -62,8 +61,8 @@ def lint_route_junctions(route, route_id, lane_map, road_map, issue_layer, issue
 def main():
     args = parser.parse_args()
     issue_types = set()
-    if args.issue_types:
-        for itype in args.issue_types.split(','):
+    if args.issue_types is not None:
+        for itype in args.issue_types:
             try:
                 issue_types.add(IssueType[itype])
             except KeyError:
@@ -129,16 +128,6 @@ def main():
             if curr_count > 0:
                 print '  {}: {}'.format(k.name, curr_count)
 
-    total_counts = issue_layer.count_issues_by_level()
-
-    print
-    print "*****************************************"
-    print "Total Issues:", issue_layer.count() + route_failures
-    if route_failures > 0:
-        print '  Route Failures: {}'.format(route_failures)
-    for k in sorted(total_counts.keys()):
-        print '  {}: {}'.format(k.name, total_counts[k])
-
     issue_type_counts = {}
     for issue in issue_layer.get_all_issues():
         if issue.level not in issue_type_counts:
@@ -147,15 +136,22 @@ def main():
             issue_type_counts[issue.level][issue.issue_type] = 0
         issue_type_counts[issue.level][issue.issue_type] += 1
 
+    total_counts = issue_layer.count_issues_by_level()
+
     print
-    print 'Issues by Type:'
+    print "*****************************************"
+    print "Total Issues:", issue_layer.count() + route_failures
     if len(issue_type_counts) == 0:
         print '    None'
     else:
-        for issue_level, issue_types in issue_type_counts.iteritems():
-            print '  Level: {}'.format(issue_level.name)
-            for issue_type, count in issue_types.iteritems():
+        if route_failures > 0:
+            print '  Route Failures: {}'.format(route_failures)
+            print
+        for issue_level in sorted(total_counts.keys()):
+            print '  {}: {}'.format(issue_level.name, total_counts[issue_level])
+            for issue_type, count in issue_type_counts[issue_level].iteritems():
                 print '    {} - {}'.format(issue_type, count)
+            print
 
     if args.out_file is not None:
         print
