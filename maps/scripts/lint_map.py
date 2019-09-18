@@ -29,7 +29,7 @@ UPDATE_INTERVAL_PERCENT = 20
 def lint_route_junctions(route, route_id, lane_map, road_map, issue_layer, issue_types=None):
     junction_set = set()
 
-    print("Getting LaneGroups in Route: {}".format(route_id))
+    print "Getting LaneGroups in Route: {}".format(route_id)
 
     route_lane_groups = list(routing_utils.get_lane_groups_in_route(route, road_map, lane_map))
     next_interval = 0
@@ -66,7 +66,7 @@ def main():
             try:
                 issue_types.add(IssueType[itype])
             except KeyError:
-                print('Type [{}] is not a valid IssueType'.format(itype))
+                print 'Type [{}] is not a valid IssueType'.format(itype)
                 return
     else:
         for itype in IssueType:

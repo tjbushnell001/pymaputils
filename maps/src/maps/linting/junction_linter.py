@@ -96,7 +96,7 @@ def junction_transition_summary(lane_map, lane_refs):
     summary = {
         is_ramp: {
             trans_type: 0
-            for trans_type in LANE_TRANSITION_TYPES.keys()
+            for trans_type in LANE_TRANSITION_TYPES
         }
         for is_ramp in (False, True)
         }
@@ -110,7 +110,7 @@ def junction_transition_summary(lane_map, lane_refs):
         assert is_ramp in (True, False)
 
         transition_type = lane.properties['lane_transition_type'] or "UNKNOWN"
-        assert transition_type in LANE_TRANSITION_TYPES.keys()
+        assert transition_type in LANE_TRANSITION_TYPES
 
         summary[is_ramp][transition_type] += 1
 
