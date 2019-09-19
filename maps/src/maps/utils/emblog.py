@@ -2,9 +2,9 @@
 
 try:
     import rospy
-    ROS_AVAILABLE = True
+    USE_ROS = True
 except ImportError:
-    ROS_AVAILABLE = False
+    USE_ROS = False
 
 
 class Color(object):
@@ -15,24 +15,24 @@ class Color(object):
 
 
 def debug(msg, *args, **kwargs):
-    if ROS_AVAILABLE:
+    if USE_ROS:
         rospy.logdebug(msg, args, kwargs)
     print Color.DEBUG + msg + Color.ENDC
 
 
 def info(msg, *args, **kwargs):
-    if ROS_AVAILABLE:
+    if USE_ROS:
         rospy.loginfo(msg, args, kwargs)
     print msg
 
 
 def warn(msg, *args, **kwargs):
-    if ROS_AVAILABLE:
+    if USE_ROS:
         rospy.logwarn(msg, args, kwargs)
     print Color.WARN + msg + Color.ENDC
 
 
 def error(msg, *args, **kwargs):
-    if ROS_AVAILABLE:
+    if USE_ROS:
         rospy.logerr(msg, args, kwargs)
     print Color.ERROR + msg + Color.ENDC

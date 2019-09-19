@@ -125,9 +125,9 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
         print '    None'
     else:
         if len(failed_routes) > 0:
-            print '  Route Failures: {}'.format(len(failed_routes))
+            emblog.error('  Route Failures: {}'.format(len(failed_routes)))
             for route_id in failed_routes:
-                print '    {}'.format(route_id)
+                emblog.error('    {}'.format(route_id))
             print
         if len(total_counts) == 0:
             print '  Issues:'
