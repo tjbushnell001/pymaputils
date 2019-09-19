@@ -4,10 +4,9 @@ import argparse
 import os
 import glob
 import rospkg
-import sys
 
 from maps.linting import route_linter
-
+from maps.utils import emblog
 
 parser = argparse.ArgumentParser("Lint all da lanes")
 parser.add_argument("--route_id", action='append', dest="route_ids", help="a list of routes to lint")
@@ -46,11 +45,10 @@ def main():
         issue_layer.write(args.out_file)
 
     if failures:
-        print
-        print "**************************************"
-        print "Linting FAILED!"
-        print "**************************************"
-        sys.exit(1)
+        emblog.error("\n"
+                     "**************************************\n"
+                     "* Linting FAILED!\n"
+                     "**************************************\n")
 
 
 if __name__ == '__main__':

@@ -10,6 +10,7 @@ from maps.issues import IssueLayer, IssueLevel, Issue
 from maps.issue_types import IssueType
 from maps.lane_maps import ConvertedLaneMapLayer
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
+from maps.utils import emblog
 from maps.utils import routing_utils
 
 parser = argparse.ArgumentParser("Lint all da lanes")
@@ -19,6 +20,8 @@ parser.add_argument("--map_reader_dir", default=None, help="dir of map reader fi
 parser.add_argument("--out_file", default=None, help="file to write issue layer output")
 parser.add_argument("--issue_type", dest="issue_types", action='append', default=None,
                     help="list of issue types to search for")
+
+FAILURE_LEVELS = (IssueLevel.WARN, IssueLevel.ERROR)
 
 
 def lint_route(route, route_id, lane_map, road_map, issue_layer, issue_types=None):
@@ -93,11 +96,14 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
         print
         print "Route Issues:", sum(curr_counts.values()) - sum(prev_counts.values()) + int(route_failed)
         if route_failed:
-            print '  Route Failures: 1'
-        for k in sorted(curr_counts.keys()):
-            curr_count = curr_counts[k] - prev_counts.get(k, 0)
+            emblog.error('  Route Failures: 1')
+        for level in sorted(curr_counts.keys()):
+            curr_count = curr_counts[level] - prev_counts.get(level, 0)
             if curr_count > 0:
-                print '  {}: {}'.format(k.name, curr_count)
+                if level in FAILURE_LEVELS:
+                    emblog.error('  {}: {}'.format(level.name, curr_count))
+                else:
+                    emblog.info('  {}: {}'.format(level.name, curr_count))
 
     issue_type_counts = {}
     for issue in issue_layer.get_all_issues():
@@ -128,13 +134,17 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
             print '    None'
         else:
             for issue_level in sorted(total_counts):
-                print '  {}: {}'.format(issue_level.name, total_counts[issue_level])
+                msg = '  {}: {}'.format(issue_level.name, total_counts[issue_level])
+                if issue_level in FAILURE_LEVELS:
+                    emblog.error(msg)
+                else:
+                    emblog.info(msg)
                 for issue_type, count in issue_type_counts[issue_level].iteritems():
                     print '    {} - {}'.format(issue_type, count)
                 print
 
     failures = len(failed_routes) > 0
-    for failure_level in (IssueLevel.WARN, IssueLevel.ERROR):
+    for failure_level in FAILURE_LEVELS:
         if failure_level in total_counts and total_counts[failure_level] != 0:
             failures = True
 
