@@ -3,7 +3,8 @@ import os
 import rospy
 
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
-from maps.utils import routing_utils
+from maps.geojson_maps import GeoJsonTiledMapLayer
+from maps.utils import routing_utils, routing_msg_utils
 import maps.routing
 from perception_msgs.msg import MapTrip
 from std_msgs.msg import String
@@ -11,6 +12,7 @@ from basic_msgs.msg import Polygon64
 from geometry_msgs.msg import Point
 import maps.road_graph
 from diagnostics_utils.node_health_publisher import NodeHealthPublisher
+
 
 class RouteGenerationNode(object):
     def __init__(self):
@@ -67,12 +69,12 @@ class RouteGenerationNode(object):
 
         if routes is not None:
             route_ok = True
-            route_msg = routing_utils.trip_to_msg(routes, all_waypoints)
+            route_msg = routing_msg_utils.trip_to_msg(routes, all_waypoints)
             route_msg.route_id = route_id.data
             self.route_pub.publish(route_msg)
 
             # visualize route in simian
-            points = routing_utils.trip_to_geometry(self.road_graph, routes)
+            points = routing_msg_utils.trip_to_geometry(self.road_graph, routes)
             self.route_path_pub.publish(points=[Point(x=x, y=y) for x,y in points])
 
         # update diagnostics
@@ -80,6 +82,7 @@ class RouteGenerationNode(object):
                                        [('Active', route_ok),
                                         ('Route Id', route_id.data)],
                                        error_message=route_error)
+
 
 if __name__ == '__main__':
     rospy.init_node('route_publisher')

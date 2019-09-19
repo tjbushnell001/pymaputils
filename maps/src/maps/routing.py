@@ -1,12 +1,10 @@
 """ Utility functions for routing through map tiles. """
-
-import rospy
 import shapely.geometry
 import heapq
 import geopy.distance
 import maps
 
-from maps.utils import geojson_utils
+from maps.utils import emblog
 from maps.utils import ref_utils
 
 MPH_TO_MPS = 0.44704
@@ -105,7 +103,7 @@ def heuristic_cost_estimate(map_tiles, src_id, dest_id):
     src_seg_end = src_seg.properties['right_boundary'][-1][:2]
     dest_seg_end = dest_seg.properties['right_boundary'][-1][:2]
 
-    dist = geopy.distance.distance(src_seg_end, dest_seg_end).meters
+    dist = geopy.distance.distance(reversed(src_seg_end), reversed(dest_seg_end)).meters
 
     # estimate cost in seconds, assuming freeway speeds
     # NOTE: it's desirable to under estimate cost in the heuristic
@@ -189,7 +187,8 @@ def a_star(road_graph, start_id, goal_id, ignore_set=None):
 
 
 def coord_to_lat_lng(point):
-  return (point[1], point[0])
+    return point[1], point[0]
+
 
 def find_route(road_graph, waypoints, capabilities):
     routes = []
@@ -213,24 +212,20 @@ def find_route(road_graph, waypoints, capabilities):
 
         if road_segment is None:
             # issues.add_issue(wp, "Can't find segment for waypoint")
-            msg = "Can't find segment for waypoint [{}]".format(wp_id)
-            rospy.logerr(msg)
-            print msg
+            emblog.error("Can't find segment for waypoint [{}]".format(wp_id))
             return None
 
         segment_id = road_segment.ref
 
         if waypoint_type == 'allowed_ramp':
             # these aren't _real_ waypoints, but they instead authorize us to take certain ramps
-	    # we need to keep track of them for later
+            # we need to keep track of them for later
             allowed_ramps.add(segment_id)
             continue
 
         if prev_segment_id is None:
             if waypoint_type not in ('trip_origin', 'sub_origin', 'reroute_origin'):
-                msg = "Not an origin waypoint [{}]".format(wp_id)
-                rospy.logerr(msg)
-                print msg
+                emblog.error("Not an origin waypoint [{}]".format(wp_id))
                 return None
 
             # start route segment
@@ -248,13 +243,11 @@ def find_route(road_graph, waypoints, capabilities):
         sub_route, progress = a_star(road_graph, prev_segment_id, segment_id, ignore_set=closed_set)
 
         if sub_route is None:
-            msg = "No route from waypoint [{}] [{}] {} to [{}] [{}] {}".format(
+            emblog.error("No route from waypoint [{}] [{}] {} to [{}] [{}] {}".format(
                 prev_wp_id, prev_segment_id,
                 coord_to_lat_lng(prev_wp.geometry['coordinates']),
                 wp_id, segment_id,
-                coord_to_lat_lng(wp.geometry['coordinates']))
-            rospy.logerr(msg)
-            print msg
+                coord_to_lat_lng(wp.geometry['coordinates'])))
 
             # print out the furthest point the router was able to reach, which is sometimes a useful debugging hint
             if len(progress) > 0:
@@ -262,12 +255,10 @@ def find_route(road_graph, waypoints, capabilities):
                 furthest = road_graph.get_feature(furthest_ref)
                 coords = furthest.properties['left_boundary'][-1]
                 furthest_min = int(furthest_sec / 60)
-                msg = "Furthest point: [{}] {:d}h:{:02d}m {}".format(
+                emblog.info("Furthest point: [{}] {:d}h:{:02d}m {}".format(
                     furthest_ref,
                     furthest_min / 60, furthest_min % 60,
-                    coord_to_lat_lng(coords))
-                print msg
-                rospy.loginfo(msg)
+                    coord_to_lat_lng(coords)))
 
             return None
 
@@ -292,9 +283,7 @@ def find_route(road_graph, waypoints, capabilities):
 
     # check for incomplete route
     if len(route) > 0:
-        msg = "Route must end on a destination waypoint"
-        rospy.logerr(msg)
-        print msg
+        emblog.error("Route must end on a destination waypoint")
         return None
 
     # make sure we didn't route across any non allowed ramps
@@ -312,13 +301,9 @@ def find_route(road_graph, waypoints, capabilities):
                 rs_is_ramp = rs.properties['is_ramp']
 
                 # we only care about transitions from non-ramps onto ramps
-                if (rs_is_ramp and
-                    prev_is_ramp is False and
-                    rs_ref not in allowed_ramps):
+                if rs_is_ramp and prev_is_ramp is False and rs_ref not in allowed_ramps:
                     coords = rs.properties['left_boundary'][-1]
-                    msg = "Ramp [{}] is not allowed. {}".format(rs_ref, coord_to_lat_lng(coords))
-                    rospy.logerr(msg)
-                    print msg
+                    emblog.error("Ramp [{}] is not allowed. {}".format(rs_ref, coord_to_lat_lng(coords)))
                     ramp_error = True
 
                 prev_is_ramp = rs_is_ramp

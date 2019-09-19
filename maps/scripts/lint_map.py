@@ -1,19 +1,13 @@
 #! /usr/bin/env python
-""" Simple script to sift through lanes and verify they follow our constraints on lane labels. """
+""" Script to lint the map for potential errors. """
 import argparse
 import os
 import glob
 import rospkg
-import maps.routing
 import sys
 
-from maps.linting import junction_linter
-from maps.geojson_tiled_map import GeoJsonTiledMapLayer
-from maps.issues import IssueLayer, IssueLevel, Issue
-from maps.issue_types import IssueType
-from maps.lane_maps import ConvertedLaneMapLayer
-from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
-from maps.utils import routing_utils
+from maps.linting import route_linter
+
 
 parser = argparse.ArgumentParser("Lint all da lanes")
 parser.add_argument("--route_id", action='append', dest="route_ids", help="a list of routes to lint")
@@ -22,127 +16,6 @@ parser.add_argument("--map_reader_dir", default=None, help="dir of map reader fi
 parser.add_argument("--out_file", default=None, help="file to write issue layer output")
 parser.add_argument("--issue_type", dest="issue_types", action='append', default=None,
                     help="list of issue types to search for")
-
-UPDATE_INTERVAL_PERCENT = 25
-
-
-def lint_route_junctions(route, route_id, lane_map, road_map, issue_layer, issue_types=None):
-    junction_set = set()
-
-    print "Getting LaneGroups in route: {}".format(route_id)
-
-    route_lane_groups = list(routing_utils.get_lane_groups_in_route(route, road_map, lane_map))
-
-    print "Linting lane groups..."
-
-    next_interval = 0
-    for count, lane_group in enumerate(route_lane_groups, 1):
-        percent_complete = 100 * float(count) / float(len(route_lane_groups))
-        if percent_complete > next_interval:
-            next_interval += UPDATE_INTERVAL_PERCENT
-            print "Route: {}, Percent Complete: {}".format(route_id, percent_complete)
-        lane_tile = lane_map.get_tile(lane_group['ref']['tile_id'])
-        for lane_segment_ref in lane_group.properties['lane_segment_refs']:
-            lane = lane_tile.get_features('lane')[lane_segment_ref]
-            if lane.properties['is_emergency_lane']:
-                continue
-            # Only use starting junctions to avoid duplicate issue checking
-            for junction_key in ('start_junction_ref', 'end_junction_ref'):
-                junction_ref = lane.properties[junction_key]
-                if junction_ref in junction_set:
-                    continue
-                junction_set.add(junction_ref)
-
-                junction = lane_map.get_feature(junction_ref)
-                if junction is None:
-                    if IssueType.NON_EXISTANT_JUNCTION_REF in issue_types:
-                        issue_layer.add_issue(lane, Issue(IssueType.NON_EXISTANT_JUNCTION_REF.name, msg=str(lane)))
-                else:
-                    junction_linter.lint_junction(junction, lane_map, issue_layer, issue_types)
-
-
-def lint_map(map_dir, map_reader_dir, route_ids, issue_types=None):
-    issue_set = set()
-    if issue_types is not None:
-        for itype in issue_types:
-            try:
-                issue_set.add(IssueType[itype])
-            except KeyError:
-                print 'Type [{}] is not a valid IssueType'.format(itype)
-                return
-    else:
-        issue_set = set(IssueType)
-
-    lane_map = ConvertedLaneMapLayer(os.path.join(map_dir, 'tiles'), fix_dot=True)
-    road_map = GeoJsonTiledMapLayer(os.path.join(map_dir, 'road_tiles'), tile_level=ROAD_GRAPH_TILE_LEVEL)
-    issue_layer = IssueLayer()
-
-    route_failures = 0
-    for route_id in route_ids:
-        prev_counts = issue_layer.count_issues_by_level()
-        route_failed = False
-
-        print
-        print "*****************************************"
-        print "Generating route for [{}]".format(route_id)
-
-        all_waypoints = routing_utils.load_waypoints_from_map_reader(map_reader_dir, route_id)
-        routes = maps.routing.find_route(road_map, all_waypoints, routing_utils.Capabilities())
-
-        if routes is None:
-            route_failed = True
-            route_failures += 1
-            print "Failed to generate route for [{}]".format(route_id)
-        else:
-            print
-            print "Linting route [{}]".format(route_id)
-
-            print
-            print 'Linting Junctions'
-            lint_route_junctions(routes, route_id, lane_map, road_map, issue_layer, issue_set)
-
-        curr_counts = issue_layer.count_issues_by_level()
-
-        print
-        print "Route Issues:", sum(curr_counts.values()) - sum(prev_counts.values()) + int(route_failed)
-        if route_failed:
-            print '  Route Failures: 1'
-        for k in sorted(curr_counts.keys()):
-            curr_count = curr_counts[k] - prev_counts.get(k, 0)
-            if curr_count > 0:
-                print '  {}: {}'.format(k.name, curr_count)
-
-    issue_type_counts = {}
-    for issue in issue_layer.get_all_issues():
-        if issue.level not in issue_type_counts:
-            issue_type_counts[issue.level] = {}
-        if issue.issue_type not in issue_type_counts[issue.level]:
-            issue_type_counts[issue.level][issue.issue_type] = 0
-        issue_type_counts[issue.level][issue.issue_type] += 1
-
-    total_counts = issue_layer.count_issues_by_level()
-
-    print
-    print "*****************************************"
-    print "Total Issues:", issue_layer.count() + route_failures
-    if len(issue_type_counts) == 0:
-        print '    None'
-    else:
-        if route_failures > 0:
-            print '  Route Failures: {}'.format(route_failures)
-            print
-        for issue_level in sorted(total_counts):
-            print '  {}: {}'.format(issue_level.name, total_counts[issue_level])
-            for issue_type, count in issue_type_counts[issue_level].iteritems():
-                print '    {} - {}'.format(issue_type, count)
-            print
-
-    failures = route_failures > 0
-    for failure_level in (IssueLevel.WARN, IssueLevel.ERROR):
-        if failure_level in total_counts and total_counts[failure_level] != 0:
-            failures = True
-
-    return issue_layer, failures
 
 
 def main():
@@ -160,12 +33,12 @@ def main():
     route_ids = args.route_ids
     if route_ids is None:
         route_ids = []
-        # default to all routes
+        # demap_dirfault to all routes
         for fn in glob.glob(os.path.join(routes_dir, '*.yaml')):
             route_id = os.path.splitext(os.path.basename(fn))[0]
             route_ids.append(route_id)
 
-    issue_layer, failures = lint_map(map_dir, map_reader_dir, route_ids, args.issue_types)
+    issue_layer, failures = route_linter.lint_routes(map_dir, map_reader_dir, route_ids, args.issue_types)
 
     if args.out_file is not None:
         print
@@ -173,6 +46,7 @@ def main():
         issue_layer.write(args.out_file)
 
     if failures:
+        print
         print "**************************************"
         print "Linting FAILED!"
         print "**************************************"
