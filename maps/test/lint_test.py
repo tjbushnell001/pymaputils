@@ -5,6 +5,7 @@ import glob
 import sys
 
 from maps.linting import route_linter
+from maps.utils import emblog
 
 # -------------------------------------------------
 # Because this lint test is not running in a ROS environment, we can't rely on our ros params or package locations
@@ -27,10 +28,10 @@ def main():
     issue_layer, failures = route_linter.lint_routes(MAP_DIR, MAP_READER_DIR, route_ids)
 
     if failures:
-        print
-        print "**************************************"
-        print "Linting FAILED!"
-        print "**************************************"
+        emblog.error("\n"
+                     "**************************************\n"
+                     "* Linting FAILED!\n"
+                     "**************************************\n")
         sys.exit(1)
 
 
