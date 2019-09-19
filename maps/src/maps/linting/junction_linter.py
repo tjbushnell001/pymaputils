@@ -80,6 +80,8 @@ def lint_junction(junction, lane_map, issue_layer=None, issue_types=None):
     for lane_refs, pt_idx in [(inflows, -1), (outflows, 0)]:
         for lane_ref in lane_refs:
             lane = lane_map.get_feature(lane_ref)
+            if lane.properties['is_emergency_lane']:
+                continue
             lane_pt = tuple(reversed(lane.geometry['coordinates'][pt_idx]))
 
             d = geopy.distance.distance(lane_pt, junction_pt).meters
@@ -103,6 +105,8 @@ def junction_transition_summary(lane_map, lane_refs):
 
     for lane_ref in lane_refs:
         lane = lane_map.get_feature(lane_ref)
+        if lane.properties['is_emergency_lane']:
+            continue
         lane_group_ref = geojson_utils.lane_group_ref_from_lane_ref(lane_ref)
         lane_group = lane_map.get_feature(lane_group_ref)
 

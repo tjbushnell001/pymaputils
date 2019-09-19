@@ -93,17 +93,28 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
 
         curr_counts = issue_layer.count_issues_by_level()
 
-        print
-        print "Route Issues:", sum(curr_counts.values()) - sum(prev_counts.values()) + int(route_failed)
+        if sum(curr_counts.values()) - sum(prev_counts.values()) + int(route_failed) != 0:
+            print
+            print "Route Issues:", sum(curr_counts.values()) - sum(prev_counts.values()) + int(route_failed)
+
+        failed = False
         if route_failed:
             emblog.error('  Route Failures: 1')
-        for level in sorted(curr_counts.keys()):
+            failed = False
+        for level in sorted(curr_counts.keys(), cmp=IssueLevel.cmp):
             curr_count = curr_counts[level] - prev_counts.get(level, 0)
             if curr_count > 0:
                 if level in FAILURE_LEVELS:
                     emblog.error('  {}: {}'.format(level.name, curr_count))
+                    failed = True
                 else:
                     emblog.info('  {}: {}'.format(level.name, curr_count))
+
+        print
+        if failed:
+            emblog.error("Failed!")
+        else:
+            emblog.debug("Passed")
 
     issue_type_counts = {}
     for issue in issue_layer.get_all_issues():
@@ -133,7 +144,7 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
             print '  Issues:'
             print '    None'
         else:
-            for issue_level in sorted(total_counts):
+            for issue_level in sorted(total_counts, cmp=IssueLevel.cmp):
                 msg = '  {}: {}'.format(issue_level.name, total_counts[issue_level])
                 if issue_level in FAILURE_LEVELS:
                     emblog.error(msg)

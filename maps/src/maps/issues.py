@@ -13,6 +13,10 @@ class IssueLevel(Enum):
     ERROR = 1
     IGNORE = 2
 
+    @staticmethod
+    def cmp(issue1, issue2):
+        return cmp(issue1.value, issue2.value)
+
 
 class IssueLayer(object):
     """
@@ -72,17 +76,19 @@ class IssueLayer(object):
 
         return num_issues
 
-    def write(self, fp):
+    def write(self, fp, include_ignores=False):
         """
         Write the issues layer to a json file in geojson.
         :param fp: A file path to write to
+        :param include_ignores: whether to include ignored issues in the file
         """
         feature_collection = {'type': 'FeatureCollection', 'features': []}
         for issue_set in self.features.values():
             for ref, issue in issue_set.issues.iteritems():
-                feature_collection['features'].append(convert_issue_to_geojson(issue, ref, issue_set))
+                if issue.level != IssueLevel.IGNORE or include_ignores:
+                    feature_collection['features'].append(convert_issue_to_geojson(issue, ref, issue_set))
         with open(fp, 'w') as f:
-            json.dump(feature_collection, f, indent=4)
+            json.dump(feature_collection, f, indent=4, separators=(',', ':'))
 
     def load(self, fp):
         """

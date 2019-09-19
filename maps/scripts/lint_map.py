@@ -49,6 +49,8 @@ def main():
                      "**************************************\n"
                      "* Linting FAILED!\n"
                      "**************************************\n")
+    else:
+        emblog.debug("\nLinting PASSED.\n")
 
 
 if __name__ == '__main__':

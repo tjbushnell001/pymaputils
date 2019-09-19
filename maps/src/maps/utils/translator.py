@@ -65,6 +65,9 @@ VALID_LANE_TYPES = {
 VALID_LANE_TRANSITION_TYPES = {None, 'UNKNOWN', 'MERGE', 'SPLIT'}
 
 
+EXTRA_FIELDS = {'last_edited', 'ignore_issues', 'note'}
+
+
 # ---------------------------------------
 # Maps Translation API
 # ---------------------------------------
@@ -204,7 +207,7 @@ def feature_to_connector(feature):
         'outflow_refs': feature.properties['outflow_refs'],
         'junctions': [],  # empty list of junctions to be populated during reassembly
     }
-    add_last_edited(feature.properties, obj)
+    add_extra_properties(feature.properties, obj)
     return obj
 
 
@@ -226,7 +229,7 @@ def feature_to_lane(feature):
         'start_connector_lane_number': feature.properties['start_junction_ref']['id'],
         'type': feature['feature_type'],
     }
-    add_last_edited(feature.properties, obj)
+    add_extra_properties(feature.properties, obj)
     obj.update({key: feature.properties[key] for key in LANE_FEATURE_LIST})
     return obj
 
@@ -247,7 +250,7 @@ def feature_to_lane_boundary(feature):
         'altitude_pts': feature.properties['altitudes'],
         'type': feature['feature_type'],
     }
-    add_last_edited(feature.properties, obj)
+    add_extra_properties(feature.properties, obj)
     obj.update({key: feature.properties[key] for key in LANE_BOUNDARY_FEATURE_LIST})
     return obj
 
@@ -268,7 +271,7 @@ def feature_to_lane_group(feature):
         'start_connector_id': feature.properties['start_connector_ref']['id'],
         'type': feature['feature_type'],
     }
-    add_last_edited(feature.properties, obj)
+    add_extra_properties(feature.properties, obj)
     obj.update({key: feature.properties[key] for key in LANE_GROUP_FEATURE_LIST})
     return obj
 
@@ -289,7 +292,7 @@ def feature_to_junction(feature):
         'inflow_refs': feature.properties['inflow_refs'],
         'outflow_refs': feature.properties['outflow_refs'],
     }
-    add_last_edited(feature.properties, obj)
+    add_extra_properties(feature.properties, obj)
     return obj
 
 
@@ -347,7 +350,7 @@ def convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone):
         is_within_interchange=raw_lg.get('is_within_interchange'),
         lane_segment_refs=[])
 
-    add_last_edited(raw_lg, lane_group.properties)
+    add_extra_properties(raw_lg, lane_group.properties)
     return lane_group
 
 
@@ -407,7 +410,7 @@ def convert_lane_to_geojson(raw_lane, tile_id, lane_group_id, lane_idx, start_co
         lane_type=lane_type,
         merged=raw_lane['merged'])
 
-    add_last_edited(raw_lane, lane_seg.properties)
+    add_extra_properties(raw_lane, lane_seg.properties)
     return lane_seg
 
 
@@ -438,7 +441,7 @@ def convert_boundary_to_geojson(raw_boundary, tile_id, lane_group_id):
         is_only_emergency_boundary=raw_boundary['is_only_emergency_boundary'],
         altitudes=raw_boundary['altitude_pts'])
 
-    add_last_edited(raw_boundary, boundary.properties)
+    add_extra_properties(raw_boundary, boundary.properties)
     return boundary
 
 
@@ -455,7 +458,7 @@ def convert_connector_to_geojson(raw_conn, tile_id):
         inflow_refs=raw_conn.get('inflow_refs', []),
         outflow_refs=raw_conn.get('outflow_refs', []))
 
-    add_last_edited(raw_conn, connector.properties)
+    add_extra_properties(raw_conn, connector.properties)
     return connector
 
 
@@ -471,7 +474,7 @@ def convert_junction_to_geojson(raw_junction, tile_id, connector_id):
         inflow_refs=raw_junction.get('inflow_refs', []),
         outflow_refs=raw_junction.get('outflow_refs', []))
 
-    add_last_edited(raw_junction, junction.properties)
+    add_extra_properties(raw_junction, junction.properties)
     return junction
 
 
@@ -479,9 +482,10 @@ def convert_junction_to_geojson(raw_junction, tile_id, connector_id):
 # Helper Methods
 # -------------------------------------------
 
-def add_last_edited(source, dest):
-    if 'last_edited' in source:
-        dest['last_edited'] = source['last_edited']
+def add_extra_properties(source, dest):
+    for prop in EXTRA_FIELDS:
+        if prop in source:
+            dest[prop] = source[prop]
 
 
 def determine_direction_of_travel(raw_lg):

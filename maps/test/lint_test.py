@@ -33,6 +33,8 @@ def main():
                      "* Linting FAILED!\n"
                      "**************************************\n")
         sys.exit(1)
+    else:
+        emblog.debug("\nLinting PASSED.\n")
 
 
 if __name__ == '__main__':

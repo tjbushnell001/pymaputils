@@ -77,7 +77,7 @@ class JsonTiledMapLayer(object):
 
         fn = self.get_tile_filename(tile_id)
         with open(fn, 'w') as f:
-            json.dump(tile, f, indent=4, sort_keys=True)
+            json.dump(tile, f, indent=4, sort_keys=True, separators=(',', ': '))
             print "Saved tile: {}".format(fn)
 
     def get_tile_list(self):
