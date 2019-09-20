@@ -1,6 +1,4 @@
-#! /usr/bin/env python
-""" Simple script to sift through lanes and verify they follow our constraints on lane labels. """
-import argparse
+""" Library for linting routes. """
 import os
 import maps.routing
 
@@ -12,14 +10,6 @@ from maps.lane_maps import ConvertedLaneMapLayer
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
 from maps.utils import emblog
 from maps.utils import routing_utils
-
-parser = argparse.ArgumentParser("Lint all da lanes")
-parser.add_argument("--route_id", action='append', dest="route_ids", help="a list of routes to lint")
-parser.add_argument("--map_dir", default=None, help="input dir for tiles, default to lane_map_server")
-parser.add_argument("--map_reader_dir", default=None, help="dir of map reader files")
-parser.add_argument("--out_file", default=None, help="file to write issue layer output")
-parser.add_argument("--issue_type", dest="issue_types", action='append', default=None,
-                    help="list of issue types to search for")
 
 FAILURE_LEVELS = {IssueLevel.WARN, IssueLevel.ERROR}
 

@@ -1,5 +1,4 @@
 #! /usr/bin/env python
-""" Simple script to sift through lanes and verify they follow our constraints on lane labels. """
 import os
 import glob
 import sys
