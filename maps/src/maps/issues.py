@@ -45,7 +45,7 @@ class IssueLayer(object):
     def get_all_issues(self):
         issue_set = set()
         for feature in self.features.values():
-            for issue in feature.get_issues().values():
+            for issue in feature.get_issues():
                 issue_set.add(issue)
         return issue_set
 
@@ -152,7 +152,7 @@ class FeatureIssueSet(object):
             self.issues[ref] = issue
 
     def get_issues(self):
-        return self.issues
+        return self.issues.values()
 
 
 class Issue(object):

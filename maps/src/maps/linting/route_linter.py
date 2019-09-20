@@ -21,7 +21,7 @@ parser.add_argument("--out_file", default=None, help="file to write issue layer 
 parser.add_argument("--issue_type", dest="issue_types", action='append', default=None,
                     help="list of issue types to search for")
 
-FAILURE_LEVELS = (IssueLevel.WARN, IssueLevel.ERROR)
+FAILURE_LEVELS = {IssueLevel.WARN, IssueLevel.ERROR}
 
 
 def lint_route(route, route_id, lane_map, road_map, issue_layer, issue_types=None):
@@ -145,14 +145,18 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
             print '    None'
         else:
             for issue_level in sorted(total_counts, cmp=IssueLevel.cmp):
-                msg = '  {}: {}'.format(issue_level.name, total_counts[issue_level])
-                if issue_level in FAILURE_LEVELS:
-                    emblog.error(msg)
-                else:
-                    emblog.info(msg)
+                log = emblog.error if issue_level in FAILURE_LEVELS else emblog.info
+                log('  {}: {}'.format(issue_level.name, total_counts[issue_level]))
                 for issue_type, count in issue_type_counts[issue_level].iteritems():
-                    print '    {} - {}'.format(issue_type, count)
+                    log('    {} - {}'.format(issue_type, count))
                 print
+
+    emblog.error("ERRORS:\n")
+    for feature_issue in issue_layer.get_all_feature_sets():
+        point = feature_issue.point
+        for issue in feature_issue.get_issues():
+            if issue.level in FAILURE_LEVELS:
+                emblog.error('  {} - Coordinates: ({}, {})'.format(issue, point.y, point.x))
 
     failures = len(failed_routes) > 0
     for failure_level in FAILURE_LEVELS:

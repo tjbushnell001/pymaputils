@@ -7,11 +7,11 @@ import sys
 from maps.linting import route_linter
 from maps.utils import emblog
 
-# -------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------
 # Because this lint test is not running in a ROS environment, we can't rely on our ros params or package locations
 # for the map data.
 # TODO: Make sure to keep these file locations up to date!
-# -------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------
 
 BRAIN_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../..")
 MAP_DIR = os.path.join(BRAIN_ROOT, "perception/lane_map_server/maps/tiled_maps/usa")
