@@ -100,6 +100,9 @@ maps::createMapLayers(const std::vector<MapLayerType>& layer_types)
         const std::vector<std::string> map_files =
             file_utils::getFilesInDirectory(lane_annotations_dir);
         for (const std::string& filename : map_files) {
+          if (file_utils::getExtension(filename) != ".json")
+            continue;
+
           const std::string filename_stem = file_utils::getFilenameStem(filename);
           auto layer = std::make_shared<PolygonFeatureMapLayer>(
               MapLayerType::LANE_ANNOTATION, filename_stem, MapFrameType::GCS_NED, filename);
@@ -116,6 +119,9 @@ maps::createMapLayers(const std::vector<MapLayerType>& layer_types)
 
         // create a layer for each map file
         for (const std::string& filename : file_utils::getFilesInDirectory(free_space_dir)) {
+          if (file_utils::getExtension(filename) != ".json")
+            continue;
+
           const std::string filename_stem = file_utils::getFilenameStem(filename);
           if (filename_stem.empty())
             continue;
@@ -134,6 +140,9 @@ maps::createMapLayers(const std::vector<MapLayerType>& layer_types)
 
         // create a layer for each map file
         for (const std::string& filename : file_utils::getFilesInDirectory(radar_zones_dir)) {
+          if (file_utils::getExtension(filename) != ".json")
+            continue;
+
           const std::string filename_stem = file_utils::getFilenameStem(filename);
           if (filename_stem.empty())
             continue;
@@ -153,6 +162,9 @@ maps::createMapLayers(const std::vector<MapLayerType>& layer_types)
 
         // create a layer for each map file
         for (const std::string& filename : file_utils::getFilesInDirectory(map_reader_dir)) {
+          if (file_utils::getExtension(filename) != ".json")
+            continue;
+
           const std::string filename_stem = file_utils::getFilenameStem(filename);
           if (filename_stem.empty())
             continue;
