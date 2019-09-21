@@ -141,16 +141,17 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
                     log('    {} - {}'.format(issue_type, count))
                 print
 
-    emblog.error("ERRORS:\n")
-    for feature_issue in issue_layer.get_all_feature_sets():
-        point = feature_issue.point
-        for issue in feature_issue.get_issues():
-            if issue.level in FAILURE_LEVELS:
-                emblog.error('  {} - Coordinates: ({}, {})'.format(issue, point.y, point.x))
-
     failures = len(failed_routes) > 0
     for failure_level in FAILURE_LEVELS:
         if failure_level in total_counts and total_counts[failure_level] != 0:
             failures = True
+
+    if failures:
+        emblog.error("ERRORS:\n")
+        for feature_issue in issue_layer.get_all_feature_sets():
+            point = feature_issue.point
+            for issue in feature_issue.get_issues():
+                if issue.level in FAILURE_LEVELS:
+                    emblog.error('  {} - Coordinates: ({}, {})'.format(issue, point.y, point.x))
 
     return issue_layer, failures
