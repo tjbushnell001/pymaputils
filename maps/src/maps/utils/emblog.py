@@ -19,6 +19,12 @@ class Color(object):
     ENDC = '\033[0m'
 
 
+def set_ros(use_ros):
+    """ Use this to set the output to be ros out or std out. """
+    global USE_ROS
+    USE_ROS = use_ros
+
+
 def debug(msg, *args, **kwargs):
     if USE_ROS:
         rospy.logdebug(msg, args, kwargs)

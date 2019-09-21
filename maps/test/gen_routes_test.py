@@ -8,6 +8,7 @@ from maps.geojson_maps import GeoJsonTiledMapLayer
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
 from maps.utils import emblog
 from maps.utils import routing_utils
+emblog.set_ros(False)
 
 # ----------------------------------------------------------------------------------------------------------------
 # Because this test is not running in a ROS environment, we can't rely on our ros params or package locations

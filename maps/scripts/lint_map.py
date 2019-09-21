@@ -7,6 +7,7 @@ import rospkg
 
 from maps.linting import route_linter
 from maps.utils import emblog
+emblog.set_ros(False)
 
 parser = argparse.ArgumentParser("Lint all da lanes")
 parser.add_argument("--route_id", action='append', dest="route_ids", help="a list of routes to lint")

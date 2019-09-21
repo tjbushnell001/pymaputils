@@ -5,6 +5,7 @@ import sys
 
 from maps.linting import route_linter
 from maps.utils import emblog
+emblog.set_ros(False)
 
 # ----------------------------------------------------------------------------------------------------------------
 # Because this lint test is not running in a ROS environment, we can't rely on our ros params or package locations
