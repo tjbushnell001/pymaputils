@@ -3,7 +3,7 @@ import os
 import maps.routing
 
 from maps.linting import junction_linter
-from maps.geojson_maps import GeoJsonTiledMapLayer
+from maps.geojson_tiled_map import GeoJsonTiledMapLayer
 from maps.issues import IssueLayer, IssueLevel, Issue
 from maps.issue_types import IssueType
 from maps.lane_maps import ConvertedLaneMapLayer

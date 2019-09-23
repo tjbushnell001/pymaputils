@@ -3,7 +3,6 @@ import os
 import rospy
 
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
-from maps.geojson_maps import GeoJsonTiledMapLayer
 from maps.utils import routing_utils, routing_msg_utils
 import maps.routing
 from perception_msgs.msg import MapTrip
