@@ -191,6 +191,6 @@ def parse_geojson_issue(geojson_issue):
         level=IssueLevel[geojson_issue.properties['level']],
         msg=geojson_issue.properties['msg']
     )
-    ref = geojson_utils.hashify(geojson_issue.ref['feature_ref'])
+    ref = ref_utils.hashify(geojson_issue.ref['feature_ref'])
     point = geojson_issue.geometry['coordinates']
     return issue, ref, point
