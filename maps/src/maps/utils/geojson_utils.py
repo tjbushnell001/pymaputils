@@ -154,4 +154,5 @@ def connector_ref_from_junction_ref(junction_ref):
     :param junction_ref: the ref object of the junction within a connector
     :return:
     """
-    return hashify({'id': junction_ref['connector_id'], 'tile_id': junction_ref['tile_id'], 'type': 'connector_ref'})
+    return ref_utils.hashify(
+        {'id': junction_ref['connector_id'], 'tile_id': junction_ref['tile_id'], 'type': 'connector_ref'})
