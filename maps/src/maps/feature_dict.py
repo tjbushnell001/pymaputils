@@ -12,28 +12,20 @@ class FeatureDict(object):
     """
 
     # -----------------------------
-    # Constructors
+    # Constructor
     # -----------------------------
 
     def __init__(self, collection):
         """ Initializes a feature dict from a geojson FeatureCollection object. """
         self.collection = collection
         self.feature_type_map = {}
-        self._hash_refs()
-
-    @classmethod
-    def from_file(cls, file_path):
-        """
-        Load a geojson file adding our custom ref parsing logic.
-
-        :param file_path: the full file path of the file to load
-        :return: a FeatureDict object with fully index-able refs
-        """
-        if not os.path.exists(file_path):
-            return None
-        with open(file_path, 'r') as f:
-            collection = geojson.load(f)
-        return cls(collection)
+        for f in self.collection.features:
+            if f.feature_type not in self.feature_type_map:
+                self.feature_type_map[f.feature_type] = OrderedDict()
+            f.ref = ref_utils.hashify(f.ref)
+            # We hashify the properties as many features have nested refs
+            f.properties = ref_utils.hashify(f.properties)
+            self.feature_type_map[f.feature_type][f.ref] = f
 
     # -----------------------------
     # Feature Accessor Methods
@@ -69,19 +61,21 @@ class FeatureDict(object):
                 if len(self.feature_type_map[feature_type]) == 0:
                     del self.feature_type_map[feature_type]
 
-    def write(self, file_path):
-        with open(file_path, 'w') as f:
-            geojson.dump(self.collection, f, sort_keys=True, separators=(',', ':'), indent=1)
 
-    # -----------------------------
-    # Helper Methods
-    # -----------------------------
+def load_from_file(file_path):
+    """
+    Load a geojson file adding our custom ref parsing logic.
 
-    def _hash_refs(self):
-        for f in self.collection.features:
-            if f.feature_type not in self.feature_type_map:
-                self.feature_type_map[f.feature_type] = OrderedDict()
-            f.ref = ref_utils.hashify(f.ref)
-            # We hashify the properties as many features have nested refs
-            f.properties = ref_utils.hashify(f.properties)
-            self.feature_type_map[f.feature_type][f.ref] = f
+    :param file_path: the full file path of the file to load
+    :return: a FeatureDict object with fully index-able refs
+    """
+    if not os.path.exists(file_path):
+        return None
+    with open(file_path, 'r') as f:
+        collection = geojson.load(f)
+    return FeatureDict(collection)
+
+
+def write_to_file(file_path, feature_dict):
+    with open(file_path, 'w') as f:
+        geojson.dump(feature_dict.collection, f, sort_keys=True, separators=(',', ':'), indent=1)

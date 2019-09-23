@@ -1,5 +1,5 @@
+from maps import feature_dict
 from maps.tiled_map_layer import JsonTiledMapLayer
-from maps.feature_dict import FeatureDict
 
 
 class GeoJsonTiledMapLayer(JsonTiledMapLayer):
@@ -21,7 +21,7 @@ class GeoJsonTiledMapLayer(JsonTiledMapLayer):
         :param tile_id: int id of the tile (used to name / fetch json tile files)
         """
         fn = self.get_tile_filename(tile_id)
-        return FeatureDict.from_file(fn)
+        return feature_dict.load_from_file(fn)
 
     def save_tile(self, tile_id, tile):
         """
@@ -32,7 +32,7 @@ class GeoJsonTiledMapLayer(JsonTiledMapLayer):
         if tile is None:
             return
         fn = self.get_tile_filename(tile_id)
-        tile.write(fn)
+        feature_dict.write_to_file(fn, tile)
         print "Saved tile: {}".format(fn)
 
     def get_feature(self, ref):

@@ -45,7 +45,7 @@ if __name__ == '__main__':
             features.append(route_feature)
         features.extend(all_waypoints)
 
-        # TODO: convert this into a TiledMapLayer object
+        # TODO: convert this into a FeatureDict object
         geojson_utils.write_geojson_tile(route_id, args.route_dir,
                                          geojson_utils.create_feature_collection('route', route_id, features))
         print 'Wrote', os.path.join(args.route_dir, '{}.json'.format(route_id))
