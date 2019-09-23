@@ -16,7 +16,7 @@ class FeatureDict(object):
     # -----------------------------
 
     def __init__(self, collection):
-        """ Initializes a feature dict from a geojson FeatureCollection object. """
+        """ Initializes a feature dict from a geojson FeatureCollection object. g"""
         self.collection = collection
         self.feature_type_map = {}
         for f in self.collection.features:
