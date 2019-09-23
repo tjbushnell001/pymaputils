@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 """ Utils around constructing ROS Routing messages. Split out from routing_utils to remove the dependency on rospy."""
 import rospy
 

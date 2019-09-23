@@ -103,7 +103,7 @@ def heuristic_cost_estimate(map_tiles, src_id, dest_id):
     src_seg_end = src_seg.properties['right_boundary'][-1][:2]
     dest_seg_end = dest_seg.properties['right_boundary'][-1][:2]
 
-    dist = geopy.distance.distance(reversed(src_seg_end), reversed(dest_seg_end)).meters
+    dist = geopy.distance.distance(coord_to_lat_lng(src_seg_end), coord_to_lat_lng(dest_seg_end)).meters
 
     # estimate cost in seconds, assuming freeway speeds
     # NOTE: it's desirable to under estimate cost in the heuristic
