@@ -37,6 +37,29 @@ def trip_to_msg(routes, all_waypoints):
     msg.header.stamp = rospy.Time.now()
     return msg
 
+def trip_to_geometry(road_graph, routes):
+    """
+    Convert a set of routes to a polygon surrounding the entire route.
+
+    :param road graph map
+    :param routes: the set of routes
+    :return: (lat, lon) points wrapping the routes
+    """
+
+    left_path = []
+    right_path = []
+
+    for route,_ in routes:
+        for road_ref in route:
+            road_seg = road_graph.get_feature(road_ref)
+            assert road_seg is not None
+
+            left_path.extend(road_seg.properties['left_boundary'])
+            right_path.extend(road_seg.properties['right_boundary'])
+
+    right_path.reverse()
+    points = left_path + right_path
+    return points
 
 def waypoint_to_msg(wp):
     """

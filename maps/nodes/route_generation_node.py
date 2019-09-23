@@ -7,6 +7,8 @@ from maps.utils import routing_utils
 import maps.routing
 from perception_msgs.msg import MapTrip
 from std_msgs.msg import String
+from basic_msgs.msg import Polygon64
+from geometry_msgs.msg import Point
 import maps.road_graph
 from diagnostics_utils.node_health_publisher import NodeHealthPublisher
 
@@ -23,6 +25,8 @@ class RouteGenerationNode(object):
                                           maps.road_graph.ROAD_GRAPH_TILE_LEVEL)
 
         self.route_pub = rospy.Publisher('/route', MapTrip, queue_size=1, latch=True)
+
+        self.route_path_pub = rospy.Publisher('/route/path', Polygon64, queue_size=1, latch=True)
 
         self.diagnostics = NodeHealthPublisher('route_generator')
 
@@ -66,6 +70,10 @@ class RouteGenerationNode(object):
             route_msg = routing_utils.trip_to_msg(routes, all_waypoints)
             route_msg.route_id = route_id.data
             self.route_pub.publish(route_msg)
+
+            # visualize route in simian
+            points = routing_utils.trip_to_geometry(self.road_graph, routes)
+            self.route_path_pub.publish(points=[Point(x=x, y=y) for x,y in points])
 
         # update diagnostics
         self.diagnostics.update_status('Route', route_ok,
