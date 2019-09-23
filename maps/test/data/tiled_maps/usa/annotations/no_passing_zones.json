@@ -4,7 +4,7 @@
     {
       "type": "Feature",
       "properties": {
-        "route": "ontario-texas"
+        "route": "ontario_texass"
       },
       "geometry": {
         "type": "Polygon",
@@ -78,7 +78,7 @@
     {
       "type": "Feature",
       "properties": {
-        "route": "ontario-texas"
+        "route": "ontario_texass"
       },
       "geometry": {
         "type": "Polygon",
@@ -111,7 +111,7 @@
     {
       "type": "Feature",
       "properties": {
-        "route": "ontario-texas"
+        "route": "ontario_texass"
       },
       "geometry": {
         "type": "Polygon",
@@ -144,7 +144,7 @@
     {
       "type": "Feature",
       "properties": {
-        "route": "ontario-texas"
+        "route": "ontario_texass"
       },
       "geometry": {
         "type": "Polygon",
@@ -177,7 +177,7 @@
     {
       "type": "Feature",
       "properties": {
-        "route": "texas-ontario"
+        "route": "texas_ontario"
       },
       "geometry": {
         "type": "Polygon",
@@ -210,7 +210,7 @@
     {
       "type": "Feature",
       "properties": {
-        "route": "texas-ontario"
+        "route": "texas_ontario"
       },
       "geometry": {
         "type": "Polygon",
@@ -243,7 +243,7 @@
     {
       "type": "Feature",
       "properties": {
-        "route": "texas-ontario"
+        "route": "texas_ontario"
       },
       "geometry": {
         "type": "Polygon",
@@ -276,7 +276,7 @@
     {
       "type": "Feature",
       "properties": {
-        "route": "texas-ontario"
+        "route": "texas_ontario"
       },
       "geometry": {
         "type": "Polygon",
@@ -309,7 +309,7 @@
     {
       "type": "Feature",
       "properties": {
-        "route": "texas-ontario"
+        "route": "texas_ontario"
       },
       "geometry": {
         "type": "Polygon",

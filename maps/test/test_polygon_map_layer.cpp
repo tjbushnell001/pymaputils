@@ -59,7 +59,7 @@ TEST(MapTileLoader, noOvertakeLaneAnnotations)
 
   auto east_zone = findFirstMatch(BoostPoint(33.696922692957685, -116.09664916992189), features);
   EXPECT_NE(east_zone, nullptr);
-  EXPECT_EQ(east_zone->properties["route"], "ontario-texas");
+  EXPECT_EQ(east_zone->properties["route"], "ontario_texass");
 }
 
 int main(int argc, char** argv)
