@@ -74,7 +74,7 @@ EXTRA_FIELDS = {'last_edited', 'ignore_issues', 'note'}
 
 def convert_geojson_to_tile(geojson_tile):
     """
-    Converts a GeoJSON formatted feature group tile into a here maps json formatted tile
+    Converts a GeoJSON formatted FeatureDict tile into a here maps json formatted tile
 
     :param geojson_tile: the GeoJSON FeatureDict object
     :return: json object
@@ -308,8 +308,25 @@ def convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone):
 
     lane_group_ref = ref_utils.create_lane_group_ref(tile_id, raw_lg['id'])
 
-    left_boundary = list(raw_lg['left_boundary'])
-    right_boundary = list(raw_lg['right_boundary'])
+    left_boundary = None
+    right_boundary = None
+
+    # find left most boundary
+    min_id = np.inf
+    for boundary in raw_lg['boundaries']:
+        if boundary['id'] < min_id:
+            left_boundary = list(boundary['pts'])
+            min_id = boundary['id']
+
+    # find right most boundary
+    max_id = -1
+    for boundary in raw_lg['boundaries']:
+        if boundary['id'] > max_id:
+            right_boundary = list(boundary['pts'])
+            max_id = boundary['id']
+
+    if left_boundary is None or right_boundary is None:
+        raise ValueError("No valid lane group boundaries found!")
 
     dot = determine_direction_of_travel(raw_lg)
 

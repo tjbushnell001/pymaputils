@@ -7,7 +7,6 @@ import maps
 import maps.road_graph
 import os
 import re
-import time
 
 from flask_cors import cross_origin
 from maps.feature_dict import FeatureDict
@@ -195,6 +194,7 @@ def update_tile(tile_id):
     print "Saving tile [{}], please wait...".format(tile_id)
 
     tile = FeatureDict(geojson.loads(flask.request.data))
+
     lane_map.save_tile(tile_id, tile)
 
     print "Rebuilding road tiles, please wait..."
