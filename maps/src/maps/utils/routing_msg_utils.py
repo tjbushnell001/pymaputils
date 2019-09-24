@@ -68,7 +68,7 @@ def waypoint_to_msg(wp):
     coordinates = wp.geometry['coordinates']
     msg = MapWaypoint(
         id=wp.ref,
-        waypoint_type=WAYPOINT_TYPES_MAP[WaypointType[wp.properties['waypoint_type']]],
+        waypoint_type=WAYPOINT_TYPES_MAP[WaypointType[wp.properties['waypoint_type'].upper()]],
         source=wp.properties['source'])
 
     # position as a gps fix
