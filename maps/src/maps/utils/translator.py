@@ -326,7 +326,7 @@ def convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone):
             max_id = boundary['id']
 
     if left_boundary is None or right_boundary is None:
-        raise ValueError("No valid lane group boundaries found!")
+        raise ValueError("No valid lane group boundaries found! Ref: {}".format(lane_group_ref))
 
     dot = determine_direction_of_travel(raw_lg)
 

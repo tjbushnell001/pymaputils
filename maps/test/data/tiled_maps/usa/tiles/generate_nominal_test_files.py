@@ -31,6 +31,7 @@ def create_lane_group(lg_id, is_ramp=False):
     return {
         "id": lg_id,
         "is_ramp": is_ramp,
+        "boundaries": [{"id": 1, "pts": [[0, 0]]}],
         "lanes": [],
         "type": "lane_group"
     }
