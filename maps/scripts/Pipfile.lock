@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "aac9265da94bd4cd3de1b660df79dc91abec019f6b56f05a0517f5fa2d3b96dd"
+            "sha256": "22b73b343e22639db71dec7e7451fc8c6f2f6a5d0d1d23c64fd88703d1ce3059"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -48,9 +48,10 @@
         },
         "geographiclib": {
             "hashes": [
-                "sha256:635da648fce80a57b81b28875d103dacf7deb12a3f5f7387ba7d39c51e096533"
+                "sha256:12bd46ee7ec25b291ea139b17aa991e7ef373e21abd053949b75c0e9ca55c632",
+                "sha256:51cfa698e7183792bce27d8fb63ac8e83689cd8170a730bf35e1a5c5bf8849b9"
             ],
-            "version": "==1.49"
+            "version": "==1.50"
         },
         "geojson": {
             "hashes": [
