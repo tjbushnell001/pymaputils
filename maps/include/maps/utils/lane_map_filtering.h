@@ -55,11 +55,11 @@ std::unordered_set<lane_map::LaneGroupRef> traverseLaneGroups(
  * @param[in] map Lane sub map.
  * @param[in] initial_ref Starting LaneRef.
  * @param[in] follower Follower function to get next lane.
- * @param[in] limit Maximum number of steps to traverse.
+ * @param[in] limit Maximum number of steps to traverse.  Use 0 for no limit.
  * @returns A vector of lane refs.
  **/
 std::vector<lane_map::LaneRef> followLanes(
-    const maps::LaneSubMap& map, const lane_map::LaneRef& initial_ref,
+    const lane_map::LaneRef& initial_ref,
     const LaneFollower& follower, size_t max_distance);
 
 }; // namespace lane_map_utils
