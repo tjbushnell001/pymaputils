@@ -316,8 +316,9 @@ def convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone):
 
     boundaries = {b['id'] : b for b in raw_lg['boundaries']}
 
-    left_boundary = boundaries[left_lane['left_boundary_id']]['pts']
-    right_boundary = boundaries[right_lane['right_boundary_id']]['pts']
+    # NOTE: make sure to make new lists here, otherwise they get reversed twice in correct_direction_of_travel()
+    left_boundary = list(boundaries[left_lane['left_boundary_id']]['pts'])
+    right_boundary = list(boundaries[right_lane['right_boundary_id']]['pts'])
 
     dot = determine_direction_of_travel(raw_lg)
 
