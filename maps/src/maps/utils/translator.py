@@ -308,8 +308,17 @@ def convert_lane_group_to_geojson(raw_lg, tile_id, utm_zone):
 
     lane_group_ref = ref_utils.create_lane_group_ref(tile_id, raw_lg['id'])
 
-    left_boundary = list(raw_lg['left_boundary'])
-    right_boundary = list(raw_lg['right_boundary'])
+    lanes = raw_lg['lanes']
+    assert len(lanes) > 0
+
+    left_lane = min(lanes, key=lambda l: l['id'])
+    right_lane = max(lanes, key=lambda l: l['id'])
+
+    boundaries = {b['id'] : b for b in raw_lg['boundaries']}
+
+    # NOTE: make sure to make new lists here, otherwise they get reversed twice in correct_direction_of_travel()
+    left_boundary = list(boundaries[left_lane['left_boundary_id']]['pts'])
+    right_boundary = list(boundaries[right_lane['right_boundary_id']]['pts'])
 
     dot = determine_direction_of_travel(raw_lg)
 

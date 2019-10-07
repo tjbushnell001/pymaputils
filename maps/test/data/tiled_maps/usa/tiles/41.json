@@ -37,7 +37,13 @@
     "lane_groups": [
         {
             "id": 1, 
-            "is_ramp": false, 
+            "is_ramp": false,
+            "boundaries": [
+                {
+                    "id": 1,
+                    "pts": [[0,0]]
+                }
+            ],
             "lanes": [
                 {
                     "id": 1, 
@@ -54,7 +60,13 @@
         }, 
         {
             "id": 100, 
-            "is_ramp": true, 
+            "is_ramp": true,
+            "boundaries": [
+                {
+                    "id": 1,
+                    "pts": [[0,0]]
+                }
+            ],
             "lanes": [
                 {
                     "id": 1, 
