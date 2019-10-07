@@ -11,10 +11,22 @@ from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
 from maps.utils import emblog
 from maps.utils import routing_utils
 
-FAILURE_LEVELS = {IssueLevel.WARN, IssueLevel.ERROR}
+
+def lint_lane_group(lane_group, lane_map, issue_layer, issue_types):
+    if len(lane_group.properties['lane_segment_refs']) == 0:
+        if IssueType.NO_LANES_IN_LANE_GROUP in issue_types:
+            issue_layer.add_issue(lane_group, Issue(IssueType.NO_LANES_IN_LANE_GROUP.name))
+
+    for lane_ref in lane_group.properties['lane_segment_refs']:
+        lane = lane_map.get_feature(lane_ref)
+        for key in ('left_boundary_ref', 'right_boundary_ref'):
+            boundary_ref = lane.properties[key]
+            boundary = lane_map.get_feature(boundary_ref)
+            if boundary is None and IssueType.MISSING_BOUNDARY in issue_types:
+                issue_layer.add_issue(lane, Issue(IssueType.MISSING_BOUNDARY.name, msg=str(boundary_ref)))
 
 
-def lint_route(route, route_id, lane_map, road_map, issue_layer, issue_types=None):
+def lint_route(route, route_id, lane_map, road_map, issue_layer, issue_types):
     junction_set = set()
 
     print "Getting LaneGroups in route: {}".format(route_id)
@@ -22,6 +34,9 @@ def lint_route(route, route_id, lane_map, road_map, issue_layer, issue_types=Non
     print "Linting lane groups..."
 
     for lane_group in route_lane_groups:
+        # lint the lane group
+        lint_lane_group(lane_group, lane_map, issue_layer, issue_types)
+
         lane_tile = lane_map.get_tile(lane_group['ref']['tile_id'])
         for lane_segment_ref in lane_group.properties['lane_segment_refs']:
             lane = lane_tile.get_features('lane')[lane_segment_ref]
@@ -94,7 +109,7 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
         for level in sorted(curr_counts.keys(), cmp=IssueLevel.cmp):
             curr_count = curr_counts[level] - prev_counts.get(level, 0)
             if curr_count > 0:
-                if level in FAILURE_LEVELS:
+                if level == IssueLevel.ERROR:
                     emblog.error('  {}: {}'.format(level.name, curr_count))
                     failed = True
                 else:
@@ -135,23 +150,22 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
             print '    None'
         else:
             for issue_level in sorted(total_counts, cmp=IssueLevel.cmp):
-                log = emblog.error if issue_level in FAILURE_LEVELS else emblog.info
+                log = emblog.error if issue_level == IssueLevel.ERROR else emblog.info
                 log('  {}: {}'.format(issue_level.name, total_counts[issue_level]))
                 for issue_type, count in issue_type_counts[issue_level].iteritems():
                     log('    {} - {}'.format(issue_type, count))
                 print
 
     failures = len(failed_routes) > 0
-    for failure_level in FAILURE_LEVELS:
-        if failure_level in total_counts and total_counts[failure_level] != 0:
-            failures = True
+    if total_counts.get(IssueLevel.ERROR, 0) != 0:
+        failures = True
 
     if failures:
         emblog.error("ERRORS:\n")
         for feature_issue in issue_layer.get_all_feature_sets():
             point = feature_issue.point
             for issue in feature_issue.get_issues():
-                if issue.level in FAILURE_LEVELS:
+                if issue.level == IssueLevel.ERROR:
                     emblog.error('  {} - Coordinates: ({}, {})'.format(issue, point.y, point.x))
 
     return issue_layer, failures
