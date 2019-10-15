@@ -34,22 +34,12 @@
             "lanes": [
                 {
                     "id": 1,
+                    "left_boundary_id": 1,
+                    "right_boundary_id": 1,
                     "lane_transition_type": "UNKNOWN",
                     "type": "lane"
                 }
             ],
-            "type": "lane_group"
-        },
-        {
-            "id": 100,
-            "is_ramp": false,
-            "boundaries": [
-                {
-                    "id": 1,
-                    "pts": [[0,0]]
-                }
-            ],
-            "lanes": [],
             "type": "lane_group"
         }
     ],

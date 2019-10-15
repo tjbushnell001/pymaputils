@@ -46,7 +46,9 @@
             ],
             "lanes": [
                 {
-                    "id": 1, 
+                    "id": 1,
+                    "left_boundary_id": 1,
+                    "right_boundary_id": 1,
                     "lane_transition_type": "UNKNOWN", 
                     "type": "lane"
                 }
@@ -64,7 +66,9 @@
             ],
             "lanes": [
                 {
-                    "id": 1, 
+                    "id": 1,
+                    "left_boundary_id": 1,
+                    "right_boundary_id": 1,
                     "lane_transition_type": "UNKNOWN", 
                     "type": "lane"
                 }
@@ -83,6 +87,8 @@
             "lanes": [
                 {
                     "id": 1,
+                    "left_boundary_id": 1,
+                    "right_boundary_id": 1,
                     "lane_transition_type": "MERGE",
                     "type": "lane"
                 }

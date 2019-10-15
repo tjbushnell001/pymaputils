@@ -42,46 +42,64 @@
     "id": 28, 
     "lane_groups": [
         {
-            "id": 1, 
-            "is_ramp": false,
             "boundaries": [
                 {
-                    "id": 1,
-                    "pts": [[0,0]]
+                    "id": 1, 
+                    "pts": [
+                        [
+                            0, 
+                            0
+                        ]
+                    ]
                 }
-            ],
+            ], 
+            "id": 1, 
+            "is_ramp": false, 
             "lanes": [
                 {
                     "id": 1, 
                     "lane_transition_type": "UNKNOWN", 
+                    "left_boundary_id": 1, 
+                    "right_boundary_id": 1, 
                     "type": "lane"
                 }, 
                 {
                     "id": 2, 
                     "lane_transition_type": "SPLIT", 
+                    "left_boundary_id": 1, 
+                    "right_boundary_id": 1, 
                     "type": "lane"
                 }
             ], 
             "type": "lane_group"
         }, 
         {
-            "id": 100, 
-            "is_ramp": false,
             "boundaries": [
                 {
-                    "id": 1,
-                    "pts": [[0,0]]
+                    "id": 1, 
+                    "pts": [
+                        [
+                            0, 
+                            0
+                        ]
+                    ]
                 }
-            ],
+            ], 
+            "id": 100, 
+            "is_ramp": false, 
             "lanes": [
                 {
                     "id": 1, 
                     "lane_transition_type": "UNKNOWN", 
+                    "left_boundary_id": 1, 
+                    "right_boundary_id": 1, 
                     "type": "lane"
                 }, 
                 {
                     "id": 2, 
                     "lane_transition_type": "MERGE", 
+                    "left_boundary_id": 1, 
+                    "right_boundary_id": 1, 
                     "type": "lane"
                 }
             ], 

@@ -49,6 +49,8 @@ def create_lane_ref(l_id, lg_id, tile_id):
 def create_lane(l_id, transiton_type):
     return {
         "id": l_id,
+        "left_boundary_id": 1,
+        "right_boundary_id": 1,
         "lane_transition_type": transiton_type,
         "type": "lane"
     }
