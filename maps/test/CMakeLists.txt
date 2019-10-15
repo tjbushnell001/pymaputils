@@ -6,5 +6,5 @@ target_link_libraries(test_map_tile_loader ${catkin_LIBRARIES} maps)
 add_rostest_gtest(test_polygon_map_layer test_polygon_map_layer.test test_polygon_map_layer.cpp)
 target_link_libraries(test_polygon_map_layer ${catkin_LIBRARIES} maps)
 
-#add_rostest_gtest(test_nominal_lane_function test_nominal_lane_function.test test_nominal_lane_function.cpp)
-#target_link_libraries(test_nominal_lane_function ${catkin_LIBRARIES} maps)
+add_rostest_gtest(test_nominal_lane_function test_nominal_lane_function.test test_nominal_lane_function.cpp)
+target_link_libraries(test_nominal_lane_function ${catkin_LIBRARIES} maps)
