@@ -8,6 +8,7 @@ from maps.utils import ref_utils
 from maps.utils import tile_utils
 from shapely.geometry import Point
 from maps.utils import lru_cache
+from scipy.spatial import cKDTree
 
 #TODO rename or use an includable class
 class Entry:
@@ -70,12 +71,13 @@ class Lane:
                   }
         return result
 
+
 # finds the lane that a given lat, lng point is in on a given title
 # assumes that only one lane falls on a tile
 def find_lane(lat, lng, tile):
     lane_features = tile.get_features('lane')
-
     boundary_features = tile.get_features('lane_boundary')
+
     for lane in lane_features.itervalues():
         if lane.properties['is_emergency_lane']:
             continue
@@ -83,12 +85,174 @@ def find_lane(lat, lng, tile):
         left_line_ref = lane.properties["left_boundary_ref"]
         right_line_ref = lane.properties["right_boundary_ref"]
 
+        # CHANGE TO BE BETWEEN LEFT AND RIGHT LINES (SEE
+        # std::unordered_set<lane_map::LaneRef> associateLanes(const maps::LaneSubMap& map,
+        #                                                      const geometry_msgs::Point& object))
         left_boundary = boundary_features[left_line_ref].geometry["coordinates"]
         right_boundary = boundary_features[right_line_ref].geometry["coordinates"]
         poly = geojson_utils.boundaries_to_poly(left_boundary, right_boundary)
         if poly.contains(Point(lng, lat)):
             return lane
     return None
+
+
+def find_closest_lane(lat, lng,  lane_maps, tile_level, cache):
+    """
+    Using a KD-tree find the lane with center closest to lat,lng heading
+    :param lat:
+    :param lng:
+    :param lane_maps:
+    :param tile_level:
+    :param cache:
+    :return:
+    """
+    t0_setup = time.time()
+    current_tile_id = tile_utils.lat_lng_to_tile_id(lat, lng, tile_level)
+    tile_ids = tile_utils.adjacent_tile_ids(current_tile_id, tile_level, include_self=True)
+
+    lane_line_indices = []
+    lane_indices = []
+    lane_pts = []
+    lane_index = 0
+    lane_line_index = 0
+    lane_index_to_lane = {}
+
+    get_lane_data_time = 0.0
+    to_np_lists_time = 0.0
+    get_feature_time = 0.0
+    cache_lookup_time = 0.0
+
+    num_valid_tiles = 0
+    for tile_id in tile_ids:
+
+        t0_cache_lookup = time.time()
+        # THIS IS THE SLOW SECTION ( lane_maps.get_tile() )
+        cached_tile = cache.get(tile_id)
+        if cached_tile is None:
+            tile = lane_maps.get_tile(tile_id)
+            if tile is None:
+                continue
+            cache.set(tile_id, tile)
+        else:
+            tile = cached_tile
+        num_valid_tiles += 1
+        cache_lookup_time += (time.time()-t0_cache_lookup)*1000
+
+        # prepare data for lookup -- each lane pnt has a mapping back to which lane it's from
+        t0_get_feature = time.time()
+        lane_features = tile.get_features('lane')
+        boundary_features = tile.get_features('lane_boundary')
+        get_feature_time += (time.time()-t0_get_feature)*1000
+
+        for lane in lane_features.itervalues():
+            if lane.properties['is_emergency_lane']:
+                continue
+
+            t0_lane_pts = time.time()
+            left_line_ref = lane.properties["left_boundary_ref"]
+            right_line_ref = lane.properties["right_boundary_ref"]
+            left_boundary = boundary_features[left_line_ref].geometry["coordinates"]
+            right_boundary = boundary_features[right_line_ref].geometry["coordinates"]
+
+            left_pts = np.array(left_boundary)
+            right_pts = np.array(right_boundary)
+
+            t = (time.time()-t0_lane_pts)*1000
+            get_lane_data_time += t
+
+            t0_np_lists = time.time()
+            lane_indices.append(lane_index * np.ones(np.size(left_boundary, 0), dtype=int))
+            lane_line_indices.append(lane_line_index * np.ones(np.size(left_boundary, 0), dtype=int))
+            lane_pts.append(left_pts)
+            lane_index_to_lane[lane_index] = (lane, tile)
+            lane_line_index += 1
+
+            lane_indices.append(lane_index * np.ones(np.size(right_boundary, 0), dtype=int))
+            lane_line_indices.append(lane_line_index * np.ones(np.size(right_boundary, 0), dtype=int))
+            lane_pts.append(right_pts)
+            lane_index_to_lane[lane_index] = (lane, tile)
+            lane_line_index += 1
+
+            lane_index += 1
+            t = (time.time()-t0_np_lists)*1000
+            to_np_lists_time += t
+
+    t0_concat = time.time()
+    lane_indices = np.concatenate(lane_indices)
+    lane_line_indices = np.concatenate(lane_line_indices)
+    lane_pts = np.concatenate(lane_pts)
+    t_concat = (time.time()-t0_concat)*1000
+    print "cache_lookup_time = ", cache_lookup_time, " ms"
+    print "get_feature_time = ", get_feature_time, " ms"
+    print "get_lane_data_time = ", get_lane_data_time, " ms"
+    print "to_np_lists_time = ", to_np_lists_time, " ms"
+    print "t_concat = ", t_concat, " ms"
+    print "data setup time = ", time.time()-t0_setup, " s"
+
+    assert num_valid_tiles > 0
+    print "num_valid_tiles = ", num_valid_tiles
+    kd_tree = cKDTree(lane_pts)
+
+    # Do query
+    earth_circumference = 40075000.0  # 40,075 km
+    search_radius_degrees = 100.0/earth_circumference * 360
+    found_indices = np.array(kd_tree.query_ball_point(np.array([lng, lat]), search_radius_degrees))
+
+    # print "r = ", search_radius_degrees
+    # print "found_indices = ", found_indices
+
+    # d, i = kd_tree.query(np.array([lng, lat]))
+    # print "d = ", d, " deg ~ ", d/360.0 * earth_circumference, "m"
+    # print "query: ", lng, lat, " found: ", lane_pts[i]
+    # utm_q = np.array(utm.from_latlon(lat, lng)[:2])
+    # utm_f = np.array(utm.from_latlon(lane_pts[i][1], lane_pts[i][0])[:2])
+    # print "dist = ", np.linalg.norm(utm_q-utm_f)
+
+    if len(found_indices) == 0:
+        return None, None
+
+    # group by lane_line
+    found_lane_lines = lane_line_indices[found_indices]
+    found_lanes = lane_indices[found_indices]
+
+    sorting = np.argsort(found_lane_lines)
+    found_lane_lines = found_lane_lines[sorting]
+    found_lanes = found_lanes[sorting]
+    found_pts = (lane_pts[found_indices])[sorting]
+
+    # go through lane lines in order, calculate distances to left and right
+    distances_for_lane_index = {}
+
+    unique_lane_lines = np.unique(found_lane_lines)
+    crr = 0
+    for i in range(0, len(unique_lane_lines)):
+        if i+1 < len(unique_lane_lines):
+            nxt = np.searchsorted(found_lane_lines, unique_lane_lines[i+1])
+            curr_lane_line_pts = found_pts[crr:nxt]
+        else:
+            nxt = -1
+            curr_lane_line_pts = found_pts[crr:]
+
+        lane_index = found_lanes[crr]
+
+        dx = curr_lane_line_pts[:, 0] - lng
+        dy = curr_lane_line_pts[:, 1] - lat
+
+        dist = np.min(dx**2 + dy**2)
+        if lane_index not in distances_for_lane_index:
+            distances_for_lane_index[lane_index] = []
+        distances_for_lane_index[lane_index].append(dist)
+
+        crr = nxt
+
+    best_lane_dist = np.inf
+    best_lane_index = None
+    for k, v in distances_for_lane_index.iteritems():
+        if len(v) == 2 and np.sum(v) < best_lane_dist:
+            best_lane_dist = np.sum(v)
+            best_lane_index = k
+
+    return lane_index_to_lane[best_lane_index]
 
 
 def find_dist_to_end(points, start_lat, start_lng):
@@ -130,7 +294,7 @@ def get_lane_from_lane_ref_in_gcs_frame(lane_key_list, lat, lng, low_x, high_x, 
         return Lane()
     for key_index in xrange(len(lane_key_list)):
         key = lane_key_list[key_index]
-        tile_id =  key["tile_id"]
+        tile_id = key["tile_id"]
         cached_tile = cache.get(tile_id)
         if cached_tile is None:
             tile = lane_maps.get_tile(tile_id)
@@ -148,7 +312,7 @@ def get_lane_from_lane_ref_in_gcs_frame(lane_key_list, lat, lng, low_x, high_x, 
     if highway_num == -1:
         print "no candidate found for map lane"
         return Lane()
-    tile_id =  lane_key_list[highway_num]["tile_id"]
+    tile_id = lane_key_list[highway_num]["tile_id"]
     cached_tile = cache.get(tile_id)
     if cached_tile is None:
         tile = lane_maps.get_tile(tile_id)
@@ -198,7 +362,6 @@ def get_lane_from_lane_ref_in_gcs_frame(lane_key_list, lat, lng, low_x, high_x, 
             result = result + get_lane_from_lane_ref_in_gcs_frame(outflow_key, location[1], location[0], 0.0,
                                                                   new_high_x, lane_maps, cache)
 
-
     tile_prev = cache.get(next_junction['tile_id'])
     if tile_prev is None:
         tile_prev = lane_maps.get_tile(next_junction['tile_id'])
@@ -220,17 +383,33 @@ def get_lane_from_lane_ref_in_gcs_frame(lane_key_list, lat, lng, low_x, high_x, 
 
 
 def get_map_lane_lines_for_point_in_lane_gcs_frame(lat, lng, low_x, high_x, lane_maps, tile_level, cache):
-    tile_id = tile_utils.lat_lng_to_tile_id(lat, lng, tile_level)
-    cached_tile = cache.get(tile_id)
-    if cached_tile is None:
-        tile = lane_maps.get_tile(tile_id)
-        if tile is None:
-            print "have a bad map reference"
-            assert(False)
-        cache.set(tile_id, tile)
+    # When we switch tiles, lanes that start in one tile might not go over to the next one.
+    # We need to query lanes from adjacent tiles also...
+
+    # tile_id = tile_utils.lat_lng_to_tile_id(lat, lng, tile_level)
+    # cached_tile = cache.get(tile_id)
+    # if cached_tile is None:
+    #     tile = lane_maps.get_tile(tile_id)
+    #     if tile is None:
+    #         print "have a bad map reference"
+    #         assert False
+    #     cache.set(tile_id, tile)
+    # else:
+    #     tile = cached_tile
+
+    # current_lane = find_lane(lat, lng, tile)
+    current_lane, tile = find_closest_lane(lat, lng, lane_maps, tile_level, cache)
+    # alt_lane = find_closest_lane(lat, lng, lane_maps, tile_level, cache)
+    print "tile.id = ", tile.id
+    if current_lane is not None:
+        print "current_lane = ", current_lane["ref"]
     else:
-        tile = cached_tile
-    current_lane = find_lane(lat, lng, tile)
+        print "current_lane = None"
+    # if alt_lane is not None:
+    #     print "alt_lane = ", alt_lane["ref"]
+    # else:
+    #     print "alt_lane = None"
+
     if current_lane is None:
         print "current lane could not be found"
         # empty lane is returned
