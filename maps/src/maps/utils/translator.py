@@ -1,6 +1,6 @@
 """
-Converts GeoJSON formatted map features back to raw here maps json format for backwards compatibility
-with the old map editor.
+Converts GeoJSON formatted map features back to raw here maps json format
+for backwards compatibility with the old map editor.
 """
 import utm
 import geojson
@@ -14,7 +14,8 @@ from maps.utils import tile_utils
 # Constants
 # ---------------------------------------
 
-# These lists denote a set of properties that are copied directly between the translation with no extra logic
+# These lists denote a set of properties that are copied directly between
+# the translation with no extra logic
 LANE_FEATURE_LIST = [
     'altitude_pts',
     'direction_of_travel',
@@ -74,7 +75,8 @@ EXTRA_FIELDS = {'last_edited', 'ignore_issues', 'note'}
 
 def convert_geojson_to_tile(geojson_tile):
     """
-    Converts a GeoJSON formatted feature group tile into a here maps json formatted tile
+    Converts a GeoJSON formatted feature group tile into a here maps json
+    formatted tile.
 
     :param geojson_tile: the GeoJSON FeatureDict object
     :return: json object
@@ -120,8 +122,10 @@ def convert_tile_to_geojson(here_map_tile, tile_level, fix_dot=True):
     Converts a here map formatted tile into a GeoJSON formatted feature group
 
     :param here_map_tile: the here map tile (a python dict)
-    :param tile_level: the here map tile level used to create this tile (usually 14)
-    :param fix_dot: if true, the direction of travel will be scrubbed to make sure all lane groups face forward.
+    :param tile_level: the here map tile level used to create this
+                       tile (usually 14)
+    :param fix_dot: if true, the direction of travel will be scrubbed to
+                    make sure all lane groups face forward.
     :return: json object
     """
     features = []

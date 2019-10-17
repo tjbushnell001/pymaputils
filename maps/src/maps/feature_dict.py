@@ -7,8 +7,10 @@ from maps.utils import ref_utils
 
 class FeatureDict(object):
     """
-    Our custom representation of a geojson FeatureCollection. All of our geojson features have "ref" objects that we
-    parse and add hash functions to. Some map layers are just simple geojson files and exist only as FeatureDicts
+    Our custom representation of a geojson FeatureCollection. All of our
+    geojson features have "ref" objects that we parse and add hash functions
+    to. Some map layers are just simple geojson files and exist only as
+    FeatureDicts.
     """
 
     # -----------------------------
@@ -16,7 +18,7 @@ class FeatureDict(object):
     # -----------------------------
 
     def __init__(self, collection):
-        """ Initializes a feature dict from a geojson FeatureCollection object."""
+        """Initializes a feature dict from a geojson FeatureCollection object."""
         self.collection = collection
         self.feature_type_map = {}
         for f in self.collection.features:
@@ -78,4 +80,8 @@ def load_from_file(file_path):
 
 def write_to_file(file_path, feature_dict):
     with open(file_path, 'w') as f:
-        geojson.dump(feature_dict.collection, f, sort_keys=True, separators=(',', ':'), indent=1)
+        geojson.dump(feature_dict.collection,
+                     f,
+                     sort_keys=True,
+                     separators=(',', ':'),
+                     indent=1)

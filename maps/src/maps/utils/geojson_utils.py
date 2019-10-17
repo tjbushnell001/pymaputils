@@ -12,11 +12,13 @@ def create_feature(feature_type, feature_ref, geometry, **properties):
     """
     Create a geojson Feature object with the given fields.
 
-    :param feature_type: the type of feature being created. Can be any generic string, but should be one of the
-                         standard feature_types (e.g. lane_group, lane, lane_boundary, etc)
+    :param feature_type: the type of feature being created. Can be any generic
+                         string, but should be one of the standard
+                         feature_types (e.g. lane_group, lane_boundary, etc)
     :param feature_ref: a ref dict
     :param geometry: a geojson geometry (or shapely geometry)
-    :param properties: any extra keyword arg will be converted to a property of the new geojson feature
+    :param properties: any extra keyword arg will be converted to a property
+                       of the new geojson feature
     :return: new geojson Feature object
     """
     f = geojson.Feature(geometry=geometry,
@@ -31,10 +33,12 @@ def create_feature_collection(feature_type, feature_id, features, **properties):
     """
     Create a geojson FeatureCollection object with the given fields.
 
-    :param feature_type: the type describing the entire collection (e.g. route, tile, road_tile, etc)
+    :param feature_type: the type describing the entire collection
+                         (e.g. route, tile, road_tile, etc)
     :param feature_id: a unique id to set mark the feature
     :param features: a list of geojson Features to add to the collection
-    :param properties: any extra keyword arg will be converted to a property of the new geojson feature collection
+    :param properties: any extra keyword arg will be converted to a property
+                       of the new geojson feature collection
     :return: new geojson FeatureCollection object
     """
     fc = geojson.FeatureCollection(features,
@@ -46,15 +50,18 @@ def create_feature_collection(feature_type, feature_id, features, **properties):
 
 def downsample_line(points, utm_zone, utm_lat_band, tolerance=1.0, min_points=20):
     """
-    Reduces the number of (downsamples) points in a set of points using shapely's simplify method. Converts the lat lon
-    points to utm to do the downsampling and converts back to lat lon for the return value. This ensures we can use
-    meters as our tolerance value. Note however that if your points cover a range on the order of hundreds of miles
-    of lat lon, there will be significant distortion from the utm conversion.
+    Reduces the number of (downsamples) points in a set of points using
+    shapely's simplify method. Converts the lat lon points to utm to do the
+    downsampling and converts back to lat lon for the return value. This
+    ensures we can use meters as our tolerance value. Note however that if
+    your points cover a range on the order of hundreds of miles of lat lon,
+    there will be significant distortion from the utm conversion.
 
     :param points: the set of points to downsample
     :param utm_zone: the utm zone to use as the conversion zone
     :param utm_lat_band: the utm lat ban to use for utm conversion
-    :param tolerance: the tolerance to use for the downsample (max distance of distortion allowed for points)
+    :param tolerance: the tolerance to use for the downsample (max distance
+                      of distortion allowed for points)
     :param min_points: the minimum number of points in the return
     :return: list of simplified coordinate points in lat lon
     """
@@ -81,11 +88,13 @@ def downsample_line(points, utm_zone, utm_lat_band, tolerance=1.0, min_points=20
 # TODO: create poly to boundaries
 def boundaries_to_poly(left_boundary, right_boundary):
     """
-    Takes two line boundaries and converts them into a polygon. This is done by reversing the right boundary,
-    combining the two boundaries into a single set, and looping back to include the first point again, forming
-    a valid geojson polygon.
-    :param left_boundary: an iterable of points defining the left lane line boundary
-    :param right_boundary: an iterable of points defining the right lane line boundary
+    Takes two line boundaries and converts them into a polygon. This is done
+    by reversing the right boundary, combining the two boundaries into a
+    single set, and looping back to include the first point again, forming a
+    valid geojson polygon.
+
+    :param left_boundary: iterable of points defining left lane line boundary
+    :param right_boundary: iterable of points defining right lane line boundary
     :return: a shapely Polygon
     """
     poly_points = list(left_boundary)
@@ -103,13 +112,14 @@ def boundaries_to_poly(left_boundary, right_boundary):
 
 def bbox_to_poly(min_lat, min_lng, max_lat, max_lng):
     """
-    Converts a set of rectangular boundary dimensions in lat lon into a shapely polygon.
+    Converts rectangular boundary dimensions in lat lon into a shapely polygon.
 
     :param min_lat: minimum latitude value
     :param min_lng: minimum longitude value
     :param max_lat: maximum latitude value
     :param max_lng: maximum longitude value
-    :return: a shapely polygon constructed with the four corners defined by the boundary dimensions.
+    :return: a shapely polygon constructed with the four corners defined by
+             the boundary dimensions.
     """
     poly = shapely.geometry.Polygon([
         (min_lng, min_lat),
@@ -129,7 +139,9 @@ def lane_group_ref_from_lane_ref(lane_ref):
     :return: a hashable ref key for the lane group
     """
     return ref_utils.hashify(
-        {'id': lane_ref['lane_group_id'], 'tile_id': lane_ref['tile_id'], 'type': 'lane_group_ref'})
+        {'id': lane_ref['lane_group_id'],
+         'tile_id': lane_ref['tile_id'],
+         'type': 'lane_group_ref'})
 
 
 def write_geojson_tile(tile_id, prefix, feature_collection):
@@ -155,4 +167,6 @@ def connector_ref_from_junction_ref(junction_ref):
     :return:
     """
     return ref_utils.hashify(
-        {'id': junction_ref['connector_id'], 'tile_id': junction_ref['tile_id'], 'type': 'connector_ref'})
+        {'id': junction_ref['connector_id'],
+         'tile_id': junction_ref['tile_id'],
+         'type': 'connector_ref'})
