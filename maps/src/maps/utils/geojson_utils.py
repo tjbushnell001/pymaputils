@@ -123,7 +123,7 @@ def bbox_to_poly(min_lat, min_lng, max_lat, max_lng):
 
 def lane_group_ref_from_lane_ref(lane_ref):
     """
-    Convert a lane ref into it's parent lane group ref
+    Convert a lane ref into its parent lane group ref
 
     :param lane_ref: the full lane.ref of the lane
     :return: a hashable ref key for the lane group

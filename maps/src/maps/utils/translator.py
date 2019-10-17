@@ -79,7 +79,7 @@ def convert_geojson_to_tile(geojson_tile):
     :param geojson_tile: the GeoJSON FeatureDict object
     :return: json object
     """
-    # Associate each junction with it's connector
+    # Associate each junction with its connector
     connectors = [feature_to_connector(v)
                   for v in geojson_tile.get_features('connector').values()]
     connectors_by_id = {c['id']: c for c in connectors}
