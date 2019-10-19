@@ -41,6 +41,23 @@ class LaneSubMap : public SubMap<lane_map::Tile>
 
   void addLaneGroup(const lane_map::LaneGroupRef& ref, const lane_map::LaneGroup& lane_group);
   void addConnector(const lane_map::ConnectorRef& ref, const lane_map::Connector& connector);
+
+  /**
+   * Make a deep copy of this sub map.
+   **/
+  std::shared_ptr<LaneSubMap> copy() const
+  {
+    auto result = std::make_shared<LaneSubMap>();
+    result->map_frame = map_frame;
+    result->missing_tiles = missing_tiles;
+
+    for (const auto& tile : tiles) {
+      // make a deep copy of the tile, not just a shared_ptr reference
+      auto tile_copy = std::make_shared<lane_map::Tile>(*tile.second);
+      result->tiles[tile.first] = tile_copy;
+    }
+    return result;
+  }
 };
 
 class LaneMapLayer : public TiledMapLayer<LaneSubMap>
