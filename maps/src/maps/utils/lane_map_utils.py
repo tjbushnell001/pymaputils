@@ -16,9 +16,11 @@ BACKWARD_TRANSITION_PRIORITY = {
     None: 3,  # INVALID
 }
 
+
 class Direction(Enum):
     FORWARD = 0
     BACKWARD = 1
+
 
 def get_nominal_lanes(lane_map, candidate_lanes, direction=Direction.FORWARD):
     """
@@ -43,8 +45,6 @@ def get_nominal_lanes(lane_map, candidate_lanes, direction=Direction.FORWARD):
             rospy.logerr('MISSING LANE GROUP: %s' % lg_ref)
             continue
 
-
-
         priority = (lg.properties['is_ramp'],
                     transition_priority[lane.properties['lane_transition_type']],
                     lg_ref['tile_id'], lg_ref['id'], lane.properties['lane_num'])
@@ -63,6 +63,7 @@ def get_nominal_lanes(lane_map, candidate_lanes, direction=Direction.FORWARD):
             break
         results.append(lane)
     return results
+
 
 def get_next_likely_lane(lane, lane_map, direction=Direction.FORWARD):
     if lane is None:
@@ -87,6 +88,7 @@ def get_next_likely_lane(lane, lane_map, direction=Direction.FORWARD):
         return None
 
     return likely_lanes[0]
+
 
 def follow_lanes(initial_lane, lane_map, next_fn):
     lane = initial_lane
