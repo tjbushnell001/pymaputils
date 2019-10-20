@@ -22,15 +22,15 @@ class MapLayers(object):
     # Main Getter
     # ----------------------------------------------
 
-    def get_layer(self, layer_type, layer_name=''):
+    def get_layer(self, layer_type, layer_name='', **kwargs):
         if layer_type == MapType.LANE:
             if MapType.LANE not in self.layers:
-                self.layers[MapType.LANE] = self.create_lane_map_layer()
+                self.layers[MapType.LANE] = self.create_lane_map_layer(**kwargs)
             return self.layers[MapType.LANE]
 
         elif layer_type == MapType.ROAD:
             if MapType.ROAD not in self.layers:
-                self.layers[MapType.ROAD] = self.create_road_graph_layer()
+                self.layers[MapType.ROAD] = self.create_road_graph_layer(**kwargs)
             return self.layers[MapType.ROAD]
 
         elif layer_type == MapType.DISENGAGE_ZONE:

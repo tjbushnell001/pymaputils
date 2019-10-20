@@ -2,7 +2,7 @@
 """ Library to lint map junctions for "Issues" """
 from maps.issue_types import IssueType
 from maps.issues import Issue, IssueLayer
-from maps.utils import geojson_utils
+from maps.utils import ref_utils
 import geopy
 
 LANE_TRANSITION_TYPES = {"MERGE": "M", "SPLIT": "S", "UNKNOWN": "N"}
@@ -103,7 +103,7 @@ def junction_transition_summary(lane_map, lane_refs):
         lane = lane_map.get_feature(lane_ref)
         if lane.properties['is_emergency_lane']:
             continue
-        lane_group_ref = geojson_utils.lane_group_ref_from_lane_ref(lane_ref)
+        lane_group_ref = ref_utils.lane_group_ref_from_lane_ref(lane_ref)
         lane_group = lane_map.get_feature(lane_group_ref)
 
         is_ramp = lane_group.properties['is_ramp'] or False

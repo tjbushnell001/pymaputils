@@ -131,19 +131,6 @@ def bbox_to_poly(min_lat, min_lng, max_lat, max_lng):
     return poly
 
 
-def lane_group_ref_from_lane_ref(lane_ref):
-    """
-    Convert a lane ref into its parent lane group ref
-
-    :param lane_ref: the full lane.ref of the lane
-    :return: a hashable ref key for the lane group
-    """
-    return ref_utils.hashify(
-        {'id': lane_ref['lane_group_id'],
-         'tile_id': lane_ref['tile_id'],
-         'type': 'lane_group_ref'})
-
-
 def write_geojson_object(file_name, prefix, feature_collection):
     """
     Write a geojson feature_collection to disk as a json file.

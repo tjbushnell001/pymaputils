@@ -41,6 +41,19 @@ def create_lane_group_ref(tile_id, lane_group_id):
     })
 
 
+def lane_group_ref_from_lane_ref(lane_ref):
+    """
+    Convert a lane ref into its parent lane group ref
+
+    :param lane_ref: the full lane.ref of the lane
+    :return: a hashable ref key for the lane group
+    """
+    return hashify(
+        {'id': lane_ref['lane_group_id'],
+         'tile_id': lane_ref['tile_id'],
+         'type': 'lane_group_ref'})
+
+
 def create_lane_segment_ref(tile_id, lane_group_id, lane_segment_id):
     assert 0 <= lane_segment_id < (1 << 8), lane_segment_id
     assert 0 <= lane_group_id < (1 << 64), lane_group_id
