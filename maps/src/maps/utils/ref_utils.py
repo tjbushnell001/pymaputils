@@ -1,12 +1,13 @@
 """
-A simple library for creating more descriptive ref id's from the simple id's and hierarchy of the original here
-maps data.
+A simple library for creating more descriptive ref ids from the simple
+ids and hierarchy of the original here maps data.
 """
 
 
 class HashableDict(dict):
     """
-    Add a hashing function for dicts. This allows us to use refs as fully index-able id's.
+    Add a hashing function for dicts. This allows us to use refs as
+    fully index-able ids.
     """
     def __hash__(self):
         return hash(tuple(sorted(self.values())))
@@ -14,7 +15,8 @@ class HashableDict(dict):
 
 def hashify(obj):
     """
-    Recursively convert all dicts to HashableDicts. Does a deep search into all lists and dicts.
+    Recursively convert all dicts to HashableDicts. Does a deep search
+    into all lists and dicts.
 
     :param obj: the object to be hashified
     :return: the updated object
@@ -32,7 +34,11 @@ def create_lane_group_ref(tile_id, lane_group_id):
     assert 0 <= lane_group_id < (1 << 64), lane_group_id
     assert 0 <= tile_id < (1 << 64), tile_id
 
-    return hashify({'type': 'lane_group_ref', 'tile_id': tile_id, 'id': lane_group_id})
+    return hashify({
+        'type': 'lane_group_ref',
+        'tile_id': tile_id,
+        'id': lane_group_id
+    })
 
 
 def create_lane_segment_ref(tile_id, lane_group_id, lane_segment_id):
@@ -40,14 +46,24 @@ def create_lane_segment_ref(tile_id, lane_group_id, lane_segment_id):
     assert 0 <= lane_group_id < (1 << 64), lane_group_id
     assert 0 <= tile_id < (1 << 64), tile_id
 
-    return hashify({'type': 'lane_ref', 'tile_id': tile_id, 'lane_group_id': lane_group_id, 'id': lane_segment_id})
+    return hashify({
+        'type': 'lane_ref',
+        'tile_id': tile_id,
+        'lane_group_id': lane_group_id,
+        'id': lane_segment_id
+    })
 
 
 def create_connector_ref(tile_id, connector_id):
     assert 0 <= connector_id < (1 << 64), connector_id
-    assert 0 <= tile_id < (1 << 64), "tile_id: {}, type(tile_id): {}".format(tile_id, type(tile_id))
+    assert 0 <= tile_id < (1 << 64), "tile_id: {}, type(tile_id): {}".format(
+            tile_id, type(tile_id))
 
-    return hashify({'type': 'connector_ref', 'tile_id': tile_id, 'id': connector_id})
+    return hashify({
+        'type': 'connector_ref',
+        'tile_id': tile_id,
+        'id': connector_id
+    })
 
 
 def create_junction_ref(tile_id, connector_id, junction_id):
@@ -55,7 +71,12 @@ def create_junction_ref(tile_id, connector_id, junction_id):
     assert 0 <= connector_id < (1 << 64), connector_id
     assert 0 <= tile_id < (1 << 64), tile_id
 
-    return hashify({'type': 'junction_ref', 'tile_id': tile_id, 'connector_id': connector_id, 'id': junction_id})
+    return hashify({
+        'type': 'junction_ref',
+        'tile_id': tile_id,
+        'connector_id': connector_id,
+        'id': junction_id
+    })
 
 
 def create_junction_ref_from_connector_ref(connector_ref, junction_id):
@@ -69,18 +90,31 @@ def create_lane_boundary_ref(tile_id, lane_group_id, boundary_id):
     assert 0 <= lane_group_id < (1 << 64), lane_group_id
     assert 0 <= tile_id < (1 << 64), tile_id
 
-    return hashify({'type': 'lane_boundary_ref', 'tile_id': tile_id, 'lane_group_id': lane_group_id, 'id': boundary_id})
+    return hashify({
+        'type': 'lane_boundary_ref',
+        'tile_id': tile_id,
+        'lane_group_id': lane_group_id,
+        'id': boundary_id
+    })
 
 
 def create_road_segment_ref(tile_id, road_segment_id):
     assert 0 <= road_segment_id < (1 << 64), road_segment_id
     assert 0 <= tile_id < (1 << 64), tile_id
 
-    return hashify({'type': 'road_segment_ref', 'tile_id': tile_id, 'id': road_segment_id})
+    return hashify({
+        'type': 'road_segment_ref',
+        'tile_id': tile_id,
+        'id': road_segment_id
+    })
 
 
 def create_road_connector_ref(tile_id, road_connector_id):
     assert 0 <= road_connector_id < (1 << 64), road_connector_id
     assert 0 <= tile_id < (1 << 64), tile_id
 
-    return hashify({'type': 'road_connector_ref', 'tile_id': tile_id, 'id': road_connector_id})
+    return hashify({
+        'type': 'road_connector_ref',
+        'tile_id': tile_id,
+        'id': road_connector_id
+    })
