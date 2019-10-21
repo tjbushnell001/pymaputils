@@ -27,7 +27,7 @@ VALID_ROUTE_NAME = re.compile('^[a-zA-Z0-9_-]+$')
 
 app = flask.Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
-cors = flask_cors.CORS(app, resources={r"/foo": {"origins": "http://localhost:port"}})
+cors = flask_cors.CORS(app, resources={r"/*": {"origins": "maps.embarktrucks.com"}})
 
 lane_map = None
 dot_corrected_lane_map = None
