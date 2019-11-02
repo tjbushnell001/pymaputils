@@ -27,27 +27,27 @@ def set_ros(use_ros):
 
 def debug(msg, *args, **kwargs):
     if USE_ROS:
-        rospy.logdebug(msg, args, kwargs)
+        rospy.logdebug(msg, *args)
     else:
         print Color.DEBUG + msg + Color.ENDC
 
 
 def info(msg, *args, **kwargs):
     if USE_ROS:
-        rospy.loginfo(msg, args, kwargs)
+        rospy.loginfo(msg, *args)
     else:
         print msg
 
 
 def warn(msg, *args, **kwargs):
     if USE_ROS:
-        rospy.logwarn(msg, args, kwargs)
+        rospy.logwarn(msg, *args)
     else:
         print Color.WARN + msg + Color.ENDC
 
 
 def error(msg, *args, **kwargs):
     if USE_ROS:
-        rospy.logerr(msg, args, kwargs)
+        rospy.logerr(msg, *args)
     else:
         print Color.ERROR + msg + Color.ENDC

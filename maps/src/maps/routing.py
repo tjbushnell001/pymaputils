@@ -236,37 +236,34 @@ def find_route(road_graph, waypoints, capabilities):
             prev_wp = wp
             continue
 
-        if prev_segment_id == segment_id:
-            # same segment. skip it
-            continue
+        if prev_segment_id != segment_id:
+            sub_route, progress = a_star(road_graph, prev_segment_id, segment_id, ignore_set=closed_set)
 
-        sub_route, progress = a_star(road_graph, prev_segment_id, segment_id, ignore_set=closed_set)
+            if sub_route is None:
+                emblog.error("ROUTING ERROR: No route from waypoint [{}] [{}] {} to [{}] [{}] {}".format(
+                    prev_wp_id, prev_segment_id,
+                    coord_to_lat_lng(prev_wp.geometry['coordinates']),
+                    wp_id, segment_id,
+                    coord_to_lat_lng(wp.geometry['coordinates'])))
 
-        if sub_route is None:
-            emblog.error("ROUTING ERROR: No route from waypoint [{}] [{}] {} to [{}] [{}] {}".format(
-                prev_wp_id, prev_segment_id,
-                coord_to_lat_lng(prev_wp.geometry['coordinates']),
-                wp_id, segment_id,
-                coord_to_lat_lng(wp.geometry['coordinates'])))
+                # print out the furthest point the router was able to reach, which is sometimes a useful debugging hint
+                if len(progress) > 0:
+                    furthest_ref, furthest_sec = max(progress.items(), key=lambda x: x[1])
+                    furthest = road_graph.get_feature(furthest_ref)
+                    coords = furthest.properties['left_boundary'][-1]
+                    furthest_min = int(furthest_sec / 60)
+                    emblog.info("Furthest point: [{}] {:d}h:{:02d}m {}".format(
+                        furthest_ref,
+                        furthest_min / 60, furthest_min % 60,
+                        coord_to_lat_lng(coords)))
 
-            # print out the furthest point the router was able to reach, which is sometimes a useful debugging hint
-            if len(progress) > 0:
-                furthest_ref, furthest_sec = max(progress.items(), key=lambda x: x[1])
-                furthest = road_graph.get_feature(furthest_ref)
-                coords = furthest.properties['left_boundary'][-1]
-                furthest_min = int(furthest_sec / 60)
-                emblog.info("Furthest point: [{}] {:d}h:{:02d}m {}".format(
-                    furthest_ref,
-                    furthest_min / 60, furthest_min % 60,
-                    coord_to_lat_lng(coords)))
+                return None
 
-            return None
+            assert route[-1] == sub_route[0]
 
-        assert route[-1] == sub_route[0]
-
-        closed_set.update(sub_route[:-1])
-        route.extend(sub_route[1:])
-        route_wps.append(wp_id)
+            closed_set.update(sub_route[:-1])
+            route.extend(sub_route[1:])
+            route_wps.append(wp_id)
 
         if waypoint_type in ('trip_destination', 'sub_destination'):
             routes.append((route, route_wps))
