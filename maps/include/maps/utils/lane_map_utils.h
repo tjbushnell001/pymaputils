@@ -149,6 +149,10 @@ std::unordered_set<lane_map::LaneGroupRef> getNearbyValidLaneGroups(const maps::
                                                                     const geometry_msgs::Point& pt,
                                                                     double max_distance);
 
+std::unordered_set<lane_map::LaneRef> getNearbyLanes(const maps::LaneSubMap& map,
+                                                     const geometry_msgs::Point& pt,
+                                                     double max_distance);
+
 void throwDataError(const lane_map::LaneRef& lane_ref, const std::string& error_msg);
 
 void throwDataError(const lane_map::LaneGroupRef& lg_ref, const std::string& error_msg);

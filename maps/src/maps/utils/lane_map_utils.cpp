@@ -501,6 +501,25 @@ std::unordered_set<lane_map::LaneGroupRef> getNearbyValidLaneGroups(const maps::
   return lane_map_utils::filterLaneGroups(map, filter_fn);
 }
 
+std::unordered_set<lane_map::LaneRef> getNearbyLanes(const maps::LaneSubMap& map,
+                                                     const geometry_msgs::Point& pt,
+                                                     double max_distance)
+{
+  assert(map.map_frame.type == maps::MapFrameType::UTM ||
+         map.map_frame.type == maps::MapFrameType::VEHICLE);
+
+  auto filter_fn = [&map, &pt, &max_distance](const lane_map::Lane& lane) {
+    const lane_map::Boundary* left_boundary = map.getBoundary(lane.left_boundary_ref);
+    const lane_map::Boundary* right_boundary = map.getBoundary(lane.right_boundary_ref);
+
+    const double d = std::min(geometric::minDistanceToPiecewiseLine(pt.x, pt.y, left_boundary->pts),
+                              geometric::minDistanceToPiecewiseLine(pt.x, pt.y, right_boundary->pts));
+    return d <= max_distance;
+  };
+
+  return lane_map_utils::filterLanes(map, filter_fn);
+}
+
 void throwDataError(const LaneRef& lane_ref, const std::string& error_msg)
 {
   std::stringstream ss;
