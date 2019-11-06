@@ -84,7 +84,7 @@ lane_map::BoundaryRef getRightBoundary(const lane_map::Lane& lane);
 lane_map::BoundaryRef getLeftBoundary(const lane_map::Lane& lane);
 
 std::vector<geometry_msgs::Point> getLanePtsForward(const maps::LaneSubMap& map,
-                                                    const lane_map::LaneRef& lane_ref);
+                                                    const lane_map::LaneRef& lane_ref, bool debug);
 
 std::vector<geometry_msgs::Point> getLanePtsForward(const lane_map::Lane& lane);
 

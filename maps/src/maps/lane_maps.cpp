@@ -111,18 +111,29 @@ const lane_map::LaneGroup* LaneSubMap::getLaneGroup(const lane_map::LaneGroupRef
 
 const lane_map::Lane* LaneSubMap::getLane(const lane_map::LaneRef& ref) const
 {
+  bool debug = ref.lg_id == 2165666116;
+
   const auto tile = getTile(ref.tile_id);
   if (!tile) {
+    if (debug) {
+        std::cout << "tile id missing" << std::endl;
+    }
     return nullptr;
   }
   const auto lane_group_it = tile->lane_groups.find(ref.getLaneGroupRef());
   if (lane_group_it == tile->lane_groups.end()) {
+    if (debug) {
+        std::cout << "lane group not in tile" << std::endl;
+    }
     return nullptr;
   }
   const auto& lane_group = lane_group_it->second;
 
   const auto lane_it = lane_group.lanes.find(ref);
   if (lane_it == lane_group.lanes.end()) {
+    if (debug) {
+        std::cout << "lane not in lane group" << std::endl;
+    }
     return nullptr;
   }
 
