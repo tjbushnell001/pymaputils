@@ -479,26 +479,8 @@ std::unordered_set<lane_map::LaneGroupRef> getNearbyValidLaneGroupsGCS(const map
   const bool use_NED = map.map_frame.type == maps::MapFrameType::GCS_NED;
 
   auto filter_fn = [lat, lng, use_NED, max_distance](const lane_map::LaneGroup& lg) {
-    if (!isDirectionalLaneGroup(lg)) {
-      return false;
-    } else {
-      geometry_msgs::Point test_pt;
-      test_pt.x = use_NED ? lat : lng;
-      test_pt.y = use_NED ? lng : lat;
-
-      // assume that left boundary and right boundary are similar enough that we only need
-      // to check distance to one boundary -- this cuts work in half
-      for (std::size_t i = 0; i < lg.left_boundary.size() - 1; i++) {
-        auto dist = map_utils::distanceToGCSLine(lg.left_boundary[i], lg.left_boundary[i + 1],
-                                                 test_pt, use_NED);
-        if (dist <= max_distance) {
-          // once we find a single line segment that is close enough, return true. no need to check
-          // the entire boundary.
-          return true;
-        }
-      }
-      return false;
-    }
+    return (map_utils::haversineDistance(lg, lat, lng, use_NED) <= max_distance &&
+            isDirectionalLaneGroup(lg));
   };
 
   return lane_map_utils::filterLaneGroups(map, filter_fn);
