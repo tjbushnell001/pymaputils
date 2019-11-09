@@ -165,14 +165,10 @@ BoundaryRef getLeftBoundary(const Lane& lane)
 }
 
 
-std::vector<geometry_msgs::Point> getLanePtsForward(const maps::LaneSubMap& map,
-                                                    const LaneRef& lane_ref, bool debug)
+std::vector<geometry_msgs::Point> getLanePtsForward(const maps::LaneSubMap& map, const LaneRef& lane_ref)
 {
   const Lane* lane = map.getLane(lane_ref);
   if (!lane) {
-    if (debug) {
-        std::cout << "HERE!?" << std::endl;
-    }
     return {};
   }
   return getLanePtsForward(*lane);
