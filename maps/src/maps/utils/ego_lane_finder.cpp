@@ -8,30 +8,30 @@
 
 namespace ego_lane_finder {
 
-  const static std::map<lane_map::LaneTransitionType, size_t> FORWARD_TRANSITION_PRIORITY = {
-    {lane_map::LaneTransitionType::UNKNOWN, 0},
-    {lane_map::LaneTransitionType::MERGE, 1},
-    {lane_map::LaneTransitionType::SPLIT, 2},
-    {lane_map::LaneTransitionType::INVALID, 3},
-  };
+const static std::map<lane_map::LaneTransitionType, size_t> FORWARD_TRANSITION_PRIORITY = {
+  { lane_map::LaneTransitionType::UNKNOWN, 0 },
+  { lane_map::LaneTransitionType::MERGE, 1 },
+  { lane_map::LaneTransitionType::SPLIT, 2 },
+  { lane_map::LaneTransitionType::INVALID, 3 },
+};
 
-  const static std::map<lane_map::LaneTransitionType, size_t> BACKWARD_TRANSITION_PRIORITY = {
-    {lane_map::LaneTransitionType::UNKNOWN, 0},
-    {lane_map::LaneTransitionType::SPLIT, 1},
-    {lane_map::LaneTransitionType::MERGE, 2},
-    {lane_map::LaneTransitionType::INVALID, 3},
-  };
+const static std::map<lane_map::LaneTransitionType, size_t> BACKWARD_TRANSITION_PRIORITY = {
+  { lane_map::LaneTransitionType::UNKNOWN, 0 },
+  { lane_map::LaneTransitionType::SPLIT, 1 },
+  { lane_map::LaneTransitionType::MERGE, 2 },
+  { lane_map::LaneTransitionType::INVALID, 3 },
+};
 
-std::vector<lane_map::LaneRef>
-getNominalLanes(const maps::LaneSubMap& map,
-                const std::unordered_set<lane_map::LaneRef>& candidate_lanes,
-                const lane_map_utils::TraverseDirection direction)
+std::vector<lane_map::LaneRef> getNominalLanes(
+    const maps::LaneSubMap& map, const std::unordered_set<lane_map::LaneRef>& candidate_lanes,
+    const lane_map_utils::TraverseDirection direction)
 {
   if (candidate_lanes.empty()) {
     return {};
   }
 
-  struct LanePriority {
+  struct LanePriority
+  {
     lane_map::LaneRef lane_ref;
     lane_map::LaneTransitionType lane_transition_type;
     int8_t lane_order;
@@ -39,7 +39,9 @@ getNominalLanes(const maps::LaneSubMap& map,
     bool is_ramp;
   };
 
-  const auto& transition_priority = direction == lane_map_utils::TraverseDirection::OUT ? FORWARD_TRANSITION_PRIORITY : BACKWARD_TRANSITION_PRIORITY;
+  const auto& transition_priority = direction == lane_map_utils::TraverseDirection::OUT ?
+                                        FORWARD_TRANSITION_PRIORITY :
+                                        BACKWARD_TRANSITION_PRIORITY;
 
   // first, sort by priority
   auto priority_fn = [&map, &transition_priority](const LanePriority& a, const LanePriority& b) {
@@ -56,8 +58,7 @@ getNominalLanes(const maps::LaneSubMap& map,
 
     // then by lane group id (arbitrary)
     // then by lane order within a lane group (not arbitrary, prefer left most)
-    if (a.lane_group_ref == b.lane_group_ref &&
-        a.lane_order < b.lane_order) {
+    if (a.lane_group_ref == b.lane_group_ref && a.lane_order < b.lane_order) {
       return true;
     } else if (a.lane_group_ref.tile_id < b.lane_group_ref.tile_id) {
       return true;
@@ -79,8 +80,8 @@ getNominalLanes(const maps::LaneSubMap& map,
       continue;
     }
 
-    const LanePriority priority = {lane_ref, lane->lane_transition_type,
-                             lane->lane_order, lg_ref, lg->is_ramp};
+    const LanePriority priority = { lane_ref, lane->lane_transition_type, lane->lane_order, lg_ref,
+                                    lg->is_ramp };
     lane_priorities.push_back(priority);
   }
   if (lane_priorities.empty()) {
@@ -92,8 +93,7 @@ getNominalLanes(const maps::LaneSubMap& map,
   // then, keep as many lanes as are equivalent to the best choice
   auto is_equivalent = [&map](const LanePriority& a, const LanePriority& b) {
     // we only look at is_ramp and lane_transition_type
-    return (a.is_ramp == b.is_ramp &&
-            a.lane_transition_type == b.lane_transition_type);
+    return (a.is_ramp == b.is_ramp && a.lane_transition_type == b.lane_transition_type);
   };
 
   const auto& top_priority = lane_priorities.front();
@@ -127,11 +127,12 @@ getEgoLanes(const maps::LaneSubMap& map,
   std::unordered_set<lane_map::LaneRef> candidate_lanes;
   std::copy_if(associated_lanes.begin(), associated_lanes.end(),
                std::inserter(candidate_lanes, candidate_lanes.begin()),
-               [&](const lane_map::LaneRef& ref){
+               [&](const lane_map::LaneRef& ref) {
                  return route_lane_groups.count(ref.getLaneGroupRef()) > 0;
                });
 
-  const auto nominal_lanes = getNominalLanes(map, candidate_lanes, lane_map_utils::TraverseDirection::OUT);
+  const auto nominal_lanes =
+      getNominalLanes(map, candidate_lanes, lane_map_utils::TraverseDirection::OUT);
 
   return nominal_lanes;
 }

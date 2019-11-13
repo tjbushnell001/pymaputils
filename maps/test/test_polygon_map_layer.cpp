@@ -2,8 +2,9 @@
 
 #include "maps/map_layers.h"
 
-const lane_map::PolygonFeature* findFirstMatch(const BoostPoint& point,
-                                               const std::vector<lane_map::PolygonFeature>& features) {
+const lane_map::PolygonFeature*
+findFirstMatch(const BoostPoint& point, const std::vector<lane_map::PolygonFeature>& features)
+{
   for (const auto& feature : features) {
     if (boost::geometry::within(point, feature.polygon)) {
       return &feature;
@@ -14,8 +15,7 @@ const lane_map::PolygonFeature* findFirstMatch(const BoostPoint& point,
 
 TEST(MapTileLoader, localizationZones)
 {
-  
-  maps::MapLayers map(maps::createMapLayers({maps::MapLayerType::LOCALIZATION_ZONES}));
+  maps::MapLayers map(maps::createMapLayers({ maps::MapLayerType::LOCALIZATION_ZONES }));
   // get layer
   auto layer = map.getLayerAs<maps::PolygonFeatureMapLayer>(maps::MapLayerType::LOCALIZATION_ZONES);
   EXPECT_NE(layer, nullptr);
@@ -39,10 +39,10 @@ TEST(MapTileLoader, localizationZones)
 
 TEST(MapTileLoader, noOvertakeLaneAnnotations)
 {
-  
-  maps::MapLayers map(maps::createMapLayers({maps::MapLayerType::LANE_ANNOTATION}));
+  maps::MapLayers map(maps::createMapLayers({ maps::MapLayerType::LANE_ANNOTATION }));
   // get layer
-  auto layer = map.getLayerAs<maps::PolygonFeatureMapLayer>(maps::MapLayerType::LANE_ANNOTATION, "no_passing_zones");
+  auto layer = map.getLayerAs<maps::PolygonFeatureMapLayer>(maps::MapLayerType::LANE_ANNOTATION,
+                                                            "no_passing_zones");
   EXPECT_NE(layer, nullptr);
 
   EXPECT_NE(layer->getFeatures(), nullptr);
@@ -68,6 +68,6 @@ int main(int argc, char** argv)
 
   // NOTE: createMapLayers() requires ros params.
   ros::init(argc, argv, "test_polygon_map_layers", ros::init_options::AnonymousName);
- 
+
   return RUN_ALL_TESTS();
 }

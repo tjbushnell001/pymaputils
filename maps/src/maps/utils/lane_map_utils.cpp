@@ -23,7 +23,8 @@ std::unordered_set<LaneGroupRef> getConnectedLaneGroups(const maps::LaneSubMap& 
   switch (traverse_direction) {
     case TraverseDirection::BOTH: {
       auto forward = getConnectedLaneGroups(map, lane_group.end_connector, TraverseDirection::BOTH);
-      auto backward = getConnectedLaneGroups(map, lane_group.start_connector, TraverseDirection::BOTH);
+      auto backward =
+          getConnectedLaneGroups(map, lane_group.start_connector, TraverseDirection::BOTH);
 
       return set_utils::set_union(forward, backward);
     } break;
@@ -76,7 +77,7 @@ std::unordered_set<LaneGroupRef> getConnectedLaneGroups(const maps::LaneSubMap& 
       return conn->inflow_refs;
   }
 }
-  
+
 std::vector<const Lane*> getLanesInOrder(const LaneGroup& lg)
 {
   if (!isDirectionalLaneGroup(lg)) {

@@ -22,7 +22,8 @@ const double MAX_DISTANCE_TO_LANE = 0.10; // meters
  *
  * @return An unordered set of associated lanes.
  **/
-std::unordered_set<lane_map::LaneRef> associateLanes(const maps::LaneSubMap& map, const geometry_msgs::Point& object);
+std::unordered_set<lane_map::LaneRef> associateLanes(const maps::LaneSubMap& map,
+                                                     const geometry_msgs::Point& object);
 
 /**
  * Determine current ego lane.
@@ -70,11 +71,9 @@ getEgoLanes(const maps::LaneSubMap& map,
  *
  * @returns A vector of LaneRefs.  Sorted by decreasing preference.
  **/
-std::vector<lane_map::LaneRef>
-getNominalLanes(const maps::LaneSubMap& map,
-                const std::unordered_set<lane_map::LaneRef>& candidate_lanes,
-                lane_map_utils::TraverseDirection direction);
-
+std::vector<lane_map::LaneRef> getNominalLanes(
+    const maps::LaneSubMap& map, const std::unordered_set<lane_map::LaneRef>& candidate_lanes,
+    lane_map_utils::TraverseDirection direction);
 
 
 } // end namespace

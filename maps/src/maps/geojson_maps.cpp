@@ -8,8 +8,7 @@ GeoJsonSubMap::GeoJsonSubMap(const MapFrameType frame_type) : SubMap(frame_type)
 
 GeoJsonTileMapLayer::GeoJsonTileMapLayer(MapLayerType layer_type, const std::string& layer_name,
                                          const std::string& dir_name, uint8_t tile_level,
-                                         size_t tile_radius,
-                                         bool preload)
+                                         size_t tile_radius, bool preload)
   : TiledMapLayer(layer_type, layer_name, dir_name, tile_level, tile_radius, preload)
 {
 }

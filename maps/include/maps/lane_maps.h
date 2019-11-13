@@ -16,10 +16,10 @@ namespace maps {
 class LaneSubMap : public SubMap<lane_map::Tile>
 {
  public:
- /**
-   * A tile lane sub map, which exposes accessors and settors.
-   *
-   **/
+  /**
+    * A tile lane sub map, which exposes accessors and settors.
+    *
+    **/
   LaneSubMap(const MapFrameType frame_type = MapFrameType::GCS_NED);
 
   /**
@@ -63,15 +63,15 @@ class LaneSubMap : public SubMap<lane_map::Tile>
 class LaneMapLayer : public TiledMapLayer<LaneSubMap>
 {
  public:
- /**
-   * A tiled lane map layer.
-   *
-   * This loads tiled lane maps from our custom json format.
-   *
-   * @param[in] dir_name The directory where tiles are stored.
-   * @param[in] tile_radius The tile radius at which we keep tiles loaded.
-   * @param[in] preload Asyncronously and preemptively load tiles.
-   **/
+  /**
+    * A tiled lane map layer.
+    *
+    * This loads tiled lane maps from our custom json format.
+    *
+    * @param[in] dir_name The directory where tiles are stored.
+    * @param[in] tile_radius The tile radius at which we keep tiles loaded.
+    * @param[in] preload Asyncronously and preemptively load tiles.
+    **/
   LaneMapLayer(const std::string& dir_name, size_t tile_radius, bool preload = true);
 
  private:
@@ -82,19 +82,19 @@ class LaneMapLayer : public TiledMapLayer<LaneSubMap>
 class PolygonFeatureMapLayer : public SingleMapLayer<std::vector<lane_map::PolygonFeature>>
 {
  public:
- /**
-   * A polygon feature map layer.
-   *
-   * This will load a GeoJson file containing Polygon features, along with any
-   * associated properties.
-   *
-   * @param[in] layer_type The type of the layer.
-   * @param[in] layer_name The name of the layer.  In instances where there's
-   *            only one layer of a type, this should be the empty string.
-   * @param[in] frame_type Desired frame representation (either GCS or GCS_NED,
-   *                       to swap x,y points).
-   * @param[in] file_name The filename of the map file.
-   **/
+  /**
+    * A polygon feature map layer.
+    *
+    * This will load a GeoJson file containing Polygon features, along with any
+    * associated properties.
+    *
+    * @param[in] layer_type The type of the layer.
+    * @param[in] layer_name The name of the layer.  In instances where there's
+    *            only one layer of a type, this should be the empty string.
+    * @param[in] frame_type Desired frame representation (either GCS or GCS_NED,
+    *                       to swap x,y points).
+    * @param[in] file_name The filename of the map file.
+    **/
   PolygonFeatureMapLayer(MapLayerType layer_type, const std::string& layer_name,
                          MapFrameType frame_type, const std::string& file_name);
 

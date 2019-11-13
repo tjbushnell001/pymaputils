@@ -31,7 +31,8 @@ class GeoJsonTileMapLayer : public TiledMapLayer<GeoJsonSubMap>
    * @param[in] tile_radius The tile radius at which we keep tiles loaded.
    **/
   GeoJsonTileMapLayer(MapLayerType layer_type, const std::string& layer_name,
-                      const std::string& dir_name, uint8_t tile_level, size_t tile_radius, bool preload = true);
+                      const std::string& dir_name, uint8_t tile_level, size_t tile_radius,
+                      bool preload = true);
 
  private:
   std::shared_ptr<Json::Value> loadTile(const std::string& dir_name, uint64_t tile_id,

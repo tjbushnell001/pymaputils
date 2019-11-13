@@ -1,13 +1,13 @@
 #include <gtest/gtest.h>
-#include <iostream>
 #include <ros/ros.h>
 #include <utils/ros/params.h>
-#include "maps/utils/ego_lane_finder.h"
-#include "maps/map_layers.h"
+#include <iostream>
+#include "diagnostics_utils/crash_handler.h"
 #include "maps/map_frame.h"
+#include "maps/map_layers.h"
+#include "maps/utils/ego_lane_finder.h"
 #include "maps/utils/map_frame_utils.h"
 #include "utils/map/utils.h"
-#include "diagnostics_utils/crash_handler.h"
 
 auto const JUNCTION_CONNECTOR_ID = 1;
 auto const JUNCTION_ID = 1;
@@ -18,14 +18,15 @@ auto const IN_LANE_ID = 1;
 auto const OUT_LANE_LG_ID = 100;
 auto const OUT_LANE_ID = 1;
 
-const std::shared_ptr<maps::LaneSubMap> getLaneSubMapFromTile(uint64_t tile_id) {
-  maps::MapLayers map(maps::createMapLayers({maps::MapLayerType::LANE}));
+const std::shared_ptr<maps::LaneSubMap> getLaneSubMapFromTile(uint64_t tile_id)
+{
+  maps::MapLayers map(maps::createMapLayers({ maps::MapLayerType::LANE }));
 
   // get lane map
   auto lane_map = map.getLayerAs<maps::LaneMapLayer>(maps::MapLayerType::LANE);
   EXPECT_NE(lane_map, nullptr);
 
-  lane_map->loadTiles({tile_id});
+  lane_map->loadTiles({ tile_id });
 
   auto lane_sub_map = lane_map->getSubMap();
   EXPECT_NE(lane_sub_map->getTile(tile_id), nullptr);
@@ -33,33 +34,38 @@ const std::shared_ptr<maps::LaneSubMap> getLaneSubMapFromTile(uint64_t tile_id) 
   return lane_sub_map;
 }
 
-void testJunction(uint64_t tile_id, const int valid_in_lanes, const int valid_out_lanes) {
-    const auto lane_sub_map = getLaneSubMapFromTile(tile_id);
+void testJunction(uint64_t tile_id, const int valid_in_lanes, const int valid_out_lanes)
+{
+  const auto lane_sub_map = getLaneSubMapFromTile(tile_id);
 
-    const auto junction_ref = lane_map::JunctionRef(tile_id, JUNCTION_CONNECTOR_ID, JUNCTION_ID);
-    auto junction = lane_sub_map->getJunction(junction_ref);
-    EXPECT_NE(junction, nullptr);
+  const auto junction_ref = lane_map::JunctionRef(tile_id, JUNCTION_CONNECTOR_ID, JUNCTION_ID);
+  auto junction = lane_sub_map->getJunction(junction_ref);
+  EXPECT_NE(junction, nullptr);
 
-    lane_map::LaneRef answer_lane_ref;
-    const auto in_nominal_lanes = ego_lane_finder::getNominalLanes(*lane_sub_map, junction->inflow_refs, lane_map_utils::TraverseDirection::IN);
+  lane_map::LaneRef answer_lane_ref;
+  const auto in_nominal_lanes = ego_lane_finder::getNominalLanes(
+      *lane_sub_map, junction->inflow_refs, lane_map_utils::TraverseDirection::IN);
 
-    // Assert the size is num_valid_lanes
-    EXPECT_EQ(in_nominal_lanes.size(), valid_in_lanes);
-    if (in_nominal_lanes.size() > 0) {
-        answer_lane_ref = lane_map::LaneRef(tile_id, IN_LANE_LG_ID, IN_LANE_ID);
-        // In addition, the "first" in lane (i.e. the far left lane) is still taken to be the answer in ambiguous cases
-        EXPECT_EQ(in_nominal_lanes[0], answer_lane_ref);
-    }
+  // Assert the size is num_valid_lanes
+  EXPECT_EQ(in_nominal_lanes.size(), valid_in_lanes);
+  if (in_nominal_lanes.size() > 0) {
+    answer_lane_ref = lane_map::LaneRef(tile_id, IN_LANE_LG_ID, IN_LANE_ID);
+    // In addition, the "first" in lane (i.e. the far left lane) is still taken to be the answer in
+    // ambiguous cases
+    EXPECT_EQ(in_nominal_lanes[0], answer_lane_ref);
+  }
 
-    const auto out_nominal_lanes = ego_lane_finder::getNominalLanes(*lane_sub_map, junction->outflow_refs, lane_map_utils::TraverseDirection::OUT);
+  const auto out_nominal_lanes = ego_lane_finder::getNominalLanes(
+      *lane_sub_map, junction->outflow_refs, lane_map_utils::TraverseDirection::OUT);
 
-    // Assert the size is valid_out_lanes
-    EXPECT_EQ(out_nominal_lanes.size(), valid_out_lanes);
-    if (out_nominal_lanes.size() > 0) {
-        answer_lane_ref = lane_map::LaneRef(tile_id, OUT_LANE_LG_ID, OUT_LANE_ID);
-        // In addition, the "first" out lane (i.e. the far left lane) is still taken to be the answer in ambiguous cases
-        EXPECT_EQ(out_nominal_lanes[0], answer_lane_ref);
-    }
+  // Assert the size is valid_out_lanes
+  EXPECT_EQ(out_nominal_lanes.size(), valid_out_lanes);
+  if (out_nominal_lanes.size() > 0) {
+    answer_lane_ref = lane_map::LaneRef(tile_id, OUT_LANE_LG_ID, OUT_LANE_ID);
+    // In addition, the "first" out lane (i.e. the far left lane) is still taken to be the answer in
+    // ambiguous cases
+    EXPECT_EQ(out_nominal_lanes[0], answer_lane_ref);
+  }
 }
 
 
@@ -167,7 +173,8 @@ TEST(MapTileLoader, _2N_0__N_0)
   testJunction(tile_id, 2, 1);
 }
 
-// Lane ends without a merge. Invalid! This should not happen on the road. Still we assert the return is what we expect
+// Lane ends without a merge. Invalid! This should not happen on the road. Still we assert the
+// return is what we expect
 // N/0->0/0
 TEST(MapTileLoader, _N_0__0_0)
 {
@@ -247,7 +254,8 @@ TEST(MapTileLoader, _0_N__0_M)
   testJunction(tile_id, 1, 1);
 }
 
-// Two normal lanes merge on a ramp without a valid transition label. Invalid! Still assert the return type.
+// Two normal lanes merge on a ramp without a valid transition label. Invalid! Still assert the
+// return type.
 // 0/2N->0/N
 TEST(MapTileLoader, _0_2N__0_N)
 {
@@ -327,7 +335,8 @@ TEST(MapTileLoader, _N2M_0__N_0)
   testJunction(tile_id, 1, 1);
 }
 
-// Two lanes merge on a ramp into another merge lane, lacking proper transition labels. Invalid! Still assert return
+// Two lanes merge on a ramp into another merge lane, lacking proper transition labels. Invalid!
+// Still assert return
 // values.
 // 0/2N->0/M
 TEST(MapTileLoader, _0_2N__0_M)
@@ -336,7 +345,8 @@ TEST(MapTileLoader, _0_2N__0_M)
   testJunction(tile_id, 2, 1);
 }
 
-// Ramp and highway lanes merge into a split lane. Not valid from a semantics perspective, but unambiguous
+// Ramp and highway lanes merge into a split lane. Not valid from a semantics perspective, but
+// unambiguous
 // traversal wise
 // N/N->S/0
 TEST(MapTileLoader, _N_N__S_0)
@@ -353,7 +363,8 @@ TEST(MapTileLoader, _S_0__M_0)
   testJunction(tile_id, 1, 1);
 }
 
-// Normal ramp lane transitions to split ramp lane. Not valid from a semantics perspective, but unambiguous
+// Normal ramp lane transitions to split ramp lane. Not valid from a semantics perspective, but
+// unambiguous
 // traversal wise
 // 0/N->0/S
 TEST(MapTileLoader, _0_N__0_S)

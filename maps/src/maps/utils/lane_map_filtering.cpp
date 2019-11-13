@@ -82,9 +82,9 @@ std::unordered_set<lane_map::LaneGroupRef> lane_map_utils::traverseLaneGroups(
   return visited_lane_groups;
 }
 
-std::vector<lane_map::LaneRef> lane_map_utils::followLanes(
-    const lane_map::LaneRef& initial_ref,
-    const LaneFollower& follower, size_t max_distance)
+std::vector<lane_map::LaneRef> lane_map_utils::followLanes(const lane_map::LaneRef& initial_ref,
+                                                           const LaneFollower& follower,
+                                                           size_t max_distance)
 {
   std::vector<lane_map::LaneRef> results;
   lane_map::LaneRef current_ref = initial_ref;

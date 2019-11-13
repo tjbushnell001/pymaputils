@@ -3,8 +3,8 @@
 
 #include <geometry_msgs/Pose.h>
 #include <ros/ros.h>
-#include "utils/map/utils.h"
 #include <boost/functional/hash.hpp>
+#include "utils/map/utils.h"
 
 namespace maps {
 
@@ -22,11 +22,9 @@ enum class MapFrameType
 };
 
 static const std::map<MapFrameType, std::string> mapFrameTypeStrings = {
-    {MapFrameType::INVALID, ""},
-    {MapFrameType::GCS, "GCS"},
-    {MapFrameType::GCS_NED, "GCS_NED"},
-    {MapFrameType::UTM, "UTM"},
-    {MapFrameType::VEHICLE, "VEHICLE"},
+  { MapFrameType::INVALID, "" },        { MapFrameType::GCS, "GCS" },
+  { MapFrameType::GCS_NED, "GCS_NED" }, { MapFrameType::UTM, "UTM" },
+  { MapFrameType::VEHICLE, "VEHICLE" },
 };
 
 struct MapFrame
@@ -63,30 +61,32 @@ struct MapFrame
   map_utils::UtmZone utm_zone;
 };
 
- static bool operator==(const MapFrame& frame1, const MapFrame& frame2) {
-   if (frame1.type != frame2.type) {
-     return false;
-   }
-
-   switch (frame1.type) {
-   case MapFrameType::GCS:
-   case MapFrameType::GCS_NED:
-      return true;
-   case MapFrameType::UTM:
-     // UTM must have matching zones
-     return frame1.utm_zone == frame2.utm_zone;
-   case MapFrameType::VEHICLE:
-     // vehicle frame must have matching localization
-     return (frame1.origin_latitude == frame2.origin_latitude &&
-           frame1.origin_longitude == frame2.origin_longitude &&
-           frame1.origin_heading == frame2.origin_heading);
-   }
-   return false;
- }
-
-  static bool operator!=(const MapFrame& frame1, const MapFrame& frame2) {
-    return !(frame1 == frame2);
+static bool operator==(const MapFrame& frame1, const MapFrame& frame2)
+{
+  if (frame1.type != frame2.type) {
+    return false;
   }
+
+  switch (frame1.type) {
+    case MapFrameType::GCS:
+    case MapFrameType::GCS_NED:
+      return true;
+    case MapFrameType::UTM:
+      // UTM must have matching zones
+      return frame1.utm_zone == frame2.utm_zone;
+    case MapFrameType::VEHICLE:
+      // vehicle frame must have matching localization
+      return (frame1.origin_latitude == frame2.origin_latitude &&
+              frame1.origin_longitude == frame2.origin_longitude &&
+              frame1.origin_heading == frame2.origin_heading);
+  }
+  return false;
+}
+
+static bool operator!=(const MapFrame& frame1, const MapFrame& frame2)
+{
+  return !(frame1 == frame2);
+}
 
 }; // namespace maps
 
@@ -100,28 +100,29 @@ struct hash<maps::MapFrame>
     bool include_zone = false;
     bool include_origin = false;
     switch (k.type) {
-    case maps::MapFrameType::GCS:
-    case maps::MapFrameType::GCS_NED:
-      break;
-    case maps::MapFrameType::UTM:
-      include_zone = true;
-      break;
-    case maps::MapFrameType::VEHICLE:
-      include_zone = true;
-      include_origin = true;
-      break;
+      case maps::MapFrameType::GCS:
+      case maps::MapFrameType::GCS_NED:
+        break;
+      case maps::MapFrameType::UTM:
+        include_zone = true;
+        break;
+      case maps::MapFrameType::VEHICLE:
+        include_zone = true;
+        include_origin = true;
+        break;
     }
 
     std::size_t result = 0;
     boost::hash_combine(result, static_cast<int>(k.type));
 
-    boost::hash_combine(result, std::hash<map_utils::UtmZone>()(include_zone ? k.utm_zone : map_utils::UtmZone()));
-    
+    boost::hash_combine(
+        result, std::hash<map_utils::UtmZone>()(include_zone ? k.utm_zone : map_utils::UtmZone()));
+
     boost::hash_combine(result, include_origin ? k.origin_latitude : 0.);
     boost::hash_combine(result, include_origin ? k.origin_longitude : 0.);
     boost::hash_combine(result, include_origin ? k.origin_heading : 0.);
 
-   return result;
+    return result;
   }
 };
 

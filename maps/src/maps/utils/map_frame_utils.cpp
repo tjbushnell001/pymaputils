@@ -40,9 +40,11 @@ MapFrame mapFrameFromLocalization(const MapFrameType frame_type,
   map_frame.origin_longitude = localization.longitude;
 
   const map_utils::UtmZone utm_zone = utmZoneFromLocalization(localization);
-  const double utm_theta = map_utils::getUtmTheta(utm_zone, localization.heading, localization.latitude, localization.longitude);
+  const double utm_theta = map_utils::getUtmTheta(utm_zone, localization.heading,
+                                                  localization.latitude, localization.longitude);
 
-  map_utils::convertGpsToUtm(localization.latitude, localization.longitude, utm_zone, &map_frame.utm_origin.position.x, &map_frame.utm_origin.position.y);
+  map_utils::convertGpsToUtm(localization.latitude, localization.longitude, utm_zone,
+                             &map_frame.utm_origin.position.x, &map_frame.utm_origin.position.y);
 
   map_frame.utm_origin.orientation = tf::createQuaternionMsgFromYaw(utm_theta);
 
@@ -53,7 +55,8 @@ MapFrame mapFrameFromLocalization(const MapFrameType frame_type,
 
 map_utils::UtmZone utmZoneFromLocalization(const perception_msgs::Localization& localization)
 {
-  const map_utils::UtmZone utm_zone = map_utils::getUtmZone(localization.latitude, localization.longitude);
+  const map_utils::UtmZone utm_zone =
+      map_utils::getUtmZone(localization.latitude, localization.longitude);
 
   return utm_zone;
 }

@@ -5,8 +5,8 @@
 #include <memory>
 #include <mutex>
 #include <thread>
-#include <unordered_set>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <maps/map_layer.h>
 #include <maps/sub_map.h>
@@ -61,12 +61,12 @@ class TiledMapLayer : public MapLayer
 
   ~TiledMapLayer()
   {
-     // if we have a preload thread running, stop it
-     if (preload_thread_) {
-       running_ = false;
-       preload_thread_->join();
-       preload_thread_ = nullptr;
-     }
+    // if we have a preload thread running, stop it
+    if (preload_thread_) {
+      running_ = false;
+      preload_thread_->join();
+      preload_thread_ = nullptr;
+    }
   }
 
   /**
@@ -157,9 +157,8 @@ class TiledMapLayer : public MapLayer
   void resetFrame(const MapFrameType& map_frame_type)
   {
     ROS_WARN_STREAM("Changed map frame type from "
-                    << mapFrameTypeStrings.at(sub_map_->map_frame.type)
-                    << " to " << mapFrameTypeStrings.at(map_frame_type)
-                    << ", clearing tiles");
+                    << mapFrameTypeStrings.at(sub_map_->map_frame.type) << " to "
+                    << mapFrameTypeStrings.at(map_frame_type) << ", clearing tiles");
 
     sub_map_->resetFrame(map_frame_type);
   }
@@ -218,9 +217,8 @@ class TiledMapLayer : public MapLayer
    * @param[in] tile_id Id of tile to load.
    * @param[in] target_frame Map frame to convert tile into.
    **/
-  virtual std::shared_ptr<typename SubMapType::TileType> loadTile(const std::string& dir_name,
-                                                                  uint64_t tile_id,
-                                                                  const MapFrame& target_frame) const = 0;
+  virtual std::shared_ptr<typename SubMapType::TileType>
+  loadTile(const std::string& dir_name, uint64_t tile_id, const MapFrame& target_frame) const = 0;
 
  private:
   bool loadTiles(const std::shared_ptr<SubMapType>& sub_map,
@@ -252,8 +250,7 @@ class TiledMapLayer : public MapLayer
     return loaded;
   }
 
-  bool unloadTile(const std::shared_ptr<SubMapType>& sub_map,
-                  uint64_t tile_id) const
+  bool unloadTile(const std::shared_ptr<SubMapType>& sub_map, uint64_t tile_id) const
   {
     if (sub_map->tiles.find(tile_id) == sub_map->tiles.end()) {
       return false;
@@ -278,7 +275,8 @@ class TiledMapLayer : public MapLayer
     }
   }
 
-  void runPreloadThread() {
+  void runPreloadThread()
+  {
     assert(preload_);
 
     ROS_INFO("Started map preloading thread.");
@@ -299,25 +297,26 @@ class TiledMapLayer : public MapLayer
       // we actually need, which is the main point of preloading.
       const double lat = target_frame.origin_latitude;
       const double lng = target_frame.origin_longitude;
-      const auto current_tiles = map_utils::getSurroundingTiles(lat, lng, tile_radius_ + 1, tile_level_);
+      const auto current_tiles =
+          map_utils::getSurroundingTiles(lat, lng, tile_radius_ + 1, tile_level_);
 
       // always add the target frame
-      std::unordered_set<MapFrame> all_frames = {target_frame};
+      std::unordered_set<MapFrame> all_frames = { target_frame };
       if (target_frame.type == MapFrameType::UTM) {
         // if the target is UTM and we're near to a UTM zone boundary, we want
         // to load multiple frames so we're ready for the switch over
 
         // include the target UTM zone
-        std::unordered_set<map_utils::UtmZone> all_zones = {target_frame.utm_zone};
+        std::unordered_set<map_utils::UtmZone> all_zones = { target_frame.utm_zone };
         // as well as any others for other tiles we're about to load
         for (const auto tile_id : current_tiles) {
           const auto ll = map_utils::tileIdToLatLng(tile_id, tile_level_);
           const auto utm_zone = map_utils::getUtmZone(ll.first, ll.second);
-          
+
           if (all_zones.count(utm_zone) == 0) {
             // this is a new UTM zone, add it as a new frame to preload
             MapFrame map_frame;
-            map_frame.type  = MapFrameType::UTM;
+            map_frame.type = MapFrameType::UTM;
             map_frame.utm_zone = utm_zone;
 
             all_frames.insert(map_frame);
@@ -337,9 +336,8 @@ class TiledMapLayer : public MapLayer
           // holding the lock. The copy is fast because all the tiles are pointers
           tmp_map = std::make_shared<SubMapType>(*it->second);
         } else {
-          ROS_WARN_STREAM("Adding preload frame "
-                          << static_cast<int>(map_frame.type) << " zone "
-                          << static_cast<int>(map_frame.utm_zone.zone));
+          ROS_WARN_STREAM("Adding preload frame " << static_cast<int>(map_frame.type) << " zone "
+                                                  << static_cast<int>(map_frame.utm_zone.zone));
           tmp_map = std::make_shared<SubMapType>(map_frame.type);
           tmp_map->map_frame = map_frame;
         }
@@ -365,9 +363,8 @@ class TiledMapLayer : public MapLayer
       lock.lock();
       for (auto it = preload_maps_.begin(); it != preload_maps_.end();) {
         if (all_frames.count(it->first) == 0) {
-          ROS_WARN_STREAM("Dropping preload frame "
-                      << static_cast<int>(it->first.type) << " zone "
-                      << static_cast<int>(it->first.utm_zone.zone));
+          ROS_WARN_STREAM("Dropping preload frame " << static_cast<int>(it->first.type) << " zone "
+                                                    << static_cast<int>(it->first.utm_zone.zone));
 
           it = preload_maps_.erase(it);
         } else {

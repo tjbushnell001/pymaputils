@@ -112,9 +112,8 @@ class SingleMapLayer : public MapLayer
   void resetFrame(const MapFrameType& map_frame_type)
   {
     ROS_WARN_STREAM("Changed map frame type from "
-                    << mapFrameTypeStrings.at(map_frame_.type)
-                    << " to " << mapFrameTypeStrings.at(map_frame_type)
-                    << ", clearing features");
+                    << mapFrameTypeStrings.at(map_frame_.type) << " to "
+                    << mapFrameTypeStrings.at(map_frame_type) << ", clearing features");
 
     loaded_ = false;
     features_ = nullptr;

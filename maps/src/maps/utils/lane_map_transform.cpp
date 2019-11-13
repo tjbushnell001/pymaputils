@@ -56,7 +56,7 @@ void maps::transformMapUtmToVehicleFrame(maps::LaneSubMap* map,
   assert(map);
   const auto& map_frame = map->map_frame;
   assert(map_frame.type == MapFrameType::UTM);
-  
+
   const map_utils::UtmZone utm_zone = utmZoneFromLocalization(localization);
   assert(map_frame.utm_zone == utm_zone);
 
@@ -75,8 +75,10 @@ void maps::transformTileUtmToVehicleFrame(lane_map::Tile* tile,
   const map_utils::UtmZone utm_zone = utmZoneFromLocalization(localization);
 
   geometry_msgs::Point utm_pos;
-  map_utils::convertGpsToUtm(localization.latitude, localization.longitude, utm_zone, &utm_pos.x, &utm_pos.y);
-  const double utm_theta = map_utils::getUtmTheta(utm_zone, localization.heading, localization.latitude, localization.longitude);
+  map_utils::convertGpsToUtm(localization.latitude, localization.longitude, utm_zone, &utm_pos.x,
+                             &utm_pos.y);
+  const double utm_theta = map_utils::getUtmTheta(utm_zone, localization.heading,
+                                                  localization.latitude, localization.longitude);
 
   for (auto& lg_pair : tile->lane_groups) {
     auto& lg = lg_pair.second;

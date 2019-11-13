@@ -1,6 +1,6 @@
+#include <diagnostics_utils/instrumentation.h>
 #include <maps/road_maps.h>
 #include "utils/map/road_graph_parser.h"
-#include <diagnostics_utils/instrumentation.h>
 
 using namespace maps;
 using namespace diagnostics_utils;
