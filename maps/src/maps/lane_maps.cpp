@@ -47,7 +47,7 @@ std::shared_ptr<lane_map::Tile> LaneMapLayer::loadTile(const std::string& dir_na
   return tile;
 }
 
-LaneSubMap::LaneSubMap(const MapFrameType frame_type) : SubMap(frame_type)
+LaneSubMap::LaneSubMap(const MapFrameType frame_type, const double submap_radius) : SubMap(frame_type), submap_radius(submap_radius)
 {
 }
 

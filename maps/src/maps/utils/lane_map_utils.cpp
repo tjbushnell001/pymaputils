@@ -441,7 +441,7 @@ size_t getNumberOfLanesInLaneGroup(const LaneGroup& lg)
 std::shared_ptr<maps::LaneSubMap> copySubMap(
     const maps::LaneSubMap& map, const std::unordered_set<lane_map::LaneGroupRef>& lane_groups)
 {
-  auto new_map = std::make_shared<maps::LaneSubMap>(map.map_frame.type);
+  auto new_map = std::make_shared<maps::LaneSubMap>(map.map_frame.type, map.submap_radius);
   new_map->map_frame = map.map_frame;
 
   // Add the specified lane groups

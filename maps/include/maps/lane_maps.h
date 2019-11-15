@@ -20,7 +20,12 @@ class LaneSubMap : public SubMap<lane_map::Tile>
     * A tile lane sub map, which exposes accessors and settors.
     *
     **/
-  LaneSubMap(const MapFrameType frame_type = MapFrameType::GCS_NED);
+  LaneSubMap(const MapFrameType frame_type = MapFrameType::GCS_NED, const double submap_radius = 0);
+
+  // WARNING: the "submap_radius" argument is a temporary fix we while mappery loads it's map from map_gcs. map_gcs sends
+  // an incomplete map causing some issues with missing data so this flag is used to limit the range mappery searches
+  // TODO(christian): Remove this once we remove lane_map_server
+  double submap_radius;
 
   /**
    * Transforms the current tiles into a new map frame.
