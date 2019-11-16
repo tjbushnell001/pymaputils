@@ -47,7 +47,7 @@ std::shared_ptr<lane_map::Tile> LaneMapLayer::loadTile(const std::string& dir_na
   return tile;
 }
 
-LaneSubMap::LaneSubMap(const MapFrameType frame_type, const double submap_radius) : SubMap(frame_type), submap_radius(submap_radius)
+LaneSubMap::LaneSubMap(const MapFrameType frame_type) : SubMap(frame_type)
 {
 }
 
@@ -211,6 +211,16 @@ void LaneSubMap::addConnector(const lane_map::ConnectorRef& ref,
     tiles[ref.tile_id] = tile;
   }
   tile->connectors[ref] = connector;
+}
+
+void LaneSubMap::setFilterRadius(double filter_radius)
+{
+  filter_radius_ = filter_radius;
+}
+
+double LaneSubMap::getFilterRadius() const
+{
+  return filter_radius_;
 }
 
 PolygonFeatureMapLayer::PolygonFeatureMapLayer(MapLayerType layer_type,

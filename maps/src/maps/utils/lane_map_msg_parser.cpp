@@ -21,8 +21,9 @@ std::shared_ptr<maps::LaneSubMap> getMap(const perception_msgs::Map& map_msg)
   const maps::MapFrame map_frame = maps::mapFrameFromMapFrameMsg(map_msg.map_frame);
 
   // set map frame
-  auto map = std::make_shared<maps::LaneSubMap>(map_frame.type, map_msg.submap_radius);
+  auto map = std::make_shared<maps::LaneSubMap>(map_frame.type);
   map->map_frame = map_frame;
+  map->setFilterRange(map_msg.submap_radius);
 
   // parse tiles
   map->tiles = getTiles(map_msg);

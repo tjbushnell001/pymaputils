@@ -172,8 +172,9 @@ perception_msgs::MapTile getTileMsg(const lane_map::Tile& tile)
 perception_msgs::Map getMapMsg(const maps::LaneSubMap& map)
 {
   perception_msgs::Map map_msg;
+
   map_msg.map_frame = mapFrameMsgFromMapFrame(map.map_frame);
-  map_msg.submap_radius = map.submap_radius;
+  map_msg.filter_radius = map.getFilterRadius();
 
   // match header to map frame header
   map_msg.header = map_msg.map_frame.header;
