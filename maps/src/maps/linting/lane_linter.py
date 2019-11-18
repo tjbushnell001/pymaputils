@@ -30,7 +30,7 @@ def check_line(line, feature, line_name, issue_layer):
 
     # 3. doesn't cross itself
     if not line.is_simple:
-        msg = "{} intersects itself".format(line_name))
+        msg = "{} intersects itself".format(line_name)
         issue_layer.add_issue(feature, Issue(IssueType.SELF_CROSSING_LINE.name,
                                              msg=msg))
 
