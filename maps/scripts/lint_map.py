@@ -50,6 +50,7 @@ def main():
                      "**************************************\n"
                      "* Linting FAILED!\n"
                      "**************************************\n")
+        exit(1)
     else:
         emblog.debug("\nLinting PASSED.\n")
 

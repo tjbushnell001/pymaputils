@@ -8,7 +8,7 @@ import geopy
 LANE_TRANSITION_TYPES = {"MERGE": "M", "SPLIT": "S", "UNKNOWN": "N"}
 
 
-def lint_junction(junction, lane_map, issue_layer=None, issue_types=None):
+def lint_junction(junction, lane_map, issue_layer):
     """
     Lint a junction, checking the inflow and outflow lanes for the correct properties and formatting.
 
@@ -17,9 +17,6 @@ def lint_junction(junction, lane_map, issue_layer=None, issue_types=None):
     :param issue_layer: an optional pre initialized issue layer to write new issues to
     :return: the issue layer with any new issues added.
     """
-    issue_layer = IssueLayer() if issue_layer is None else issue_layer
-    issue_types = set(IssueType) if issue_types is None else issue_types
-
     inflows = junction.properties['inflow_refs']
     outflows = junction.properties['outflow_refs']
 
@@ -28,14 +25,14 @@ def lint_junction(junction, lane_map, issue_layer=None, issue_types=None):
     transition_msg = junction_transition_message(in_transitions, out_transitions)
 
     # 1. check that junction has any outflows
-    if len(outflows) == 0 and IssueType.NO_OUTFLOW in issue_types:
+    if len(outflows) == 0:
         issue_layer.add_issue(junction, Issue(IssueType.NO_OUTFLOW.name))
 
     # 2. check outflow transitions
     for counts in out_transitions.values():
-        if sum(counts.values()) > 1 and counts['UNKNOWN'] == 0 and IssueType.SPLIT_NO_NORMAL in issue_types:
+        if sum(counts.values()) > 1 and counts['UNKNOWN'] == 0:
             issue_layer.add_issue(junction, Issue(IssueType.SPLIT_NO_NORMAL.name, msg=transition_msg))
-        elif counts['UNKNOWN'] > 1 and IssueType.SPLIT_MULTIPLE_NORMAL in issue_types:
+        elif counts['UNKNOWN'] > 1:
             issue_layer.add_issue(junction, Issue(IssueType.SPLIT_MULTIPLE_NORMAL.name, msg=transition_msg))
 
     for lane_ref in outflows:
@@ -44,20 +41,19 @@ def lint_junction(junction, lane_map, issue_layer=None, issue_types=None):
             continue
         # 3. check outflow direction of travel
         lane_dot = lane.properties['direction_of_travel']
-        if lane_dot != "FORWARD" and IssueType.INVALID_DIRECTION_OF_TRAVEL in issue_types:
+        if lane_dot != "FORWARD":
             issue_layer.add_issue(lane, Issue(IssueType.INVALID_DIRECTION_OF_TRAVEL.name, msg=lane_dot))
 
         # 4. check outflow geometric properties
-        if (len(outflows) > 1 and not lane.properties['from_split'] and
-                IssueType.FROM_SPLIT_MISSING_PROPERTY in issue_types):
+        if len(outflows) > 1 and not lane.properties['from_split']:
             lane.properties['from_split'] = True
             issue_layer.add_issue(junction, Issue(IssueType.FROM_SPLIT_MISSING_PROPERTY.name))
 
     # 5. check inflow transitions
     for counts in in_transitions.values():
-        if sum(counts.values()) > 1 and counts['UNKNOWN'] == 0 and IssueType.MERGE_NO_NORMAL in issue_types:
+        if sum(counts.values()) > 1 and counts['UNKNOWN'] == 0:
             issue_layer.add_issue(junction, Issue(IssueType.MERGE_NO_NORMAL.name, msg=transition_msg))
-        elif counts['UNKNOWN'] > 1 and IssueType.MERGE_MULTIPLE_NORMAL in issue_types:
+        elif counts['UNKNOWN'] > 1:
             issue_layer.add_issue(junction, Issue(IssueType.MERGE_MULTIPLE_NORMAL.name, msg=transition_msg))
 
     for lane_ref in inflows:
@@ -66,11 +62,11 @@ def lint_junction(junction, lane_map, issue_layer=None, issue_types=None):
             continue
         # 6. check inflow direction of travel
         lane_dot = lane.properties['direction_of_travel']
-        if lane_dot != "FORWARD" and IssueType.INVALID_DIRECTION_OF_TRAVEL in issue_types:
+        if lane_dot != "FORWARD":
             issue_layer.add_issue(lane, Issue(IssueType.INVALID_DIRECTION_OF_TRAVEL.name, msg=lane_dot))
 
         # 7. check inflow geometric properties
-        if len(inflows) > 1 and not lane.properties['merging'] and IssueType.MERGING_MISSING_PROPERTY in issue_types:
+        if len(inflows) > 1 and not lane.properties['merging']:
             issue_layer.add_issue(junction, Issue(IssueType.MERGING_MISSING_PROPERTY.name))
 
     # 8. check junction distance from lanes
@@ -87,7 +83,7 @@ def lint_junction(junction, lane_map, issue_layer=None, issue_types=None):
             d = geopy.distance.distance(lane_pt, junction_pt).meters
             if max_junction_dist is None or d > max_junction_dist:
                 max_junction_dist = d
-    if max_junction_dist is not None and max_junction_dist > 0.10 and IssueType.JUNCTION_TOO_FAR in issue_types:
+    if max_junction_dist is not None and max_junction_dist > 0.10:
         issue_layer.add_issue(junction, Issue(IssueType.JUNCTION_TOO_FAR.name,
                                               msg="{0:.2f}m".format(max_junction_dist)))
 

@@ -2,7 +2,7 @@
 import os
 import maps.routing
 
-from maps.linting import junction_linter
+from maps.linting import junction_linter, lane_linter
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
 from maps.issues import IssueLayer, IssueLevel, Issue
 from maps.issue_types import IssueType
@@ -11,22 +11,11 @@ from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
 from maps.utils import emblog
 from maps.utils import routing_utils
 
-
-def lint_lane_group(lane_group, lane_map, issue_layer, issue_types):
+def lint_lane_group(lane_group, lane_map, issue_layer):
     if len(lane_group.properties['lane_segment_refs']) == 0:
-        if IssueType.NO_LANES_IN_LANE_GROUP in issue_types:
-            issue_layer.add_issue(lane_group, Issue(IssueType.NO_LANES_IN_LANE_GROUP.name))
+        issue_layer.add_issue(lane_group, Issue(IssueType.NO_LANES_IN_LANE_GROUP.name))
 
-    for lane_ref in lane_group.properties['lane_segment_refs']:
-        lane = lane_map.get_feature(lane_ref)
-        for key in ('left_boundary_ref', 'right_boundary_ref'):
-            boundary_ref = lane.properties[key]
-            boundary = lane_map.get_feature(boundary_ref)
-            if boundary is None and IssueType.MISSING_BOUNDARY in issue_types:
-                issue_layer.add_issue(lane, Issue(IssueType.MISSING_BOUNDARY.name, msg=str(boundary_ref)))
-
-
-def lint_route(route, route_id, lane_map, road_map, issue_layer, issue_types):
+def lint_route(route, route_id, lane_map, road_map, issue_layer):
     junction_set = set()
 
     print "Getting LaneGroups in route: {}".format(route_id)
@@ -35,13 +24,17 @@ def lint_route(route, route_id, lane_map, road_map, issue_layer, issue_types):
 
     for lane_group in route_lane_groups:
         # lint the lane group
-        lint_lane_group(lane_group, lane_map, issue_layer, issue_types)
+        lint_lane_group(lane_group, lane_map, issue_layer)
 
         lane_tile = lane_map.get_tile(lane_group['ref']['tile_id'])
         for lane_segment_ref in lane_group.properties['lane_segment_refs']:
             lane = lane_tile.get_features('lane')[lane_segment_ref]
             if lane.properties['is_emergency_lane']:
                 continue
+
+            # lint each lane
+            lane_linter.lint_lane(lane, lane_map, issue_layer)
+
             # Only use starting junctions to avoid duplicate issue checking
             for junction_key in ('start_junction_ref', 'end_junction_ref'):
                 junction_ref = lane.properties[junction_key]
@@ -51,28 +44,26 @@ def lint_route(route, route_id, lane_map, road_map, issue_layer, issue_types):
 
                 junction = lane_map.get_feature(junction_ref)
                 if junction is None:
-                    if IssueType.NON_EXISTANT_JUNCTION_REF in issue_types:
-                        issue_layer.add_issue(lane, Issue(IssueType.NON_EXISTANT_JUNCTION_REF.name, msg=str(lane)))
+                    issue_layer.add_issue(lane, Issue(IssueType.NON_EXISTANT_JUNCTION_REF.name, msg=str(lane)))
                 else:
-                    junction_linter.lint_junction(junction, lane_map, issue_layer, issue_types)
+                    junction_linter.lint_junction(junction, lane_map, issue_layer)
 
 
 def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
     # TODO: Once we make map reader dir its own map layer, pass the layers in instead of the directory locations
-    issue_set = set()
+    issue_set = None
     if issue_types is not None:
+        issue_set = set()
         for itype in issue_types:
             try:
                 issue_set.add(IssueType[itype])
             except KeyError:
                 print 'Type [{}] is not a valid IssueType'.format(itype)
                 return
-    else:
-        issue_set = set(IssueType)
 
     lane_map = ConvertedLaneMapLayer(os.path.join(map_dir, 'tiles'), fix_dot=True)
     road_graph = GeoJsonTiledMapLayer(os.path.join(map_dir, 'road_tiles'), tile_level=ROAD_GRAPH_TILE_LEVEL)
-    issue_layer = IssueLayer()
+    issue_layer = IssueLayer(restrict_types=issue_set)
 
     failed_routes = set()
     for route_id in route_ids:
@@ -94,7 +85,7 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
             print
             print "Linting route [{}]".format(route_id)
 
-            lint_route(routes, route_id, lane_map, road_graph, issue_layer, issue_set)
+            lint_route(routes, route_id, lane_map, road_graph, issue_layer)
 
         curr_counts = issue_layer.count_issues_by_level()
 
