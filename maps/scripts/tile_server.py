@@ -104,7 +104,6 @@ def get_lane_feature():
     """
     # create a ref from url arguments
     ref = dict(flask.request.args)
-    print ref
     for k,v in ref.items():
         v = v[0]
         if k != 'type':
