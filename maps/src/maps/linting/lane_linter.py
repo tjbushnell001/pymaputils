@@ -30,7 +30,6 @@ def check_line(line, feature, line_name, issue_layer):
 
     # 3. doesn't cross itself
     if not line.is_simple:
-        issues.add_issue(feature,
         msg = "{} intersects itself".format(line_name))
         issue_layer.add_issue(feature, Issue(IssueType.SELF_CROSSING_LINE.name,
                                              msg=msg))
@@ -49,9 +48,9 @@ def line_relative_theta(center_line, other_line):
     """ Find the heading difference between two lines """
 
     center_heading = line_theta(center_line)
-    
+
     other_heading = line_theta(other_line)
-    
+
     return norm_angle(other_heading - center_heading)
 
 def lint_lane(lane, lane_map, issue_layer):
