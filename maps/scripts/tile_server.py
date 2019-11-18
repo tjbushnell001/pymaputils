@@ -16,7 +16,9 @@ from maps.lane_maps import ConvertedLaneMapLayer
 from maps.utils import geojson_utils
 from maps.utils import tile_linker
 from maps.utils import tile_utils
+from maps.utils import ref_utils
 
+import shapely.geometry
 
 # ------------------------------------
 # Constants
@@ -89,6 +91,44 @@ def get_lane_tile(tile_id):
         flask.abort(404)
         return
     return flask.jsonify(tile.collection)
+
+@app.route("/tiles/find", methods=['GET'])
+@app.route("/tiles/find/", methods=['GET'])
+@cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
+def get_lane_feature():
+    """
+    Find coordinates for the specified feature ref.  Ref is encoded as url args.
+    (e.g. "/tiles/find/?type=lane_ref&tile_id=309134521&lane_group_id=2083391152&id=2")
+
+    :return: A feature with the coordinates
+    """
+    # create a ref from url arguments
+    ref = dict(flask.request.args)
+    print ref
+    for k,v in ref.items():
+        v = v[0]
+        if k != 'type':
+            v = int(v)
+        ref[k] = v
+    ref = ref_utils.hashify(ref)
+
+    # find the feature
+    feature = lane_map.get_feature(ref)
+
+    if feature is None:
+        flask.abort(404)
+        return
+
+    # create a result with a representative point
+    geom = shapely.geometry.shape(feature.geometry)
+    point = geom.representative_point()
+
+    f = geojson.Feature(geometry=point,
+                        properties={
+                            'query' : ref,
+                        })
+
+    return flask.jsonify(f)
 
 
 @app.route("/road_tiles", methods=['GET'])
