@@ -7,7 +7,6 @@ import maps
 import maps.road_graph
 import os
 import re
-import time
 
 from flask_cors import cross_origin
 from maps.feature_dict import FeatureDict
@@ -91,6 +90,7 @@ def get_lane_tile(tile_id):
         flask.abort(404)
         return
     return flask.jsonify(tile.collection)
+
 
 @app.route("/tiles/find", methods=['GET'])
 @app.route("/tiles/find/", methods=['GET'])
@@ -191,6 +191,29 @@ def get_map_reader_route(route_name):
     with open(fn, 'r') as f:
         content = geojson.load(f)
     return flask.jsonify(content)
+
+
+@app.route("/routes/<route_name>", methods=['PUT'])
+@app.route("/routes/<route_name>/", methods=['PUT'])
+@cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
+def save_map_reader_route(route_name):
+    """ Save a geojson route file """
+    if VALID_ROUTE_NAME.match(route_name) is None:
+        # invalid route name
+        flask.abort(400)
+        return
+
+    fn = os.path.join(map_reader_dir, route_name + '.json')
+    if not os.path.exists(fn):
+        # route doesn't exist
+        flask.abort(404)
+        return
+
+    route = geojson.loads(flask.request.data)
+    geojson_utils.write_geojson_object(route_name, map_reader_dir, route)
+    # geojson.dump(route, open(fn, 'w'), sort_keys=True, separators=(',', ':'), indent=0)
+
+    return flask.Response(status=200)
 
 
 def rebuild_road_tiles(lane_tile_id):
