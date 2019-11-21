@@ -64,17 +64,22 @@ class FeatureDict(object):
                     del self.feature_type_map[feature_type]
 
 
-def load_from_file(file_path):
+def load_from_file(file_path, feature_dict=True):
     """
     Load a geojson file adding our custom ref parsing logic.
 
     :param file_path: the full file path of the file to load
-    :return: a FeatureDict object with fully index-able refs
+    :param feature_dict: if True, return a FeatureDict.
+    :return: a FeatureDict object with fully index-able refs or geojson FeatureCollection
     """
     if not os.path.exists(file_path):
         return None
     with open(file_path, 'r') as f:
         collection = geojson.load(f)
+
+    if not feature_dict:
+        # return raw geojson object
+        return collection
     return FeatureDict(collection)
 
 
