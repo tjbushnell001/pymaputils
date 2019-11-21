@@ -7,7 +7,6 @@ import shapely.geometry
 from maps.issues import IssueLevel, Issue
 from maps.issue_types import IssueType
 from maps.utils import tile_utils
-import utils.geometric.utils
 
 def line_to_utm(geometry, utm_zone=None):
     """ Creates a shapely LineString in utm """
@@ -29,11 +28,15 @@ def check_line(line, feature, line_name, issue_layer):
         issue_layer.add_issue(feature, Issue(IssueType.SELF_CROSSING_LINE.name,
                                              msg=msg))
 
+def norm_angle(a):
+    """ Nomalize an angle +-pi (in radians) """
+    return (a + math.pi) % (2 * math.pi) - math.pi
+
 def line_theta(line, index=0):
     """ Find the heading at the given index of a line """
     p1 = line.coords[index]
     p2 = line.coords[index + 1]
-    return utils.geometric.utils.norm_angle(math.atan2(p2[1] - p1[1], p2[0] - p1[0]))
+    return norm_angle(math.atan2(p2[1] - p1[1], p2[0] - p1[0]))
 
 def line_relative_theta(center_line, other_line):
     """ Find the heading difference between two lines """
@@ -42,7 +45,7 @@ def line_relative_theta(center_line, other_line):
 
     other_heading = line_theta(other_line)
 
-    return utils.geometric.utils.norm_angle(other_heading - center_heading)
+    return norm_angle(other_heading - center_heading)
 
 def lint_lane(lane, lane_map, issue_layer):
     if lane.properties['is_emergency_lane']:
