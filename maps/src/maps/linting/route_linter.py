@@ -63,7 +63,7 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
 
     lane_map = ConvertedLaneMapLayer(os.path.join(map_dir, 'tiles'), fix_dot=True)
     road_graph = GeoJsonTiledMapLayer(os.path.join(map_dir, 'road_tiles'), tile_level=ROAD_GRAPH_TILE_LEVEL)
-    issue_layer = IssueLayer(restrict_types=issue_set)
+    issue_layer = IssueLayer(filter_types=issue_set)
 
     failed_routes = set()
     for route_id in route_ids:

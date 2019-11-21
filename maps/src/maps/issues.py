@@ -23,16 +23,23 @@ class IssueLayer(object):
     A set of features (i.e. FeatureIssueSet) and their associated issues.
     TODO(christian): Make this a GeoJsonMapLayer
     """
-    def __init__(self, restrict_types = None):
+    def __init__(self, filter_types = None):
+        """
+        Arguments:
+        filter_types: (optional) Only accept issues of the given type (iterable
+                      of IssueType).
+        """
+
         self.features = {}
 
-        self.restrict_types = None
-        if restrict_types is not None:
-            self.restrict_types = set(restrict_types)
+        self.filter_types = None
+        if filter_types is not None:
+            self.filter_types = set(filter_types)
 
     def add_issue(self, feature, issue, point=None):
-        if (self.restrict_types is not None and
-            issue.issue_type not in self.restrict_types):
+        if (self.filter_types is not None and
+            issue.issue_type not in self.filter_types):
+            # we're filtering and this isn't a support issue type
             return
 
         issue_set = self.get_feature_issues(feature, create=True)
