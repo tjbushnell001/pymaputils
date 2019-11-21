@@ -56,10 +56,20 @@ class MapLayers(object):
 
             return self.layers[MapType.DISENGAGE_ZONE].get(layer_name)
 
+        elif layer_type == MapType.LANE_ANNOTATION:
+            if MapType.LANE_ANNOTATION not in self.layers:
+                self.layers[MapType.LANE_ANNOTATION] = self.load_single_layers(
+                    os.path.join(self.map_dir, "annotations"),
+                    spec="*.json",
+                    as_dict=False)
+
+            return self.layers[MapType.LANE_ANNOTATION].get(layer_name)
+
         elif layer_type == MapType.MAP_READER:
             if MapType.MAP_READER not in self.layers:
                 self.layers[MapType.MAP_READER] = self.load_single_layers(
-                    self.map_reader_dir)
+                    self.map_reader_dir,
+                    as_dict=False)
             return self.layers[MapType.MAP_READER].get(layer_name)
 
         elif layer_type == MapType.FREE_SPACE:
@@ -69,18 +79,19 @@ class MapLayers(object):
                     as_dict=False)
             return self.layers[MapType.FREE_SPACE].get(layer_name)
 
-        elif layer_type == MapType.RADAR_ZONES:
-            if MapType.RADAR_ZONES not in self.layers:
-                self.layers[MapType.RADAR_ZONES] = self.load_single_layers(
-                    self.radar_zones_dir)
-            return self.layers[MapType.RADAR_ZONES].get(layer_name)
+        elif layer_type == MapType.RADAR_ZONE:
+            if MapType.RADAR_ZONE not in self.layers:
+                self.layers[MapType.RADAR_ZONE] = self.load_single_layers(
+                    self.radar_zones_dir,
+                    as_dict=False)
+            return self.layers[MapType.RADAR_ZONE].get(layer_name)
 
-        elif layer_type == MapType.LOCALIZATION_ZONES:
-            if MapType.LOCALIZATION_ZONES not in self.layers:
-                fn = os.path.join(self.map_dir, "/../../localization_filter_zones.json")
-                self.layers[MapType.LOCALIZATION_ZONES] = feature_dict.load_from_file(fn)
+        elif layer_type == MapType.LOCALIZATION_ZONE:
+            if MapType.LOCALIZATION_ZONE not in self.layers:
+                fn = os.path.join(self.map_dir, "../../localization_filter_zones.json")
+                self.layers[MapType.LOCALIZATION_ZONE] = feature_dict.load_from_file(fn, feature_dict=False)
 
-            return self.layers[MapType.LOCALIZATION_ZONES]
+            return self.layers[MapType.LOCALIZATION_ZONE]
 
         raise NotImplementedError()
 
