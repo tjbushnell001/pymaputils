@@ -16,7 +16,8 @@ class ConvertedLaneMapLayer(JsonTiledMapLayer):
         :param fix_dot: Whether to fix the direction of travel on loaded tiles
         """
         super(ConvertedLaneMapLayer, self).__init__(lane_tile_dir, LANE_MAP_TILE_LEVEL, cache_tiles=cache_tiles,
-                                                    load_tiles=load_tiles, layer_type=MapType.LANE)
+                                                    load_tiles=load_tiles, layer_type=MapType.LANE,
+                                                    separators=(', ', ': '))
         self.fix_dot = fix_dot
 
     # --------------------------------------
