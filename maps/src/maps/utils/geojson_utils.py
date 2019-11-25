@@ -144,19 +144,19 @@ def lane_group_ref_from_lane_ref(lane_ref):
          'type': 'lane_group_ref'})
 
 
-def write_geojson_tile(tile_id, prefix, feature_collection):
+def write_geojson_object(file_name, prefix, feature_collection):
     """
     Write a geojson feature_collection to disk as a json file.
 
-    :param tile_id: the id of the tile being written
+    :param file_name: the name of the file
     :param prefix: the file path to write the geojson file to
     :param feature_collection: the feature collection object
     :return: None
     """
-    fn = os.path.join(prefix, '{}.json'.format(tile_id))
+    fn = os.path.join(prefix, '{}.json'.format(file_name))
 
     geojson.dump(feature_collection, open(fn, 'w'),
-                 sort_keys=True, separators=(',', ':'), indent=0)
+                 sort_keys=True, separators=(',', ': '), indent=4)
 
 
 def connector_ref_from_junction_ref(junction_ref):
