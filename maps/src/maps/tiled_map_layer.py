@@ -13,7 +13,8 @@ class JsonTiledMapLayer(object):
     """
     MAX_CACHE_SIZE = 100
 
-    def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True, layer_type=None, json_separators=(',', ': ')):
+    def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True, layer_type=None,
+                 json_separators=(',', ': ')):
         """
         :param map_dir: The root directory of this tiled map (usually lives one level below tiled_maps)
         :param cache_tiles: Whether or not to cache tiles
