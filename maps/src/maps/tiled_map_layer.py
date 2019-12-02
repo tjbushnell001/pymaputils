@@ -13,14 +13,14 @@ class JsonTiledMapLayer(object):
     """
     MAX_CACHE_SIZE = 100
 
-    def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True, layer_type=None, separators=(',', ': ')):
+    def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True, layer_type=None, json_separators=(',', ': ')):
         """
         :param map_dir: The root directory of this tiled map (usually lives one level below tiled_maps)
         :param cache_tiles: Whether or not to cache tiles
         :param tile_level: the here_maps tile level. This basically defines the resolution of the tiles (larger number
                means smaller tiles).
         :param layer_type: the MapLayer type.
-        :param json: json separators
+        :param json_seperators: json separators, per json.dump()
         """
         self.map_dir = map_dir
         self.tile_level = tile_level
@@ -28,7 +28,7 @@ class JsonTiledMapLayer(object):
         self.cache_tiles = cache_tiles
         self.load_tiles = load_tiles
         self.layer_type = layer_type
-        self.separators = separators
+        self.json_separators = json_separators
 
         # tile cache
         self.cache = LRUCache(self.MAX_CACHE_SIZE)
@@ -80,7 +80,7 @@ class JsonTiledMapLayer(object):
         fn = self.get_tile_filename(tile_id)
         with open(fn, 'w') as f:
             json.dump(tile, f, indent=4, sort_keys=True,
-                      separators=self.separators)
+                      separators=self.json_separators)
             print "Saved tile: {}".format(fn)
 
     def get_tile_list(self):
