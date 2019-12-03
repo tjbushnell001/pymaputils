@@ -5,7 +5,11 @@ try:
     import rostopic
     try:
         rostopic.get_topic_class('/rosout')
-        USE_ROS = True
+        try:
+            rospy.Time.now()
+            USE_ROS = True
+        except rospy.exceptions.ROSInitException:
+            USE_ROS = False
     except rostopic.ROSTopicIOException:
         USE_ROS = False
 except ImportError:
