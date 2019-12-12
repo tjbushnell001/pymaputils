@@ -96,7 +96,7 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
         failed = False
         if route_failed:
             emblog.error('  Route Failures: 1')
-            failed = False
+            failed = True
         for level in sorted(curr_counts.keys(), cmp=IssueLevel.cmp):
             curr_count = curr_counts[level] - prev_counts.get(level, 0)
             if curr_count > 0:
