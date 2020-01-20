@@ -50,6 +50,75 @@ void maps::transformTileGpsToUtm(lane_map::Tile* tile, map_utils::UtmZone utm_zo
   }
 }
 
+void applyTransform(const Eigen::Isometry2d& transform, BoostPolygon* polygon)
+{
+  Eigen::Vector2d p_mem;
+  auto apply_to_pnt = [&p_mem, &transform](BoostPoint& p) {
+    p_mem << p.x(), p.y();
+    p_mem = transform * p_mem;
+    p.x(p_mem(0));
+    p.y(p_mem(1));
+  };
+  boost::geometry::for_each_point(*polygon, apply_to_pnt);
+}
+
+template <typename PointType>
+void applyTransform(const Eigen::Isometry2d& transform, std::vector<PointType>* points)
+{
+  Eigen::Vector2d p_mem;
+  for (auto it = points->begin(); it != points->end(); ++it) {
+    p_mem << it->x, it->y;
+    p_mem = transform * p_mem;
+    it->x = p_mem(0);
+    it->y = p_mem(1);
+  }
+}
+
+template <typename PointType>
+void applyTransform(const Eigen::Isometry2d& transform, PointType* point)
+{
+  Eigen::Vector2d p_mem(point->x, point->y);
+  p_mem = transform * p_mem;
+  point->x = p_mem(0);
+  point->y = p_mem(1);
+}
+
+void maps::batchTransform(const Eigen::Isometry2d& transform, MapFrameType transformed_type,
+                          maps::LaneSubMap* map)
+{
+  assert(map);
+  const auto& map_frame = map->map_frame;
+  assert(map_frame.type != MapFrameType::GCS && map_frame.type != MapFrameType::GCS_NED);
+  assert(transformed_type != MapFrameType::GCS && map_frame.type != MapFrameType::GCS_NED);
+
+  for (auto& tile_pair : map->tiles) {
+    auto& tile = tile_pair.second;
+    for (auto& lg_pair : tile->lane_groups) {
+      auto& lg = lg_pair.second;
+
+      applyTransform(transform, &lg.left_boundary);
+      applyTransform(transform, &lg.right_boundary);
+      applyTransform(transform, &lg.perimeter);
+
+      for (auto& lane_pair : lg.lanes) {
+        auto& lane = lane_pair.second;
+        applyTransform(transform, &lane.pts);
+      }
+      for (auto& boundary_pair : lg.boundaries) {
+        auto& boundary = boundary_pair.second;
+        applyTransform(transform, &boundary.pts);
+      }
+    }
+    for (auto& connector_pair : tile->connectors) {
+      auto& connector = connector_pair.second;
+      applyTransform(transform, &connector.boundary_geometry);
+      for (auto& junction : connector.junctions) {
+        applyTransform(transform, &junction.pt);
+      }
+    }
+  }
+}
+
 void maps::transformMapUtmToVehicleFrame(maps::LaneSubMap* map,
                                          const perception_msgs::Localization& localization)
 {

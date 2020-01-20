@@ -26,6 +26,16 @@ void transformMapVehicleFrameToUtm(maps::LaneSubMap* map, map_utils::UtmZone utm
 void transformTileVehicleFrameToUtm(lane_map::Tile* tile, const geometry_msgs::Point& utm_pos,
                                     const double utm_theta);
 
-}; // namespace maps
+/**
+ * Apply transform to all points in the map.
+ * @param transform
+ * @param current_type
+ * @param transformed_type
+ * @param map
+ */
+void batchTransform(const Eigen::Isometry2d& transform, MapFrameType transformed_type,
+                    maps::LaneSubMap* map);
+
+} // namespace maps
 
 #endif // MAPS_UTILS_LANE_MAP_TRANSFORM_H_
