@@ -1,5 +1,8 @@
-import os
 import glob
+import os
+import sys
+
+sys.path.append('..')
 
 from maps import feature_dict
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
@@ -13,25 +16,48 @@ class MapLayers(object):
                  map_reader_dir=None):
         self.layers = {}
 
-        self.map_dir = map_dir
-        if self.map_dir is None:
-            import rospy
-            self.map_dir = rospy.get_param('/maps/map_dir')
+        self._map_dir = map_dir
+        self._free_space_dir = free_space_dir
+        self._radar_zones_dir = radar_zones_dir
+        self._map_reader_dir = map_reader_dir
 
-        self.free_space_dir = free_space_dir
-        if self.free_space_dir is None:
-            import rospy
-            self.free_space_dir = rospy.get_param('/maps/free_space_dir')
+    # ----------------------------------------------
+    # Lazy Load Layer Dirs
+    # ----------------------------------------------
+    # Dirs are lazy loaded at fetch time to ensure that map layers can be used outside of a ros
+    # environment (defaults are not called on unused map layers)
 
-        self.radar_zones_dir = radar_zones_dir
-        if self.radar_zones_dir is None:
+    @property
+    def map_dir(self):
+        if self._map_dir is None:
             import rospy
-            self.radar_zones_dir = rospy.get_param('/maps/radar_zones_dir')
+            self._map_dir = rospy.get_param('/maps/map_dir')
+        return self._map_dir
 
-        self.map_reader_dir = map_reader_dir
-        if self.map_reader_dir is None:
+    @property
+    def free_space_dir(self):
+        if self._free_space_dir is None:
             import rospy
-            self.map_reader_dir = rospy.get_param('/maps/map_reader_dir')
+            self._free_space_dir = rospy.get_param('/maps/free_space_dir')
+        return self._free_space_dir
+
+    @property
+    def radar_zones_dir(self):
+        if self._radar_zones_dir is None:
+            import rospy
+            self._radar_zones_dir = rospy.get_param('/maps/radar_zones_dir')
+        return self._radar_zones_dir
+
+    @property
+    def map_reader_dir(self):
+        if self._map_reader_dir is None:
+            import rospy
+            self._map_reader_dir = rospy.get_param('/maps/map_reader_dir')
+        return self._map_reader_dir
+
+    @property
+    def lidar_lines_dir(self):
+        return os.path.join(self.map_dir, 'lidar_lines')
 
     # ----------------------------------------------
     # Main Getter
@@ -93,6 +119,13 @@ class MapLayers(object):
 
             return self.layers[MapType.LOCALIZATION_ZONE]
 
+        elif layer_type == MapType.LIDAR_LINE:
+            if MapType.LIDAR_LINE not in self.layers:
+                self.layers[MapType.LIDAR_LINE] = self.load_single_layers(
+                    self.lidar_lines_dir)
+
+            return self.layers[MapType.LIDAR_LINE]
+
         raise NotImplementedError()
 
     def get_all_layers(self, layer_type, **kwargs):
@@ -114,6 +147,7 @@ class MapLayers(object):
 
     @staticmethod
     def load_single_layers(map_dir, spec='*.json', as_dict=True):
+        # TODO: This loads all data from a layer at once. Add a new class to lazy load different files.
         layers = {}
         for fn in glob.glob(os.path.join(map_dir, spec)):
             layer_name = os.path.splitext(os.path.basename(fn))[0]

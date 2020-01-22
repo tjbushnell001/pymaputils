@@ -11,7 +11,8 @@ import re
 from flask_cors import cross_origin
 from maps.feature_dict import FeatureDict
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
-from maps.lane_maps import ConvertedLaneMapLayer
+from maps.map_layers import MapLayers
+from maps.map_types import MapType
 from maps.utils import geojson_utils
 from maps.utils import tile_linker
 from maps.utils import tile_utils
@@ -31,6 +32,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 cors = flask_cors.CORS(app, resources={r"/*": {"origins": "maps.embarktrucks.com"}})
 
 lane_map = None
+lidar_line_layer = None
 dot_corrected_lane_map = None
 road_graph = None
 map_reader_dir = None
@@ -90,6 +92,22 @@ def get_lane_tile(tile_id):
         flask.abort(404)
         return
     return flask.jsonify(tile.collection)
+
+
+@app.route("/lidar_lines/<batch_id>", methods=['GET'])
+@app.route("/lidar_lines/<batch_id>/", methods=['GET'])
+@cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
+def get_lidar_lines(batch_id):
+    """
+    Load the lidar lines batch associated with "batch_id"
+
+    :param batch_id: the batch id of the lidar line set
+    :return: the geojson lane data as a json object
+    """
+    if batch_id not in lidar_line_layer:
+        flask.abort(404)
+        return
+    return flask.jsonify(lidar_line_layer[batch_id].collection)
 
 
 @app.route("/tiles/find", methods=['GET'])
@@ -271,9 +289,11 @@ if __name__ == '__main__':
     map_dir = os.path.join(base_dir, "perception/lane_map_server/maps/tiled_maps/usa")
     map_reader_dir = os.path.join(base_dir, "perception/map_reader/maps")
 
-    lane_map = ConvertedLaneMapLayer(os.path.join(map_dir, 'tiles'), cache_tiles=False, fix_dot=False)
-    dot_corrected_lane_map = ConvertedLaneMapLayer(os.path.join(map_dir, 'tiles'), cache_tiles=False, fix_dot=True)
-    road_graph = GeoJsonTiledMapLayer(os.path.join(map_dir, 'road_tiles'), maps.road_graph.ROAD_GRAPH_TILE_LEVEL,
-                                      cache_tiles=False)
+    map_layers = MapLayers(map_dir=map_dir, map_reader_dir=map_reader_dir)
+
+    lidar_line_layer = map_layers.get_layer(MapType.LIDAR_LINE)
+    lane_map = map_layers.get_layer(MapType.LANE, cache_tiles=False, fix_dot=False)
+    dot_corrected_lane_map = map_layers.get_layer(MapType.LANE, cache_tiles=False, fix_dot=True)
+    road_graph = map_layers.get_layer(MapType.ROAD, cache_tiles=False)
 
     app.run(debug=False, port=PORT, threaded=True)
