@@ -110,7 +110,8 @@ std::vector<lane_map::LaneRef> getNominalLanes(
 
 std::vector<lane_map::LaneRef>
 getEgoLanes(const maps::LaneSubMap& map,
-            const std::unordered_set<lane_map::LaneGroupRef>& route_lane_groups)
+            const std::unordered_set<lane_map::LaneGroupRef>& route_lane_groups,
+            const geometry_msgs::Point ego, bool filter_on_route)
 {
   /*
    * Use this function to get full functionality of ego lane finder. This function
@@ -120,15 +121,17 @@ getEgoLanes(const maps::LaneSubMap& map,
    *    angle.
    * 3. Output ego lanes ordered from left to right.
    */
-  const geometry_msgs::Point ego;
-
   const auto associated_lanes = associateLanes(map, ego);
 
   std::unordered_set<lane_map::LaneRef> candidate_lanes;
   std::copy_if(associated_lanes.begin(), associated_lanes.end(),
                std::inserter(candidate_lanes, candidate_lanes.begin()),
                [&](const lane_map::LaneRef& ref) {
-                 return route_lane_groups.count(ref.getLaneGroupRef()) > 0;
+                 if (filter_on_route) {
+                   return route_lane_groups.count(ref.getLaneGroupRef()) > 0;
+                 } else {
+                   return true;
+                 }
                });
 
   const auto nominal_lanes =

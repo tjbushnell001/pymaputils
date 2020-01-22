@@ -40,7 +40,8 @@ std::unordered_set<lane_map::LaneRef> associateLanes(const maps::LaneSubMap& map
  **/
 std::vector<lane_map::LaneRef>
 getEgoLanes(const maps::LaneSubMap& map,
-            const std::unordered_set<lane_map::LaneGroupRef>& route_lane_groups);
+            const std::unordered_set<lane_map::LaneGroupRef>& route_lane_groups,
+            const geometry_msgs::Point ego = {}, bool filter_on_route = true);
 
 /**
  * Determine the nominal lane to follow at a junction, which should be more or
