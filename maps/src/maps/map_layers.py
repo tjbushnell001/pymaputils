@@ -77,7 +77,7 @@ class MapLayers(object):
         elif layer_type == MapType.DISENGAGE_ZONE:
             if MapType.DISENGAGE_ZONE not in self.layers:
                 self.layers[MapType.DISENGAGE_ZONE] = self.load_single_layers(
-                    os.path.join(self.map_dir, "annotations"),
+                    self.get_dir(MapType.DISENGAGE_ZONE),
                     spec="disengage_zones*.json")
 
             return self.layers[MapType.DISENGAGE_ZONE].get(layer_name)
@@ -85,7 +85,7 @@ class MapLayers(object):
         elif layer_type == MapType.LANE_ANNOTATION:
             if MapType.LANE_ANNOTATION not in self.layers:
                 self.layers[MapType.LANE_ANNOTATION] = self.load_single_layers(
-                    os.path.join(self.map_dir, "annotations"),
+                    self.get_dir(MapType.LANE_ANNOTATION),
                     spec="*.json",
                     as_dict=False)
 
@@ -94,35 +94,35 @@ class MapLayers(object):
         elif layer_type == MapType.MAP_READER:
             if MapType.MAP_READER not in self.layers:
                 self.layers[MapType.MAP_READER] = self.load_single_layers(
-                    self.map_reader_dir,
+                    self.get_dir(MapType.MAP_READER),
                     as_dict=False)
             return self.layers[MapType.MAP_READER].get(layer_name)
 
         elif layer_type == MapType.FREE_SPACE:
             if MapType.FREE_SPACE not in self.layers:
                 self.layers[MapType.FREE_SPACE] = self.load_single_layers(
-                    self.free_space_dir,
+                    self.get_dir(MapType.FREE_SPACE),
                     as_dict=False)
             return self.layers[MapType.FREE_SPACE].get(layer_name)
 
         elif layer_type == MapType.RADAR_ZONE:
             if MapType.RADAR_ZONE not in self.layers:
                 self.layers[MapType.RADAR_ZONE] = self.load_single_layers(
-                    self.radar_zones_dir,
+                    self.get_dir(MapType.RADAR_ZONE),
                     as_dict=False)
             return self.layers[MapType.RADAR_ZONE].get(layer_name)
 
         elif layer_type == MapType.LOCALIZATION_ZONE:
             if MapType.LOCALIZATION_ZONE not in self.layers:
-                fn = os.path.join(self.map_dir, "../../localization_filter_zones.json")
-                self.layers[MapType.LOCALIZATION_ZONE] = feature_dict.load_from_file(fn, feature_dict=False)
+                self.layers[MapType.LOCALIZATION_ZONE] = feature_dict.load_from_file(
+                    self.get_dir(MapType.LOCALIZATION_ZONE), feature_dict=False)
 
             return self.layers[MapType.LOCALIZATION_ZONE]
 
         elif layer_type == MapType.LIDAR_LINE:
             if MapType.LIDAR_LINE not in self.layers:
                 self.layers[MapType.LIDAR_LINE] = self.load_single_layers(
-                    self.lidar_lines_dir)
+                    self.get_dir(MapType.LIDAR_LINE))
 
             return self.layers[MapType.LIDAR_LINE]
 
@@ -133,16 +133,36 @@ class MapLayers(object):
         self.get_layer(layer_type, **kwargs)
         return self.layers[layer_type]
 
+    def get_dir(self, layer_type):
+        if layer_type == MapType.LANE:
+            return os.path.join(self.map_dir, 'tiles')
+        elif layer_type == MapType.ROAD:
+            return os.path.join(self.map_dir, 'road_tiles')
+        elif layer_type == MapType.DISENGAGE_ZONE:
+            return os.path.join(self.map_dir, "annotations")
+        elif layer_type == MapType.LANE_ANNOTATION:
+            return os.path.join(self.map_dir, "annotations")
+        elif layer_type == MapType.MAP_READER:
+            return self.map_reader_dir
+        elif layer_type == MapType.FREE_SPACE:
+            return self.free_space_dir
+        elif layer_type == MapType.RADAR_ZONE:
+            return self.radar_zones_dir
+        elif layer_type == MapType.LOCALIZATION_ZONE:
+            return os.path.join(self.map_dir, "../../localization_filter_zones.json")
+        elif layer_type == MapType.LIDAR_LINE:
+            return self.lidar_lines_dir
+
     # ----------------------------------------------
     # Layer Constructors
     # ----------------------------------------------
 
     def create_lane_map_layer(self, cache_tiles=False, load_tiles=True, fix_dot=True):
-        tile_dir = os.path.join(self.map_dir, 'tiles')
+        tile_dir = self.get_dir(MapType.LANE)
         return ConvertedLaneMapLayer(tile_dir, cache_tiles, load_tiles, fix_dot)
 
     def create_road_graph_layer(self, cache_tiles=False, load_tiles=True):
-        tile_dir = os.path.join(self.map_dir, 'road_tiles')
+        tile_dir = self.get_dir(MapType.ROAD)
         return GeoJsonTiledMapLayer(tile_dir, ROAD_GRAPH_TILE_LEVEL, cache_tiles, load_tiles, MapType.ROAD)
 
     @staticmethod
