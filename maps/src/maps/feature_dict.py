@@ -46,11 +46,12 @@ class FeatureDict(object):
     def all_features(self):
         return self.feature_type_map.values()
 
-    def add_feature(self, feature):
+    def add_feature(self, feature, overwrite=False):
         if feature.feature_type not in self.feature_type_map:
             self.feature_type_map[feature.feature_type] = OrderedDict()
 
-        assert feature.ref not in self.feature_type_map[feature.feature_type]
+        if not overwrite:
+            assert feature.ref not in self.feature_type_map[feature.feature_type]
 
         self.feature_type_map[feature.feature_type][feature.ref] = feature
         self.collection.features.append(feature)
@@ -62,6 +63,7 @@ class FeatureDict(object):
                 del self.feature_type_map[feature_type][ref]
                 if len(self.feature_type_map[feature_type]) == 0:
                     del self.feature_type_map[feature_type]
+        # TODO: Delete the collection object as well
 
 
 def load_from_file(file_path, feature_dict=True):
