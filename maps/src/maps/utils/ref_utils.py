@@ -141,3 +141,11 @@ def lidar_segment_ref(batch_id, segment_id, y_cluster, sub_cluster_id=0):
         'y_cluster': y_cluster,
         'sub_cluster_id': sub_cluster_id,
     })
+
+
+def lidar_spline_ref(batch_id, group_id):
+    return hashify({
+        'type': 'lidar_spline_ref',
+        'batch_id': batch_id,
+        'group_id': group_id
+    })
