@@ -73,7 +73,7 @@ def lint_lane(lane, lane_map, issue_layer):
         boundary_line = line_to_utm(boundary.geometry, utm_zone=utm_zone)
 
         # check basic line issues
-        check_line(boundary_line, lane, line_name, issue_layer)
+        check_line(boundary_line, boundary, line_name, issue_layer)
 
         # check boundaries are headed same direction as center
         lh = line_relative_theta(center_line, boundary_line)
