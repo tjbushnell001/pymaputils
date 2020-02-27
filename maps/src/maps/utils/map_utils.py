@@ -11,7 +11,7 @@ from maps.utils import lru_cache
 from scipy.spatial import cKDTree
 
 #TODO rename or use an includable class
-class Entry:
+class Entry(object):
     x = 0.0
     y = 0.0
     z = 0.0
@@ -22,7 +22,7 @@ class Entry:
         self.z = 0.0
 
 
-class Lane:
+class Lane(object):
     ref_lane_line = []
     left_lane_line = []
     right_lane_line = []
@@ -264,7 +264,7 @@ def find_dist_to_end(points, start_lat, start_lng):
 
     last_point = points[len(points) - 1]
     b_utm = utm.from_latlon(last_point[1], last_point[0])
-    assert (a_utm[2] == b_utm[2] and a_utm[3] == b_utm[3])
+    assert a_utm[2] == b_utm[2] and a_utm[3] == b_utm[3]
     dx = a_utm[0] - b_utm[0]
     dy = a_utm[1] - b_utm[1]
     return math.sqrt(dx * dx + dy * dy)
@@ -272,10 +272,10 @@ def find_dist_to_end(points, start_lat, start_lng):
 
 def find_dist_to_start(points, start_lat, start_lng):
     a_utm = utm.from_latlon(start_lat, start_lng)  # TODO deal with utm zones
-    assert (len(points) > 0)
+    assert len(points) > 0
     first_point = points[0]
     b_utm = utm.from_latlon(first_point[1], first_point[0])
-    assert (a_utm[2] == b_utm[2] and a_utm[3] == b_utm[3])
+    assert a_utm[2] == b_utm[2] and a_utm[3] == b_utm[3]
     dx = a_utm[0] - b_utm[0]
     dy = a_utm[1] - b_utm[1]
     return math.sqrt(dx * dx + dy * dy)
@@ -300,7 +300,7 @@ def get_lane_from_lane_ref_in_gcs_frame(lane_key_list, lat, lng, low_x, high_x, 
             tile = lane_maps.get_tile(tile_id)
             if tile is None:
                 print "have a bad map reference"
-                assert(False)
+                assert False
             cache.set(tile_id, tile)
         else:
             tile = cached_tile
@@ -318,7 +318,7 @@ def get_lane_from_lane_ref_in_gcs_frame(lane_key_list, lat, lng, low_x, high_x, 
         tile = lane_maps.get_tile(tile_id)
         if tile is None:
             print "have a bad map reference"
-            assert(False)
+            assert False
         cache.set(tile_id, tile)
     else:
         tile = cached_tile
@@ -435,7 +435,7 @@ def get_map_lane_lines_for_point_in_lane_gcs_frame(lat, lng, low_x, high_x, lane
         tile_next = lane_maps.get_tile(next_junction['tile_id'])
         if tile_next is None:
             print "got a bad tile reference"
-            assert(False)
+            assert False
         cache.set(tile_next.id, tile_next)
     else:
         tile_next = tile_next_cache
@@ -463,7 +463,7 @@ def get_map_lane_lines_for_point_in_lane_gcs_frame(lat, lng, low_x, high_x, lane
         tile_prev = lane_maps.get_tile(next_junction['tile_id'])
         if tile_prev is None:
             print "have a bad reference to a tile"
-            assert(False)
+            assert False
         cache.set(tile_next.id, tile_next)
     else:
         tile_prev = tile_prev_cached
@@ -518,4 +518,3 @@ def sample_line(line, sample_min, sample_max, step):
                 else:
                     line_index = line_index + 1
     return result
-
