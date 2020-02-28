@@ -10,7 +10,7 @@
 namespace lane_map_utils {
 typedef std::function<bool(const lane_map::LaneGroup&)> LaneGroupFilter;
 typedef std::function<bool(const lane_map::Lane&)> LaneFilter;
-typedef std::function<const lane_map::LaneRef*(const lane_map::LaneRef&)> LaneFollower;
+typedef std::function<lane_map::LaneRef(const lane_map::LaneRef&)> LaneFollower;
 
 /**
  * Find all lane groups matching the given predicate.

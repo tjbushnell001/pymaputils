@@ -87,14 +87,13 @@ std::vector<lane_map::LaneRef> lane_map_utils::followLanes(const lane_map::LaneR
                                                            size_t max_distance)
 {
   std::vector<lane_map::LaneRef> results;
-  lane_map::LaneRef current_ref = initial_ref;
+  lane_map::LaneRef next_ref = initial_ref;
   while (max_distance == 0 || results.size() < max_distance) {
-    results.push_back(current_ref);
-    const lane_map::LaneRef* next_ref = follower(current_ref);
-    if (!next_ref)
-      break;
+    results.push_back(next_ref);
+    next_ref = follower(next_ref);
 
-    current_ref = *next_ref;
+    if (next_ref == lane_map::LaneRef::INVALID)
+      break;
   }
 
   return results;

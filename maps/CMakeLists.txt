@@ -55,6 +55,7 @@ add_library(${PROJECT_NAME}
    src/${PROJECT_NAME}/utils/lane_annotator.cpp
    src/${PROJECT_NAME}/utils/lane_group_annotator.cpp
    src/${PROJECT_NAME}/utils/lane_map_filtering.cpp
+   src/${PROJECT_NAME}/utils/lane_map_following.cpp
    src/${PROJECT_NAME}/utils/map_frame_utils.cpp
 )
 
