@@ -33,8 +33,8 @@ void transformTileVehicleFrameToUtm(lane_map::Tile* tile, const geometry_msgs::P
  * @param transformed_type
  * @param map
  */
-void batchTransform(const Eigen::Isometry2d& transform, MapFrameType transformed_type,
-                    maps::LaneSubMap* map);
+void transformMap(const Eigen::Isometry2d& transform, MapFrameType transformed_type,
+                  maps::LaneSubMap* map);
 
 } // namespace maps
 

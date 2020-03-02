@@ -83,7 +83,7 @@ void applyTransform(const Eigen::Isometry2d& transform, PointType* point)
   point->y = p_mem(1);
 }
 
-void maps::batchTransform(const Eigen::Isometry2d& transform, MapFrameType transformed_type,
+void maps::transformMap(const Eigen::Isometry2d& transform, MapFrameType transformed_type,
                           maps::LaneSubMap* map)
 {
   assert(map);
