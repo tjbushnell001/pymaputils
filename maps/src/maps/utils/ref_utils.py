@@ -133,19 +133,19 @@ def create_road_connector_ref(tile_id, road_connector_id):
     })
 
 
-def lidar_segment_ref(batch_id, segment_id, y_cluster, sub_cluster_id=0):
+def lidar_segment_ref(section_id, segment_id, y_cluster, sub_cluster_id=0):
     return hashify({
         'type': 'lidar_segment_ref',
-        'batch_id': batch_id,
+        'section_id': section_id,
         'segment_id': segment_id,
         'y_cluster': y_cluster,
         'sub_cluster_id': sub_cluster_id,
     })
 
 
-def lidar_spline_ref(batch_id, group_id):
+def lidar_spline_ref(section_id, group_id):
     return hashify({
         'type': 'lidar_spline_ref',
-        'batch_id': batch_id,
+        'section_id': section_id,
         'group_id': group_id
     })
