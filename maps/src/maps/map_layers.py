@@ -7,6 +7,7 @@ sys.path.append('..')
 from maps import feature_dict
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
 from maps.lane_maps import ConvertedLaneMapLayer
+from maps.lidar_maps import LidarLineLayer
 from maps.map_types import MapType
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
 
@@ -121,8 +122,7 @@ class MapLayers(object):
 
         elif layer_type == MapType.LIDAR_LINE:
             if MapType.LIDAR_LINE not in self.layers or not cache:
-                self.layers[MapType.LIDAR_LINE] = self.load_single_layers(
-                    self.get_dir(MapType.LIDAR_LINE))
+                self.layers[MapType.LIDAR_LINE] = LidarLineLayer(self.get_dir(MapType.LIDAR_LINE))
 
             return self.layers[MapType.LIDAR_LINE]
 

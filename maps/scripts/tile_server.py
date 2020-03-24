@@ -94,20 +94,20 @@ def get_lane_tile(tile_id):
     return flask.jsonify(tile.collection)
 
 
-@app.route("/lidar_lines/<batch_id>", methods=['GET'])
-@app.route("/lidar_lines/<batch_id>/", methods=['GET'])
+@app.route("/lidar_lines/<section_id>", methods=['GET'])
+@app.route("/lidar_lines/<section_id>/", methods=['GET'])
 @cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
-def get_lidar_lines(batch_id):
+def get_lidar_lines(section_id):
     """
-    Load the lidar lines batch associated with "batch_id"
+    Load the lidar lines batch associated with "section_id"
 
-    :param batch_id: the batch id of the lidar line set
+    :param section_id: the batch id of the lidar line set
     :return: the geojson lane data as a json object
     """
-    if batch_id not in lidar_line_layer:
+    if section_id not in lidar_line_layer:
         flask.abort(404)
         return
-    return flask.jsonify(lidar_line_layer[batch_id].collection)
+    return flask.jsonify(lidar_line_layer[section_id].collection)
 
 
 @app.route("/tiles/find", methods=['GET'])

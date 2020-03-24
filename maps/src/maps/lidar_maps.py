@@ -1,40 +1,52 @@
-import json
+import glob
 import os
 
 from maps import feature_dict
 
 
-class LidarLineMapLayer(object):
+class LidarLineLayer(object):
     def __init__(self, map_dir):
         self.map_dir = map_dir
+        self.sub_dirs = next(os.walk(self.map_dir))[1]
+        print 'sub_dirs:', self.sub_dirs
 
     def __getitem__(self, key):
-        return self.get_batch(key)
+        return self.get_section(key)
 
-    def get_batch(self, batch_id):
-        if not self.batch_exists(batch_id):
+    def get_section(self, section_id):
+        if not self.section_exists(section_id):
             return None
 
-        fn = self.get_batch_filename(batch_id)
-        if not os.path.exists(fn):
+        fn = self.get_section_path(section_id)
+        if fn is None:
             return None
         return feature_dict.load_from_file(fn)
+
+    def get_sections(self):
+        sections = []
+        for sub_dir in self.sub_dirs:
+            for fn in glob.glob(os.path.join(self.map_dir, sub_dir, '*.json')):
+                sections.append(os.path.splitext(os.path.basename(fn))[0])
+        return sections
 
     # --------------------------------------
     # Disk Operations
     # --------------------------------------
 
-    def batch_exists(self, batch_id):
-        fn = self.get_batch_filename(batch_id)
-        return os.path.exists(fn) and os.path.isfile(fn)
+    def section_exists(self, section_id):
+        return self.get_section_path(section_id) is not None
 
-    def get_batch_filename(self, tile_id):
-        return os.path.join(self.map_dir, '{}.json'.format(tile_id))
+    def get_section_path(self, section_id):
+        for sub_dir in self.sub_dirs:
+            fn = os.path.join(self.map_dir, sub_dir, "{}.json".format(section_id))
+            if os.path.exists(fn) and os.path.isfile(fn):
+                return fn
+        return None
 
     def get_feature(self, ref):
-        batch = self.get_batch(ref['batch_id'])
-        if batch is None:
+        section = self.get_section(ref['section_id'])
+        if section is None:
             return None
 
         feature_type = ref['type'].replace('_ref', '')
-        return batch.get_features(feature_type).get(ref)
+        return section.get_features(feature_type).get(ref)
