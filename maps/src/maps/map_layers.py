@@ -58,7 +58,7 @@ class MapLayers(object):
 
     @property
     def lidar_lines_dir(self):
-        return os.path.join(self.map_dir, 'lidar_lines')
+        return os.path.join(self.map_dir, 'lidar_maps')
 
     # ----------------------------------------------
     # Main Getter

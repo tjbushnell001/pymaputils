@@ -32,7 +32,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 cors = flask_cors.CORS(app, resources={r"/*": {"origins": "maps.embarktrucks.com"}})
 
 lane_map = None
-lidar_line_layer = None
+lidar_map_layer = None
 dot_corrected_lane_map = None
 road_graph = None
 map_reader_dir = None
@@ -94,20 +94,20 @@ def get_lane_tile(tile_id):
     return flask.jsonify(tile.collection)
 
 
-@app.route("/lidar_lines/<section_id>", methods=['GET'])
-@app.route("/lidar_lines/<section_id>/", methods=['GET'])
+@app.route("/lidar_maps/<section_id>", methods=['GET'])
+@app.route("/lidar_maps/<section_id>/", methods=['GET'])
 @cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
-def get_lidar_lines(section_id):
+def get_lidar_maps(section_id):
     """
     Load the lidar lines batch associated with "section_id"
 
     :param section_id: the batch id of the lidar line set
     :return: the geojson lane data as a json object
     """
-    if section_id not in lidar_line_layer:
+    if section_id not in lidar_map_layer:
         flask.abort(404)
         return
-    return flask.jsonify(lidar_line_layer[section_id].collection)
+    return flask.jsonify(lidar_map_layer[section_id].collection)
 
 
 @app.route("/tiles/find", methods=['GET'])
@@ -291,7 +291,7 @@ if __name__ == '__main__':
 
     map_layers = MapLayers(map_dir=map_dir, map_reader_dir=map_reader_dir)
 
-    lidar_line_layer = map_layers.get_layer(MapType.LIDAR_LINE)
+    lidar_map_layer = map_layers.get_layer(MapType.LIDAR_LINE)
     lane_map = map_layers.get_layer(MapType.LANE, cache_tiles=False, fix_dot=False)
     dot_corrected_lane_map = map_layers.get_layer(MapType.LANE, cache_tiles=False, fix_dot=True)
     road_graph = map_layers.get_layer(MapType.ROAD, cache_tiles=False)
