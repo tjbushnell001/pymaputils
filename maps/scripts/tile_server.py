@@ -94,10 +94,19 @@ def get_lane_tile(tile_id):
     return flask.jsonify(tile.collection)
 
 
+@app.route("/lidar_maps", methods=['GET'])
+@app.route("/lidar_maps/", methods=['GET'])
+@cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
+def get_lidar_maps():
+    """ Get a list of lidar maps. """
+    lidar_sections = lidar_map_layer.get_sections()
+    return flask.jsonify(lidar_sections)
+
+
 @app.route("/lidar_maps/<section_id>", methods=['GET'])
 @app.route("/lidar_maps/<section_id>/", methods=['GET'])
 @cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
-def get_lidar_maps(section_id):
+def get_lidar_map(section_id):
     """
     Load the lidar lines section associated with "section_id"
 
