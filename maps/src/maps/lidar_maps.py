@@ -8,7 +8,6 @@ class LidarLineLayer(object):
     def __init__(self, map_dir):
         self.map_dir = map_dir
         self.sub_dirs = next(os.walk(self.map_dir))[1]
-        print 'sub_dirs:', self.sub_dirs
 
     def __getitem__(self, key):
         return self.get_section(key)
