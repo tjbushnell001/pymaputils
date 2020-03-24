@@ -99,12 +99,12 @@ def get_lane_tile(tile_id):
 @cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
 def get_lidar_maps(section_id):
     """
-    Load the lidar lines batch associated with "section_id"
+    Load the lidar lines section associated with "section_id"
 
-    :param section_id: the batch id of the lidar line set
+    :param section_id: the section id of the lidar line set
     :return: the geojson lane data as a json object
     """
-    if section_id not in lidar_map_layer:
+    if section_id not in lidar_map_layer.get_sections():
         flask.abort(404)
         return
     return flask.jsonify(lidar_map_layer[section_id].collection)
