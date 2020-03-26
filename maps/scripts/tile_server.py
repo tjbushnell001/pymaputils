@@ -305,7 +305,7 @@ if __name__ == '__main__':
 
     map_layers = MapLayers(map_dir=map_dir, map_reader_dir=map_reader_dir)
 
-    lidar_map_layer = map_layers.get_layer(MapType.LIDAR_LINE, cache=False)
+    lidar_map_layer = map_layers.get_layer(MapType.LIDAR_LINE)
     lane_map = map_layers.get_layer(MapType.LANE, cache_tiles=False, fix_dot=False)
     road_graph = map_layers.get_layer(MapType.ROAD, cache_tiles=False)
 
