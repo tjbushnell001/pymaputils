@@ -84,6 +84,7 @@ LaneGroup getLaneGroupStruct(const perception_msgs::MapLaneGroup& lane_group_msg
   }
   lane_group.is_right_shoulder_undrivable = lane_group_msg.is_right_shoulder_undrivable;
 
+  lane_group.length = lane_group_msg.length;
   lane_group.functional_class = lane_group_msg.functional_class;
   lane_group.route_type = lane_group_msg.route_type;
   lane_group.is_accessible_by_pedestrians = lane_group_msg.is_accessible_by_pedestrians;
