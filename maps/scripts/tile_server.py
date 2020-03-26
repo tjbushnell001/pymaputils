@@ -11,6 +11,7 @@ import re
 from flask_cors import cross_origin
 from maps.feature_dict import FeatureDict
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
+from maps.lane_maps import ConvertedLaneMapLayer
 from maps.map_layers import MapLayers
 from maps.map_types import MapType
 from maps.utils import geojson_utils
@@ -244,7 +245,10 @@ def save_map_reader_route(route_name):
 
 
 def rebuild_road_tiles(lane_tile_id):
-    """ Rebuild all road tiles connected to this lane_tile_id in order to propagate changes to the road graph. """
+    """
+    Rebuild all road tiles connected to this lane_tile_id in order to propagate changes to the
+    road graph.
+    """
     # re-generate all required unlinked road tiles
     road_tile_id = maps.road_graph.lane_to_road_tile_id(lane_tile_id)
 
@@ -274,7 +278,8 @@ def rebuild_road_tiles(lane_tile_id):
 @cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
 def update_tile(tile_id):
     """
-    Replace the tile data associated with tile id with the data from the request body. For right now, tile updates
+    Replace the tile data associated with tile id with the data from the request body.
+    For right now, tile updates
     purely replace the full tile.
     TODO: implement partial patching logic
 
@@ -301,8 +306,13 @@ if __name__ == '__main__':
     map_layers = MapLayers(map_dir=map_dir, map_reader_dir=map_reader_dir)
 
     lidar_map_layer = map_layers.get_layer(MapType.LIDAR_LINE, cache=False)
-    lane_map = map_layers.get_layer(MapType.LANE, cache_tiles=False, cache=False, fix_dot=False)
-    dot_corrected_lane_map = map_layers.get_layer(MapType.LANE, cache_tiles=False, cache=False, fix_dot=True)
-    road_graph = map_layers.get_layer(MapType.ROAD, cache_tiles=False, cache=False)
+    lane_map = map_layers.get_layer(MapType.LANE, cache_tiles=False, fix_dot=False)
+    road_graph = map_layers.get_layer(MapType.ROAD, cache_tiles=False)
+
+    # TODO: This is a hack until we clean up the map layers api. Users should never have to
+    #  manually instantiate a map layer class but the multiple versions of the lane map layer
+    #  with different configurations is a unique case that requires a more robust api
+    dot_corrected_lane_map = ConvertedLaneMapLayer(os.path.join(map_dir, 'tiles'),
+                                                   cache_tiles=False, fix_dot=True)
 
     app.run(debug=False, port=PORT, threaded=True)

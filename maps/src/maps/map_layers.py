@@ -64,19 +64,19 @@ class MapLayers(object):
     # Main Getter
     # ----------------------------------------------
 
-    def get_layer(self, layer_type, layer_name='', cache=True, **kwargs):
+    def get_layer(self, layer_type, layer_name='', **kwargs):
         if layer_type == MapType.LANE:
-            if MapType.LANE not in self.layers or not cache:
+            if MapType.LANE not in self.layers:
                 self.layers[MapType.LANE] = self.create_lane_map_layer(**kwargs)
             return self.layers[MapType.LANE]
 
         elif layer_type == MapType.ROAD:
-            if MapType.ROAD not in self.layers or not cache:
+            if MapType.ROAD not in self.layers:
                 self.layers[MapType.ROAD] = self.create_road_graph_layer(**kwargs)
             return self.layers[MapType.ROAD]
 
         elif layer_type == MapType.DISENGAGE_ZONE:
-            if MapType.DISENGAGE_ZONE not in self.layers or not cache:
+            if MapType.DISENGAGE_ZONE not in self.layers:
                 self.layers[MapType.DISENGAGE_ZONE] = self.load_single_layers(
                     self.get_dir(MapType.DISENGAGE_ZONE),
                     spec="disengage_zones*.json")
@@ -84,7 +84,7 @@ class MapLayers(object):
             return self.layers[MapType.DISENGAGE_ZONE].get(layer_name)
 
         elif layer_type == MapType.LANE_ANNOTATION:
-            if MapType.LANE_ANNOTATION not in self.layers or not cache:
+            if MapType.LANE_ANNOTATION not in self.layers:
                 self.layers[MapType.LANE_ANNOTATION] = self.load_single_layers(
                     self.get_dir(MapType.LANE_ANNOTATION),
                     spec="*.json",
@@ -93,35 +93,35 @@ class MapLayers(object):
             return self.layers[MapType.LANE_ANNOTATION].get(layer_name)
 
         elif layer_type == MapType.MAP_READER:
-            if MapType.MAP_READER not in self.layers or not cache:
+            if MapType.MAP_READER not in self.layers:
                 self.layers[MapType.MAP_READER] = self.load_single_layers(
                     self.get_dir(MapType.MAP_READER),
                     as_dict=False)
             return self.layers[MapType.MAP_READER].get(layer_name)
 
         elif layer_type == MapType.FREE_SPACE:
-            if MapType.FREE_SPACE not in self.layers or not cache:
+            if MapType.FREE_SPACE not in self.layers:
                 self.layers[MapType.FREE_SPACE] = self.load_single_layers(
                     self.get_dir(MapType.FREE_SPACE),
                     as_dict=False)
             return self.layers[MapType.FREE_SPACE].get(layer_name)
 
         elif layer_type == MapType.RADAR_ZONE:
-            if MapType.RADAR_ZONE not in self.layers or not cache:
+            if MapType.RADAR_ZONE not in self.layers:
                 self.layers[MapType.RADAR_ZONE] = self.load_single_layers(
                     self.get_dir(MapType.RADAR_ZONE),
                     as_dict=False)
             return self.layers[MapType.RADAR_ZONE].get(layer_name)
 
         elif layer_type == MapType.LOCALIZATION_ZONE:
-            if MapType.LOCALIZATION_ZONE not in self.layers or not cache:
+            if MapType.LOCALIZATION_ZONE not in self.layers:
                 self.layers[MapType.LOCALIZATION_ZONE] = feature_dict.load_from_file(
                     self.get_dir(MapType.LOCALIZATION_ZONE), feature_dict=False)
 
             return self.layers[MapType.LOCALIZATION_ZONE]
 
         elif layer_type == MapType.LIDAR_LINE:
-            if MapType.LIDAR_LINE not in self.layers or not cache:
+            if MapType.LIDAR_LINE not in self.layers:
                 self.layers[MapType.LIDAR_LINE] = LidarLineLayer(self.get_dir(MapType.LIDAR_LINE))
 
             return self.layers[MapType.LIDAR_LINE]
