@@ -1,4 +1,0 @@
-<launch>
-  <node name="route_generator" pkg="maps" type="route_generation_node.py"
-        launch-prefix="log_stdout"/>
-</launch>

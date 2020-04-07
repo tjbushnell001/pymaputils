@@ -1,5 +1,0 @@
-<launch>
-  <include file="$(find lane_map_server)/launch/lane_map_server_node.launch"/>
-  <include file="$(find map_transformer)/launch/map_transformer_node.launch"/>
-  <include file="$(find map_localization)/launch/map_localization_node.launch"/>
-</launch>
