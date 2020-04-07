@@ -1,0 +1,84 @@
+{
+    "connectors": [
+        {
+            "id": 1, 
+            "junctions": [
+                {
+                    "id": 1, 
+                    "inflow_refs": [
+                        {
+                            "id": 1, 
+                            "lane_group_id": 1, 
+                            "tile_id": 1, 
+                            "type": "lane_ref"
+                        }
+                    ], 
+                    "outflow_refs": [
+                        {
+                            "id": 1, 
+                            "lane_group_id": 100, 
+                            "tile_id": 1, 
+                            "type": "lane_ref"
+                        }
+                    ], 
+                    "type": "junction"
+                }
+            ], 
+            "type": "connector"
+        }
+    ], 
+    "id": 1, 
+    "lane_groups": [
+        {
+            "boundaries": [
+                {
+                    "id": 1, 
+                    "pts": [
+                        [
+                            0, 
+                            0
+                        ]
+                    ]
+                }
+            ], 
+            "id": 1, 
+            "is_ramp": false, 
+            "lanes": [
+                {
+                    "id": 1, 
+                    "lane_transition_type": "UNKNOWN", 
+                    "left_boundary_id": 1, 
+                    "right_boundary_id": 1, 
+                    "type": "lane"
+                }
+            ], 
+            "type": "lane_group"
+        }, 
+        {
+            "boundaries": [
+                {
+                    "id": 1, 
+                    "pts": [
+                        [
+                            0, 
+                            0
+                        ]
+                    ]
+                }
+            ], 
+            "id": 100, 
+            "is_ramp": false, 
+            "lanes": [
+                {
+                    "id": 1, 
+                    "lane_transition_type": "UNKNOWN", 
+                    "left_boundary_id": 1, 
+                    "right_boundary_id": 1, 
+                    "type": "lane"
+                }
+            ], 
+            "type": "lane_group"
+        }
+    ], 
+    "type": "tile"
+}
