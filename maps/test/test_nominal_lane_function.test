@@ -1,4 +1,0 @@
-<launch>
-  <param name="/maps/map_dir" value="$(find maps)/test/data/tiled_maps/usa" />
-  <test test-name="test_nominal_lane_function" pkg="maps" type="test_nominal_lane_function"/>
-</launch>

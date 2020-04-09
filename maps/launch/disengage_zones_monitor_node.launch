@@ -1,7 +1,0 @@
-<launch>
-    <node name="disengage_zones_monitor"
-        pkg="maps"
-        type="disengage_zones_monitor_node.py"
-        launch-prefix="log_stdout" >
-    </node>
-</launch>

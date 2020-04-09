@@ -1,3 +1,0 @@
-<launch>
-  <test test-name="test_map_tile_loader" pkg="maps" type="test_map_tile_loader"/>
-</launch>
