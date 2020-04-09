@@ -1,8 +1,5 @@
 import glob
 import os
-import sys
-
-sys.path.append('..')
 
 from maps import feature_dict
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
