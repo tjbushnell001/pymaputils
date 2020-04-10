@@ -48,8 +48,6 @@ def reconstruct_path(came_from, current):
 def get_neighbors(road_graph, current):
     seg = road_graph.get_feature(current)
 
-    current_is_ramp = seg.properties['is_ramp']
-
     connector_ref = ref_utils.hashify(seg.properties['end_connector_ref'])
 
     # make sure junction tile is loaded

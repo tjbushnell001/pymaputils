@@ -126,7 +126,7 @@ def build_road_tile(road_graph, road_tile_id, sub_tiles):
         path.pop()
         path.extend(traverse_lane_groups(lg, all_lane_groups, all_connectors))
 
-        path_refs = [l.ref for l in path]
+        path_refs = [lane.ref for lane in path]
 
         # don't reprocess any of these lane groups
         used_lane_groups.update(path_refs)
@@ -137,20 +137,23 @@ def build_road_tile(road_graph, road_tile_id, sub_tiles):
         start_connector_ref = first_lg.properties['start_connector_ref']
         end_connector_ref = last_lg.properties['end_connector_ref']
 
-        left_boundaries = itertools.chain(*[l.properties['left_boundary'] for l in path])
-        right_boundaries = itertools.chain(*[l.properties['right_boundary'] for l in path])
+        left_boundaries = itertools.chain(*[lane.properties['left_boundary'] for lane in path])
+        right_boundaries = itertools.chain(*[lane.properties['right_boundary'] for lane in path])
 
         left_boundary = geojson_utils.downsample_line(left_boundaries, utm_zone, utm_lat_band)
         right_boundary = geojson_utils.downsample_line(right_boundaries, utm_zone, utm_lat_band)
 
-        length = sum((l.properties['length'] for l in path))
+        length = sum((lane.properties['length'] for lane in path))
 
-        for lg in path[:-1]:
+        for lg in path[:-1]:  # pylint: disable=redefined-outer-name
+            # TODO: is lg here same as lg in outer loop?
+            # If so, we should leave a comment explaining why, and if not
+            # we should rename this var.
+
             connector_ref = lg.properties['end_connector_ref']
             skipped_junctions.add(connector_ref)
 
         road_segment_ref = retile_ref(path_refs[0])
-        # assert road_segment_id[:2] == road_tile_id, (road_segment_id, road_tile_id, first_lg.id)
 
         boundary = geojson_utils.boundaries_to_poly(left_boundary, right_boundary)
 

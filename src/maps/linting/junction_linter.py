@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 """ Library to lint map junctions for "Issues" """
 from maps.issue_types import IssueType
-from maps.issues import Issue, IssueLayer
+from maps.issues import Issue
 from maps.utils import ref_utils
 import geopy
 

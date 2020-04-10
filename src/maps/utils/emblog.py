@@ -25,33 +25,34 @@ class Color(object):
 
 def set_ros(use_ros):
     """ Use this to set the output to be ros out or std out. """
-    global USE_ROS
+    global USE_ROS  # pylint: disable=global-statement
+    # TODO: Should this be refactored to not use global statement?
     USE_ROS = use_ros
 
 
 def debug(msg, *args, **kwargs):
     if USE_ROS:
-        rospy.logdebug(msg, *args)
+        rospy.logdebug(msg, *args, **kwargs)
     else:
         print Color.DEBUG + msg + Color.ENDC
 
 
 def info(msg, *args, **kwargs):
     if USE_ROS:
-        rospy.loginfo(msg, *args)
+        rospy.loginfo(msg, *args, **kwargs)
     else:
         print msg
 
 
 def warn(msg, *args, **kwargs):
     if USE_ROS:
-        rospy.logwarn(msg, *args)
+        rospy.logwarn(msg, *args, **kwargs)
     else:
         print Color.WARN + msg + Color.ENDC
 
 
 def error(msg, *args, **kwargs):
     if USE_ROS:
-        rospy.logerr(msg, *args)
+        rospy.logerr(msg, *args, **kwargs)
     else:
         print Color.ERROR + msg + Color.ENDC
