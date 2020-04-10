@@ -11,9 +11,13 @@ from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
 from maps.utils import emblog
 from maps.utils import routing_utils
 
-def lint_lane_group(lane_group, lane_map, issue_layer):
+
+def lint_lane_group(lane_group, lane_map, issue_layer):  # pylint: disable=unused-argument
+    # TODO: should this method be refactored to not have unused arg lane_map?
+
     if len(lane_group.properties['lane_segment_refs']) == 0:
         issue_layer.add_issue(lane_group, Issue(IssueType.NO_LANES_IN_LANE_GROUP.name))
+
 
 def lint_route(route, route_id, lane_map, road_map, issue_layer):
     junction_set = set()
