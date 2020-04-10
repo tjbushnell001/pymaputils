@@ -145,12 +145,8 @@ def build_road_tile(road_graph, road_tile_id, sub_tiles):
 
         length = sum((lane.properties['length'] for lane in path))
 
-        for lg in path[:-1]:  # pylint: disable=redefined-outer-name
-            # TODO: is lg here same as lg in outer loop?
-            # If so, we should leave a comment explaining why, and if not
-            # we should rename this var.
-
-            connector_ref = lg.properties['end_connector_ref']
+        for inner_lg in path[:-1]:
+            connector_ref = inner_lg.properties['end_connector_ref']
             skipped_junctions.add(connector_ref)
 
         road_segment_ref = retile_ref(path_refs[0])
@@ -167,10 +163,10 @@ def build_road_tile(road_graph, road_tile_id, sub_tiles):
             left_boundary=left_boundary,
             right_boundary=right_boundary,
             length=length,
-            direction_of_travel = dot,
-            is_ramp = first_lg.properties['is_ramp'],
-            functional_class = first_lg.properties['functional_class'],
-            is_controlled_access = first_lg.properties['is_controlled_access'],
+            direction_of_travel=dot,
+            is_ramp=first_lg.properties['is_ramp'],
+            functional_class=first_lg.properties['functional_class'],
+            is_controlled_access=first_lg.properties['is_controlled_access'],
             invalid=invalid)
 
         features.append(road_segment)
