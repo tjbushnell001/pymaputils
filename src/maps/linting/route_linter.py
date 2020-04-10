@@ -12,9 +12,7 @@ from maps.utils import emblog
 from maps.utils import routing_utils
 
 
-def lint_lane_group(lane_group, lane_map, issue_layer):  # pylint: disable=unused-argument
-    # TODO: should this method be refactored to not have unused arg lane_map?
-
+def lint_lane_group(lane_group, issue_layer):
     if len(lane_group.properties['lane_segment_refs']) == 0:
         issue_layer.add_issue(lane_group, Issue(IssueType.NO_LANES_IN_LANE_GROUP.name))
 
@@ -28,7 +26,7 @@ def lint_route(route, route_id, lane_map, road_map, issue_layer):
 
     for lane_group in route_lane_groups:
         # lint the lane group
-        lint_lane_group(lane_group, lane_map, issue_layer)
+        lint_lane_group(lane_group, issue_layer)
 
         lane_tile = lane_map.get_tile(lane_group['ref']['tile_id'])
         for lane_segment_ref in lane_group.properties['lane_segment_refs']:
