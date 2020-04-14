@@ -187,3 +187,90 @@ def load_next_lane(lane, lane_map, direction=Direction.FORWARD,
         return
 
     return likely_lanes[0]
+
+
+def get_lanes_from_lane_occupancy(lane_map, lane_occupancy):
+    """
+    Return the lane objects from the lane_occupancy message, preserving order.
+    """
+    lanes = []
+    for lane_ref in lane_occupancy.lane_refs:
+        lanes.append(
+            lane_map.get_feature(ref_utils.lane_ref_to_dict(lane_ref)))
+
+    return lanes
+
+
+def get_adjacent_lane(lane_map, lane_occupancy, left=True):
+    ego_lane_ref = get_ego_lane_ref(lane_occupancy)
+
+    ego_lane = lane_map.get_feature(ego_lane_ref)
+
+    lane_num = ego_lane['properties']['lane_num']
+    adjacent_lane_num = lane_num + (-1 if left else 1)
+
+    lanes = get_lanes_from_lane_occupancy(lane_map, lane_occupancy)
+
+    for lane in lanes:
+        if lane['properties']['lane_num'] == adjacent_lane_num:
+            return lane
+
+    return None
+
+
+def get_rightmost_lane(lane_map, lane_occupancy, include_emergency_lanes=False):
+    """
+    Returns the rightmost lane in the current lane group.
+
+    :param lane_map: lane map layer
+    :param lane_occupancy: lane occupancy msg
+    :param include_emergency_lanes: whether emergency lane should be considered
+               i.e. if True, returned rightmost lane could be an emergency
+               lane, if False, returned rightmost lane must not be an
+               emergency lane
+    :return: rightmost lane (lane segment object)
+    """
+    lane_objects = get_lanes_from_lane_occupancy(lane_map, lane_occupancy)
+
+    if len(lane_objects) < 1:
+        return None
+
+    if include_emergency_lanes:
+        return lane_objects[-1]
+
+    for lane in reversed(lane_objects):
+        if lane['properties']['is_emergency_lane']:
+            continue
+        return lane
+
+    return None
+
+
+def get_rightmost_lane_boundary(lane_map,
+                                lane_occupancy,
+                                include_emergency_lanes=False):
+    """
+    Returns the rightmost lane boundary in the current lane group.
+
+    :param lane_map: lane map layer
+    :param lane_occupancy: lane occupancy msg
+    :param include_emergency_lanes: whether emergency lane should be considered
+               i.e. if True, returned rightmost lane could be an emergency
+               lane, if False, returned rightmost lane must not be an
+               emergency lane
+    :return: rightmost lane boundary (lane boundary object)
+    """
+    rightmost_lane = get_rightmost_lane(
+        lane_map, lane_occupancy, include_emergency_lanes)
+    right_boundary_ref = rightmost_lane['properties']['right_boundary_ref']
+    return lane_map.get_feature(right_boundary_ref)
+
+
+def get_ego_lane_ref(lane_occupancy):
+    """
+    Return the lane ref for the ego lane.
+    """
+    if lane_occupancy is None or not lane_occupancy.possible_ego_lanes:
+        return None
+
+    return ref_utils.lane_ref_to_dict(lane_occupancy.possible_ego_lanes[0])
