@@ -67,6 +67,20 @@ def create_lane_segment_ref(tile_id, lane_group_id, lane_segment_id):
     })
 
 
+def lane_ref_msg_to_dict(lane_ref):
+    """
+    Convert a LaneRef ROS message to a HashableDict.
+    """
+    if not lane_ref:
+        return {}
+
+    return create_lane_segment_ref(
+        tile_id=lane_ref.tile_id,
+        lane_group_id=lane_ref.lane_group_id,
+        lane_segment_id=lane_ref.id
+    )
+
+
 def create_connector_ref(tile_id, connector_id):
     assert 0 <= connector_id < (1 << 64), connector_id
     assert 0 <= tile_id < (1 << 64), "tile_id: {}, type(tile_id): {}".format(
