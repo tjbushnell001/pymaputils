@@ -132,6 +132,7 @@ def get_next_merge_junction(lane_map, lane_ref):
             lane = lane_map.get_feature(outflow_ref)
 
 
+# TODO: Add unit test to confirm behavior is the same as existing cpp function
 def get_nominal_lanes(lane_map, candidate_lanes):
     """
     Given a lane map and a set of potential lanes, return the most likely
@@ -181,12 +182,12 @@ def load_next_lane(lane, lane_map, direction=Direction.FORWARD,
 
     next_lanes = [lane_map.get_feature(ref) for ref in junction.properties[flow_str]]
 
-    def filter_lanes(lane):
-        if lane is None:
+    def filter_lanes(curr_lane):
+        if curr_lane is None:
             return False
 
         return (include_emergency_lanes or
-                not lane["properties"]["is_emergency_lane"])
+                not curr_lane["properties"]["is_emergency_lane"])
 
     next_lanes = filter(filter_lanes, next_lanes)
 
@@ -204,7 +205,7 @@ def get_lanes_from_lane_occupancy(lane_map, lane_occupancy):
     lanes = []
     for lane_ref in lane_occupancy.lane_refs:
         lanes.append(
-            lane_map.get_feature(ref_utils.lane_ref_to_dict(lane_ref)))
+            lane_map.get_feature(ref_utils.lane_ref_msg_to_dict(lane_ref)))
 
     return lanes
 
@@ -281,4 +282,4 @@ def get_ego_lane_ref(lane_occupancy):
     if lane_occupancy is None or not lane_occupancy.possible_ego_lanes:
         return None
 
-    return ref_utils.lane_ref_to_dict(lane_occupancy.possible_ego_lanes[0])
+    return ref_utils.lane_ref_msg_to_dict(lane_occupancy.possible_ego_lanes[0])
