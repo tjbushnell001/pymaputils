@@ -42,7 +42,6 @@ def get_all_merge_lanes(lane_map, lane, max_results=5):
     return output_lanes
 
 
-
 def follow_lanes(lane_map, initial_lane_ref, max_results=2):
     lane = lane_map.get_feature(initial_lane_ref)
     if lane is None:
@@ -91,16 +90,24 @@ def get_next_merge_ramp(lane_map, lane_ref):
     return None
 
 
-def get_next_merge_lane(lane_map, lane_ref):
+def get_next_merge_lane(lane_map, lane_ref, skip_curr_lane=False):
+    """
+    Returns the next merge lane, given a starting lane_ref.
+
+    :param lane_map:
+    :param lane_ref: lane ref of starting lane
+    :param skip_curr_lane: if True, include given lane. else, skip ahead.
+    :return: next merge lane
+    """
     lane = lane_map.get_feature(lane_ref)
 
-    while True:
+    if skip_curr_lane:
         lane = load_next_lane(lane, lane_map)
-        if not lane:
-            return None
-
+    while lane:
         if lane["properties"]["merging"]:
             return lane
+        lane = load_next_lane(lane, lane_map)
+    return None
 
 
 def get_next_merge_junction(lane_map, lane_ref):
@@ -123,6 +130,7 @@ def get_next_merge_junction(lane_map, lane_ref):
 
         for outflow_ref in outflow_refs:
             lane = lane_map.get_feature(outflow_ref)
+
 
 def get_nominal_lanes(lane_map, candidate_lanes):
     """
