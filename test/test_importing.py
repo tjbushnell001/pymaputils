@@ -1,8 +1,10 @@
 import unittest
 
-import setup_env
+import setup_env  # pylint: disable=unused-import
 
 
+# These tests simply check if imports work, so unused-variable is expected.
+# pylint: disable=unused-variable
 class TestImporting(unittest.TestCase):
     def test_maps_importing(self):
         import maps.feature_dict
@@ -33,3 +35,5 @@ class TestImporting(unittest.TestCase):
         import maps.utils.tile_linker
         import maps.utils.tile_utils
         import maps.utils.translator
+
+# pylint: enable=unused-variable
