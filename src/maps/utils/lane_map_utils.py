@@ -1,6 +1,6 @@
-import rospy
 from enum import Enum
-from maps.utils import ref_utils
+
+from maps.utils import emblog, ref_utils
 
 FORWARD_TRANSITION_PRIORITY = {
     'UNKNOWN': 0,
@@ -40,7 +40,7 @@ def get_nominal_lanes(lane_map, candidate_lanes, direction=Direction.FORWARD):
         lg_ref = ref_utils.lane_group_ref_from_lane_ref(lane.ref)
         lg = lane_map.get_feature(lg_ref)
         if lg is None:
-            rospy.logerr('MISSING LANE GROUP: %s' % lg_ref)
+            emblog.error('MISSING LANE GROUP: %s' % lg_ref)
             continue
 
 
