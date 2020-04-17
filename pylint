@@ -1,0 +1,1 @@
+find . -not \( -path */venv/* \) -iname "*.py" | grep "src\|scripts\|test" | xargs pylint -f parseable
