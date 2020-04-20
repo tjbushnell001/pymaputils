@@ -5,7 +5,7 @@ node (label: 'aws-jenkins-slave-worker') {
       branches: scm.branches,
       doGenerateSubmoduleConfigurations: false,
       extensions: scm.extensions +
-        [[$class: 'SubmoduleOption', parentCredentials: true]] +
+        [[$class: 'SubmoduleOption', parentCredentials: true, timeout: 300]] +
         [$class: 'GitLFSPull'],
       userRemoteConfigs: scm.userRemoteConfigs
     ]
