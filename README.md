@@ -1,7 +1,7 @@
 # pymaputils
 
 ## Setup & Dependencies
-See `test/Pipfile`.
+See `requirements.txt`.
 
 ## Testing
 From outside a container:
