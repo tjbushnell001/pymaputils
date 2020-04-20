@@ -11,8 +11,6 @@ node (label: 'aws-jenkins-slave-worker') {
     ]
   }
 
-  def shortCommit = sh(returnStdout: true, script: "git log -1 --format='%h' --abbrev=7").trim()
-
   stage('Running pylint') {
     docker.image('python:2').inside('-u root') {
       sh "pip install --no-cache-dir pylint"
