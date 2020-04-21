@@ -21,7 +21,8 @@ def main():
 
     map_dir = args.map_dir
     if map_dir is None:
-        map_dir = os.path.join(os.path.expanduser('~'), 'src/tiled_maps/usa')
+        # If no dir provided, assume tiled_maps is mounted in home like in embite.
+        map_dir = os.path.join(os.path.expanduser('~'), 'tiled_maps/usa')
 
     map_reader_dir = os.path.join(map_dir, 'map_reader')
     route_ids = set()
