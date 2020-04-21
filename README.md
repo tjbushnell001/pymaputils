@@ -2,7 +2,6 @@
 Python Map Utilities
 
 ## Setup & Dependencies
-See `requirements.txt`.
 
 #### Usage as a submodule
 Use `git submodule add <github-url>` to add to an existing repo. 
@@ -12,10 +11,27 @@ See [submodule doc](https://git-scm.com/docs/git-submodule)
 and [examples](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
 
 #### Usage as a standalone package
-Generate into a package with:
+Generate into a wheel package with:
 ```
-python setup.py sdist bdist_wheel
+python setup.py bdist_wheel
 ```
+
+Then install into desired environment with:
+```
+pip install <path/to/wheel/name-of-generated-wheel.whl>
+```
+
+Hint: In databricks, consider using:
+```
+dbutils.library.install('dbfs:path/tp/wheel/name-of-generated-wheel.whl')
+```
+
+#### Dependencies
+See `install_requires` argument in `setup.py`.
+
+TODO: Consolidate dependencies. 
+(Currently need to keep `requirements.txt`, `test/Pipfile`, and
+`install_requires` argument in `setup.py` consistent.)
 
 ## Testing
 From outside a container:
