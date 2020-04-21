@@ -27,11 +27,7 @@ dbutils.library.install('dbfs:path/tp/wheel/name-of-generated-wheel.whl')
 ```
 
 #### Dependencies
-See `install_requires` argument in `setup.py`.
-
-TODO: Consolidate dependencies. 
-(Currently need to keep `requirements.txt`, `test/Pipfile`, and
-`install_requires` argument in `setup.py` consistent.)
+See `requirements.txt`.
 
 ## Testing
 From outside a container:

@@ -1,4 +1,16 @@
+import os
 import setuptools
+
+
+# Utility function to read a file at same level as this one.
+def read(fname):
+    with open(os.path.join(os.path.dirname(__file__), fname)) as f:
+        return f.read()
+
+
+def read_requirements():
+    return read('requirements.txt').split('\n')
+
 
 setuptools.setup(
     name="embark-pymaputils",
@@ -11,12 +23,5 @@ setuptools.setup(
         "Programming Language :: Python :: 2.7",
     ],
     python_requires='>=2.7',
-    install_requires=[
-        "enum34==1.1.6",
-        "geojson==2.0.0",
-        "geopy==1.11.0",
-        "numpy==1.14.2",
-        "Shapely==1.7.0",
-        "utm==0.4.2"
-    ]
+    install_requires=read_requirements()
 )
