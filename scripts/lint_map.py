@@ -40,6 +40,8 @@ def main():
         print "Writing Issues to File [{}]".format(args.out_file)
         issue_layer.write(args.out_file)
 
+    failures = True
+
     if failures:
         emblog.error("\n"
                      "**************************************\n"
