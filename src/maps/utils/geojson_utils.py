@@ -135,7 +135,7 @@ def write_geojson_object(file_name, prefix, feature_collection):
     """
     Write a geojson feature_collection to disk as a json file.
 
-    :param file_name: the name of the file
+    :param file_name: the name of the file (without suffix)
     :param prefix: the file path to write the geojson file to
     :param feature_collection: the feature collection object
     :return: None
