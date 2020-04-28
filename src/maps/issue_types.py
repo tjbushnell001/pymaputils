@@ -33,3 +33,6 @@ class IssueType(Enum):
 
     # Lane Group Issues
     NO_LANES_IN_LANE_GROUP = "NO_LANES_IN_LANE_GROUP"
+
+    # Lane Preference Issues
+    LANE_NOT_IN_GROUP = "LANE_NOT_IN_GROUP"

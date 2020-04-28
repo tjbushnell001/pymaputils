@@ -1,12 +1,13 @@
 """ Library for linting lanes. """
 
-import utm
 import math
-import shapely.geometry
 
-from maps.issues import IssueLevel, Issue
+import shapely.geometry
+import utm
 from maps.issue_types import IssueType
+from maps.issues import IssueLevel, Issue
 from maps.utils import tile_utils
+
 
 def line_to_utm(geometry, utm_zone=None):
     """ Creates a shapely LineString in utm """
@@ -15,6 +16,7 @@ def line_to_utm(geometry, utm_zone=None):
     return shapely.geometry.LineString(
         (utm.from_latlon(p[1], p[0], force_zone_number=utm_zone)[:2]
          for p in points))
+
 
 def check_line(line, feature, line_name, issue_layer):
     """ Check basic properties of a line """
@@ -28,15 +30,18 @@ def check_line(line, feature, line_name, issue_layer):
         issue_layer.add_issue(feature, Issue(IssueType.SELF_CROSSING_LINE.name,
                                              msg=msg))
 
+
 def norm_angle(a):
-    """ Nomalize an angle +-pi (in radians) """
+    """ Normalize an angle +-pi (in radians) """
     return (a + math.pi) % (2 * math.pi) - math.pi
+
 
 def line_theta(line, index=0):
     """ Find the heading at the given index of a line """
     p1 = line.coords[index]
     p2 = line.coords[index + 1]
     return norm_angle(math.atan2(p2[1] - p1[1], p2[0] - p1[0]))
+
 
 def line_relative_theta(center_line, other_line):
     """ Find the heading difference between two lines """
@@ -46,6 +51,7 @@ def line_relative_theta(center_line, other_line):
     other_heading = line_theta(other_line)
 
     return norm_angle(other_heading - center_heading)
+
 
 def lint_lane(lane, lane_map, issue_layer):
     if lane.properties['is_emergency_lane']:
@@ -82,7 +88,6 @@ def lint_lane(lane, lane_map, issue_layer):
             issue_layer.add_issue(lane, Issue(IssueType.WRONG_DIRECTION_LINE.name,
                                               level=IssueLevel.WARN,
                                               msg=msg))
-
 
         # checkout boundaries don't cross center
         # NOTE: Only check this on NORMAL lanes ("UNKNOWN") because merge and

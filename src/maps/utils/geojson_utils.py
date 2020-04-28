@@ -1,10 +1,10 @@
+import os
+
 import geojson
 import shapely
 import shapely.geometry
 import shapely.validation
-import os
 import utm
-
 from maps.utils import ref_utils
 
 
@@ -157,3 +157,12 @@ def connector_ref_from_junction_ref(junction_ref):
         {'id': junction_ref['connector_id'],
          'tile_id': junction_ref['tile_id'],
          'type': 'connector_ref'})
+
+
+def shapely_polygon_from_gcs_to_utm(gcs_polygon, reference_utm_zone):
+    utm_polygon_points = []
+    for lon, lat in gcs_polygon.exterior.coords:
+        utm_x, utm_y, _, _ = utm.from_latlon(lat, lon, reference_utm_zone)
+        utm_polygon_points.append((utm_x, utm_y))
+
+    return shapely.geometry.Polygon(utm_polygon_points)

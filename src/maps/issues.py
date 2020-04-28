@@ -17,6 +17,9 @@ class IssueLevel(Enum):
     def cmp(issue1, issue2):
         return cmp(issue1.value, issue2.value)
 
+    def __cmp__(self, other):
+        return cmp(self.value, other.value)
+
 
 class IssueLayer(object):
     """
@@ -137,7 +140,7 @@ class FeatureIssueSet(object):
         elif geom_type == 'Point':
             point = sg.Point(feature.geometry['coordinates']).representative_point()
         elif geom_type == 'Polygon':
-            point = sg.Polygon(feature.geometry['coordinates']).representative_point()
+            point = sg.asShape(feature.geometry).representative_point()
         else:
             raise NotImplementedError("Geometry type {} not supported in Issues yet".format(feature.geometry['type']))
 
