@@ -17,16 +17,14 @@ class IssueLevel(Enum):
     def cmp(issue1, issue2):
         return cmp(issue1.value, issue2.value)
 
-    def __cmp__(self, other):
-        return cmp(self.value, other.value)
-
 
 class IssueLayer(object):
     """
     A set of features (i.e. FeatureIssueSet) and their associated issues.
     TODO(christian): Make this a GeoJsonMapLayer
     """
-    def __init__(self, filter_types = None):
+
+    def __init__(self, filter_types=None):
         """
         Arguments:
         filter_types: (optional) Only accept issues of the given type (iterable
@@ -41,7 +39,7 @@ class IssueLayer(object):
 
     def add_issue(self, feature, issue, point=None):
         if (self.filter_types is not None and
-            issue.issue_type not in self.filter_types):
+                issue.issue_type not in self.filter_types):
             # we're filtering and this isn't a support issue type
             return
 
@@ -125,6 +123,7 @@ class IssueLayer(object):
 
 class FeatureIssueSet(object):
     """ The set of all issues associated with a feature. """
+
     def __init__(self, feature_ref, point):
         self.point = point
         self.feature_ref = feature_ref
@@ -133,17 +132,7 @@ class FeatureIssueSet(object):
 
     @classmethod
     def from_feature(cls, feature):
-        geom_type = feature.geometry['type']
-
-        if geom_type == 'LineString':
-            point = sg.LineString(feature.geometry['coordinates']).representative_point()
-        elif geom_type == 'Point':
-            point = sg.Point(feature.geometry['coordinates']).representative_point()
-        elif geom_type == 'Polygon':
-            point = sg.asShape(feature.geometry).representative_point()
-        else:
-            raise NotImplementedError("Geometry type {} not supported in Issues yet".format(feature.geometry['type']))
-
+        point = sg.asShape(feature.geometry).representative_point()
         issue_set = cls(feature.ref, point)
         for issue_type in feature.properties.get('ignore_issues', []):
             issue_set.add_ignore(issue_type)
@@ -175,6 +164,7 @@ class FeatureIssueSet(object):
 
 class Issue(object):
     """ A base "issue" object. This basically holds the type, a message describing the issue and it's severity. """
+
     def __init__(self, issue_type, level=IssueLevel.ERROR, msg=""):
         """
         :param issue_type: a string id

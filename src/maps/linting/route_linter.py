@@ -40,16 +40,14 @@ def lint_lane_group_preferences(lane_group, route_id, lane_preference_layer, iss
             if not 1 <= lane_num <= n_lanes:
                 first_polygon_point = polygon_feature['geometry']['coordinates'][0][0]
                 message = "Lane " + str(lane_num) \
-                          + " in preference polygon starting with point " \
-                          + str(first_polygon_point) \
-                          + " not valid: There are not that many points in lane group " \
+                          + " in polygon " \
+                          + str(polygon_feature['ref']['id']) \
+                          + " not valid: There are not that many lanes in lane group " \
                           + str(lane_group['ref'])
-                issue_layer.add_issue(lane_group, Issue(IssueType.LANE_NOT_IN_GROUP.name, msg=message))
-
-    pass
+                issue_layer.add_issue(polygon_feature, Issue(IssueType.LANE_NOT_IN_GROUP.name, msg=message))
 
 
-def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference_layer):
+def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference_layer=None):
     junction_set = set()
 
     print "Getting LaneGroups in route: {}".format(route_id)
