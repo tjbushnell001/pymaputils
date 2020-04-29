@@ -2,7 +2,7 @@ import geojson
 import json
 import shapely.geometry as sg
 
-from collections import defaultdict
+from collections import Counter
 from enum import Enum
 from maps.utils import geojson_utils
 from maps.utils import ref_utils
@@ -86,7 +86,7 @@ class IssueLayer(object):
         return num_issues
 
     def count_issues_by_level(self):
-        num_issues = defaultdict(lambda: 0)
+        num_issues = Counter()
         for issue_set in self.features.itervalues():
             for issue in issue_set.issues.itervalues():
                 num_issues[issue.level] += 1
