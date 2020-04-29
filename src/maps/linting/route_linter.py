@@ -1,7 +1,6 @@
 """ Library for linting routes. """
 from itertools import chain
 import os
-import sys
 
 
 import maps.routing
