@@ -1,7 +1,6 @@
 """ Library for linting routes. """
-from itertools import chain
 import os
-
+from itertools import chain
 
 import maps.routing
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
@@ -62,7 +61,7 @@ def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference
     print "Linting lane groups..."
 
     if lane_preference_layer is None:
-        emblog.info(route_id + "doesn't have any associated lane preference layers.")
+        emblog.info(route_id + " doesn't have any associated lane preference layers.")
     else:
         lint_route_preferences(route_lane_groups, route_id, lane_preference_layer, issue_layer)
 
