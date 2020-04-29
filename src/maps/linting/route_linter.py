@@ -1,6 +1,8 @@
 """ Library for linting routes. """
-import os
 from itertools import chain
+import os
+import sys
+
 
 import maps.routing
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
@@ -22,6 +24,11 @@ def lint_lane_group(lane_group, issue_layer):
         issue_layer.add_issue(lane_group, Issue(IssueType.NO_LANES_IN_LANE_GROUP))
 
 
+def lint_route_preferences(route, route_id, lane_preference_layer, issue_layer):
+    for lane_group in route:
+        lint_lane_group_preferences(lane_group, route_id, lane_preference_layer, issue_layer)
+
+
 def lint_lane_group_preferences(lane_group, route_id, lane_preference_layer, issue_layer):
     reference_utm_zone = latlon_to_zone_number(*reversed(lane_group['geometry']['coordinates'][0][0]))
     lane_group_polygon_utm = shapely_polygon_from_gcs_to_utm(asShape(lane_group['geometry']), reference_utm_zone)
@@ -41,6 +48,8 @@ def lint_lane_group_preferences(lane_group, route_id, lane_preference_layer, iss
                 message = "Lane " + str(lane_num) \
                           + " in polygon " \
                           + str(polygon_feature['ref']['id']) \
+                          + " in route " \
+                          + str(polygon_feature['ref']['route_id']) \
                           + " not valid: There are not that many lanes in lane group " \
                           + str(lane_group['ref'])
                 issue_layer.add_issue(polygon_feature, Issue(IssueType.LANE_NOT_IN_GROUP, msg=message))
@@ -53,11 +62,14 @@ def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference
     route_lane_groups = routing_utils.get_lane_groups_in_route(route, road_map, lane_map)
     print "Linting lane groups..."
 
+    if lane_preference_layer is None:
+        emblog.info(route_id + "doesn't have any associated lane preference layers.")
+    else:
+        lint_route_preferences(route_lane_groups, route_id, lane_preference_layer, issue_layer)
+
     for lane_group in route_lane_groups:
         # lint the lane group
         lint_lane_group(lane_group, issue_layer)
-        if lane_preference_layer is not None:
-            lint_lane_group_preferences(lane_group, route_id, lane_preference_layer, issue_layer)
 
         lane_tile = lane_map.get_tile(lane_group['ref']['tile_id'])
         for lane_segment_ref in lane_group.properties['lane_segment_refs']:
