@@ -19,7 +19,7 @@ from utm import latlon_to_zone_number
 
 def lint_lane_group(lane_group, issue_layer):
     if len(lane_group.properties['lane_segment_refs']) == 0:
-        issue_layer.add_issue(lane_group, Issue(IssueType.NO_LANES_IN_LANE_GROUP.name))
+        issue_layer.add_issue(lane_group, Issue(IssueType.NO_LANES_IN_LANE_GROUP))
 
 
 def lint_lane_group_preferences(lane_group, route_id, lane_preference_layer, issue_layer):
@@ -38,13 +38,12 @@ def lint_lane_group_preferences(lane_group, route_id, lane_preference_layer, iss
         lanes_to_avoid = polygon_feature['properties'].get('lanes_to_avoid', [])
         for lane_num in chain(preferred_lanes, lanes_to_avoid):
             if not 1 <= lane_num <= n_lanes:
-                first_polygon_point = polygon_feature['geometry']['coordinates'][0][0]
                 message = "Lane " + str(lane_num) \
                           + " in polygon " \
                           + str(polygon_feature['ref']['id']) \
                           + " not valid: There are not that many lanes in lane group " \
                           + str(lane_group['ref'])
-                issue_layer.add_issue(polygon_feature, Issue(IssueType.LANE_NOT_IN_GROUP.name, msg=message))
+                issue_layer.add_issue(polygon_feature, Issue(IssueType.LANE_NOT_IN_GROUP, msg=message))
 
 
 def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference_layer=None):
@@ -78,7 +77,7 @@ def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference
 
                 junction = lane_map.get_feature(junction_ref)
                 if junction is None:
-                    issue_layer.add_issue(lane, Issue(IssueType.NON_EXISTENT_JUNCTION_REF.name, msg=str(lane)))
+                    issue_layer.add_issue(lane, Issue(IssueType.NON_EXISTENT_JUNCTION_REF, msg=str(lane)))
                 else:
                     junction_linter.lint_junction(junction, lane_map, issue_layer)
 

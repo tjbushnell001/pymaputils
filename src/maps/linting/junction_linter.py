@@ -26,14 +26,14 @@ def lint_junction(junction, lane_map, issue_layer):
 
     # 1. check that junction has any outflows
     if len(outflows) == 0:
-        issue_layer.add_issue(junction, Issue(IssueType.NO_OUTFLOW.name))
+        issue_layer.add_issue(junction, Issue(IssueType.NO_OUTFLOW))
 
     # 2. check outflow transitions
     for counts in out_transitions.values():
         if sum(counts.values()) > 1 and counts['UNKNOWN'] == 0:
-            issue_layer.add_issue(junction, Issue(IssueType.SPLIT_NO_NORMAL.name, msg=transition_msg))
+            issue_layer.add_issue(junction, Issue(IssueType.SPLIT_NO_NORMAL, msg=transition_msg))
         elif counts['UNKNOWN'] > 1:
-            issue_layer.add_issue(junction, Issue(IssueType.SPLIT_MULTIPLE_NORMAL.name, msg=transition_msg))
+            issue_layer.add_issue(junction, Issue(IssueType.SPLIT_MULTIPLE_NORMAL, msg=transition_msg))
 
     for lane_ref in outflows:
         lane = lane_map.get_feature(lane_ref)
@@ -42,19 +42,19 @@ def lint_junction(junction, lane_map, issue_layer):
         # 3. check outflow direction of travel
         lane_dot = lane.properties['direction_of_travel']
         if lane_dot != "FORWARD":
-            issue_layer.add_issue(lane, Issue(IssueType.INVALID_DIRECTION_OF_TRAVEL.name, msg=lane_dot))
+            issue_layer.add_issue(lane, Issue(IssueType.INVALID_DIRECTION_OF_TRAVEL, msg=lane_dot))
 
         # 4. check outflow geometric properties
         if len(outflows) > 1 and not lane.properties['from_split']:
             lane.properties['from_split'] = True
-            issue_layer.add_issue(junction, Issue(IssueType.FROM_SPLIT_MISSING_PROPERTY.name))
+            issue_layer.add_issue(junction, Issue(IssueType.FROM_SPLIT_MISSING_PROPERTY))
 
     # 5. check inflow transitions
     for counts in in_transitions.values():
         if sum(counts.values()) > 1 and counts['UNKNOWN'] == 0:
-            issue_layer.add_issue(junction, Issue(IssueType.MERGE_NO_NORMAL.name, msg=transition_msg))
+            issue_layer.add_issue(junction, Issue(IssueType.MERGE_NO_NORMAL, msg=transition_msg))
         elif counts['UNKNOWN'] > 1:
-            issue_layer.add_issue(junction, Issue(IssueType.MERGE_MULTIPLE_NORMAL.name, msg=transition_msg))
+            issue_layer.add_issue(junction, Issue(IssueType.MERGE_MULTIPLE_NORMAL, msg=transition_msg))
 
     for lane_ref in inflows:
         lane = lane_map.get_feature(lane_ref)
@@ -63,11 +63,11 @@ def lint_junction(junction, lane_map, issue_layer):
         # 6. check inflow direction of travel
         lane_dot = lane.properties['direction_of_travel']
         if lane_dot != "FORWARD":
-            issue_layer.add_issue(lane, Issue(IssueType.INVALID_DIRECTION_OF_TRAVEL.name, msg=lane_dot))
+            issue_layer.add_issue(lane, Issue(IssueType.INVALID_DIRECTION_OF_TRAVEL, msg=lane_dot))
 
         # 7. check inflow geometric properties
         if len(inflows) > 1 and not lane.properties['merging']:
-            issue_layer.add_issue(junction, Issue(IssueType.MERGING_MISSING_PROPERTY.name))
+            issue_layer.add_issue(junction, Issue(IssueType.MERGING_MISSING_PROPERTY))
 
     # 8. check junction distance from lanes
     junction_pt = tuple(reversed(junction.geometry['coordinates']))
@@ -84,7 +84,7 @@ def lint_junction(junction, lane_map, issue_layer):
             if max_junction_dist is None or d > max_junction_dist:
                 max_junction_dist = d
     if max_junction_dist is not None and max_junction_dist > 0.10:
-        issue_layer.add_issue(junction, Issue(IssueType.JUNCTION_TOO_FAR.name,
+        issue_layer.add_issue(junction, Issue(IssueType.JUNCTION_TOO_FAR,
                                               msg="{0:.2f}m".format(max_junction_dist)))
 
     return issue_layer

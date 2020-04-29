@@ -3,6 +3,7 @@
 import argparse
 import glob
 import os
+import threading
 
 from maps.linting import route_linter
 from maps.utils import emblog

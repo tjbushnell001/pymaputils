@@ -6,6 +6,7 @@ from collections import defaultdict
 from enum import Enum
 from maps.utils import geojson_utils
 from maps.utils import ref_utils
+from maps.issue_types import IssueType
 
 
 class IssueLevel(Enum):
@@ -134,8 +135,8 @@ class FeatureIssueSet(object):
     def from_feature(cls, feature):
         point = sg.asShape(feature.geometry).representative_point()
         issue_set = cls(feature.ref, point)
-        for issue_type in feature.properties.get('ignore_issues', []):
-            issue_set.add_ignore(issue_type)
+        for issue_type_name in feature.properties.get('ignore_issues', []):
+            issue_set.add_ignore(IssueType[issue_type_name])
 
         return issue_set
 
@@ -152,7 +153,7 @@ class FeatureIssueSet(object):
     def add_issue(self, issue):
         if issue.issue_type in self.ignore_issues:
             issue.level = IssueLevel.IGNORE
-        ref = ref_utils.hashify({'feature_ref': self.feature_ref, 'type': issue.issue_type})
+        ref = ref_utils.hashify({'feature_ref': self.feature_ref, 'type': issue.issue_type.value})
         if ref not in self.issues:
             self.issues[ref] = issue
         elif issue.level.value >= self.issues[ref].level.value:

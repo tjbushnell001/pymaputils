@@ -22,12 +22,12 @@ def check_line(line, feature, line_name, issue_layer):
     """ Check basic properties of a line """
     # 1. isn't empty
     if line.is_empty:
-        issue_layer.add_issue(feature, Issue(IssueType.EMPTY_LINE.name,
+        issue_layer.add_issue(feature, Issue(IssueType.EMPTY_LINE,
                                              msg="empty {}".format(line_name)))
     # 2. doesn't cross itself
     if not line.is_simple:
         msg = "{} intersects itself".format(line_name)
-        issue_layer.add_issue(feature, Issue(IssueType.SELF_CROSSING_LINE.name,
+        issue_layer.add_issue(feature, Issue(IssueType.SELF_CROSSING_LINE,
                                              msg=msg))
 
 
@@ -73,7 +73,7 @@ def lint_lane(lane, lane_map, issue_layer):
         boundary_ref = lane.properties[line_id + '_boundary_ref']
         boundary = lane_map.get_feature(boundary_ref)
         if boundary is None:
-            issue_layer.add_issue(lane, Issue(IssueType.MISSING_BOUNDARY.name, msg=str(boundary_ref)))
+            issue_layer.add_issue(lane, Issue(IssueType.MISSING_BOUNDARY, msg=str(boundary_ref)))
             continue
 
         boundary_line = line_to_utm(boundary.geometry, utm_zone=utm_zone)
@@ -85,7 +85,7 @@ def lint_lane(lane, lane_map, issue_layer):
         lh = line_relative_theta(center_line, boundary_line)
         if abs(lh) > math.pi / 2:
             msg = "{} goes wrong direction ({:0.1f} degrees)".format(line_name, math.degrees(lh))
-            issue_layer.add_issue(lane, Issue(IssueType.WRONG_DIRECTION_LINE.name,
+            issue_layer.add_issue(lane, Issue(IssueType.WRONG_DIRECTION_LINE,
                                               level=IssueLevel.WARN,
                                               msg=msg))
 
@@ -94,6 +94,6 @@ def lint_lane(lane, lane_map, issue_layer):
         # split lanes cross their center lines.
         if transition_type == "UNKNOWN" and boundary_line.intersects(center_line):
             msg = "{} crosses center".format(line_name)
-            issue_layer.add_issue(lane, Issue(IssueType.LINE_CROSSES_CENTER.name,
+            issue_layer.add_issue(lane, Issue(IssueType.LINE_CROSSES_CENTER,
                                               level=IssueLevel.WARN,
                                               msg=msg))
