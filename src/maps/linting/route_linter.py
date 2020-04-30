@@ -1,6 +1,6 @@
 """ Library for linting routes. """
 import os
-from itertools import chain
+import itertools
 
 import maps.routing
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
@@ -41,7 +41,7 @@ def lint_lane_group_preferences(lane_group, route_id, lane_preference_layer, iss
 
         preferred_lanes = polygon_feature['properties'].get('preferred_lanes', [])
         lanes_to_avoid = polygon_feature['properties'].get('lanes_to_avoid', [])
-        for lane_num in chain(preferred_lanes, lanes_to_avoid):
+        for lane_num in itertools.chain(preferred_lanes, lanes_to_avoid):
             if not 1 <= lane_num <= n_lanes:
                 message = "Lane " + str(lane_num) \
                           + " in polygon " \
