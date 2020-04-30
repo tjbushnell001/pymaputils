@@ -4,6 +4,7 @@ import math
 
 import shapely.geometry
 import utm
+
 from maps.issue_types import IssueType
 from maps.issues import IssueLevel, Issue
 from maps.utils import tile_utils
