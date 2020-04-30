@@ -24,40 +24,48 @@ def lint_lane_group(lane_group, issue_layer):
         issue_layer.add_issue(lane_group, Issue(IssueType.NO_LANES_IN_LANE_GROUP))
 
 
-def lint_route_preferences(route, lane_preference_layer, issue_layer):
-    for lane_group in route:
-        lint_lane_group_preferences(lane_group, lane_preference_layer, issue_layer)
-
-
-def lint_lane_group_preferences(lane_group, lane_preference_layer, issue_layer):
-    reference_utm_zone = utm.latlon_to_zone_number(*reversed(lane_group['geometry']['coordinates'][0][0]))
-    lane_group_polygon_utm = shapely_polygon_from_gcs_to_utm(sg.asShape(lane_group['geometry']), reference_utm_zone)
-    n_lanes = len(lane_group['properties']['lane_segment_refs'])
-    for polygon_feature in lane_preference_layer['features']:
-        polygon_feature_border_utm = shapely_polygon_from_gcs_to_utm(sg.asShape(polygon_feature['geometry']),
+def lint_route_preferences(route_lane_groups, lane_preference_layer, issue_layer):
+    for lane_preference_polygon in lane_preference_layer['features']:
+        lane_preference_intersections = 0
+        rep_point = sg.asShape(lane_preference_polygon['geometry']).representative_point()
+        reference_utm_zone = utm.latlon_to_zone_number(rep_point.y, rep_point.x)
+        polygon_feature_border_utm = shapely_polygon_from_gcs_to_utm(sg.asShape(lane_preference_polygon['geometry']),
                                                                      reference_utm_zone)
-        if not polygon_feature_border_utm.intersects(lane_group_polygon_utm):
-            continue
+        for lane_group in route_lane_groups:
+            lane_group_border_utm = shapely_polygon_from_gcs_to_utm(sg.asShape(lane_group['geometry']),
+                                                                    reference_utm_zone)
 
-        preferred_lanes = polygon_feature['properties'].get('preferred_lanes', [])
-        lanes_to_avoid = polygon_feature['properties'].get('lanes_to_avoid', [])
-        for lane_num in itertools.chain(preferred_lanes, lanes_to_avoid):
-            if not 1 <= lane_num <= n_lanes:
-                message = "Lane " + str(lane_num) \
-                          + " in polygon " \
-                          + str(polygon_feature['ref']['id']) \
-                          + " in route " \
-                          + str(polygon_feature['ref']['route_id']) \
-                          + " not valid: There are not that many lanes in lane group " \
-                          + str(lane_group['ref'])
-                issue_layer.add_issue(polygon_feature, Issue(IssueType.LANE_NOT_IN_GROUP, msg=message))
+            if polygon_feature_border_utm.intersects(lane_group_border_utm):
+                preferred_lanes = lane_preference_polygon['properties'].get('preferred_lanes', [])
+                lanes_to_avoid = lane_preference_polygon['properties'].get('lanes_to_avoid', [])
+                n_lanes = len(lane_group['properties']['lane_segment_refs'])
+                for lane_num in itertools.chain(preferred_lanes, lanes_to_avoid):
+                    if not 1 <= lane_num <= n_lanes:
+                        message = "Lane " + str(lane_num) \
+                                  + " in polygon " \
+                                  + str(lane_preference_polygon['ref']['id']) \
+                                  + " in route " \
+                                  + str(lane_preference_polygon['ref']['route_id']) \
+                                  + " not valid: There are not that many lanes in lane group " \
+                                  + str(lane_group['ref'])
+                        issue_layer.add_issue(lane_preference_polygon, Issue(IssueType.LANE_NOT_IN_GROUP, msg=message))
+                lane_preference_intersections += 1
+
+
+def check_intersecting_lane_group_and_polygon(lane_group, lane_preference_polygon, issue_layer):
+    """
+    :param lane_group: 
+    :param lane_preference_polygon: 
+    :param issue_layer: 
+    :return: 
+    """
 
 
 def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference_layer=None):
     junction_set = set()
 
     print "Getting LaneGroups in route: {}".format(route_id)
-    route_lane_groups = routing_utils.get_lane_groups_in_route(route, road_map, lane_map)
+    route_lane_groups = list(routing_utils.get_lane_groups_in_route(route, road_map, lane_map))
     print "Linting lane groups..."
 
     if lane_preference_layer is None:
