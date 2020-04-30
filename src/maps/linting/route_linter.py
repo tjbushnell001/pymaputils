@@ -53,17 +53,8 @@ def lint_lane_group_preferences(lane_group, lane_preference_layer, issue_layer):
                 issue_layer.add_issue(polygon_feature, Issue(IssueType.LANE_NOT_IN_GROUP, msg=message))
 
 
-def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference_layer=None):
+def lint_route(route_lane_groups, lane_map, issue_layer):
     junction_set = set()
-
-    print "Getting LaneGroups in route: {}".format(route_id)
-    route_lane_groups = routing_utils.get_lane_groups_in_route(route, road_map, lane_map)
-    print "Linting lane groups..."
-
-    if lane_preference_layer is None:
-        emblog.info(route_id + " doesn't have any associated lane preference layers.")
-    else:
-        lint_route_preferences(route_lane_groups, lane_preference_layer, issue_layer)
 
     for lane_group in route_lane_groups:
         # lint the lane group
@@ -123,17 +114,26 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
         print "Generating route for [{}]".format(route_id)
 
         all_waypoints = routing_utils.load_waypoints_from_map_reader(map_reader_dir, route_id)
-        routes = maps.routing.find_route(road_graph, all_waypoints, routing_utils.Capabilities())
+        route = maps.routing.find_route(road_graph, all_waypoints, routing_utils.Capabilities())
 
-        if routes is None:
+        if route is None:
             route_failed = True
             failed_routes.add(route_id)
             print "Failed to generate route for [{}]".format(route_id)
         else:
+
+            print "Getting LaneGroups in route [{}]".format(route_id)
+            route_lane_groups = list(routing_utils.get_lane_groups_in_route(route, road_graph, lane_map))
             print
             print "Linting route [{}]".format(route_id)
 
-            lint_route(routes, route_id, lane_map, road_graph, issue_layer, lane_preference_layers.get(route_id))
+            lint_route(route_lane_groups, lane_map, issue_layer)
+
+            if route_id in lane_preference_layers:
+                print "Linting route preference for route {}".format(route_id)
+                lint_route_preferences(route_lane_groups, lane_preference_layers[route_id], issue_layer)
+            else:
+                print "[{}] doesn't have any associated lane preference layers, skipping".format(route_id)
 
         curr_counts = issue_layer.count_issues_by_level()
 
