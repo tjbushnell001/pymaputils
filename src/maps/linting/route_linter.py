@@ -2,6 +2,9 @@
 import os
 import itertools
 
+import shapely.geometry as sg
+import utm
+
 import maps.routing
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
 from maps.issue_types import IssueType
@@ -13,8 +16,6 @@ from maps.map_types import MapType
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
 from maps.utils import emblog, routing_utils
 from maps.utils.geojson_utils import shapely_polygon_from_gcs_to_utm
-from shapely.geometry import asShape
-from utm import latlon_to_zone_number
 
 
 def lint_lane_group(lane_group, issue_layer):
@@ -28,13 +29,13 @@ def lint_route_preferences(route, route_id, lane_preference_layer, issue_layer):
 
 
 def lint_lane_group_preferences(lane_group, route_id, lane_preference_layer, issue_layer):
-    reference_utm_zone = latlon_to_zone_number(*reversed(lane_group['geometry']['coordinates'][0][0]))
-    lane_group_polygon_utm = shapely_polygon_from_gcs_to_utm(asShape(lane_group['geometry']), reference_utm_zone)
+    reference_utm_zone = utm.latlon_to_zone_number(*reversed(lane_group['geometry']['coordinates'][0][0]))
+    lane_group_polygon_utm = shapely_polygon_from_gcs_to_utm(sg.asShape(lane_group['geometry']), reference_utm_zone)
     n_lanes = len(lane_group['properties']['lane_segment_refs'])
     for polygon_feature in lane_preference_layer['features']:
         if polygon_feature['properties']['route'] != route_id:
             continue
-        polygon_feature_border_utm = shapely_polygon_from_gcs_to_utm(asShape(polygon_feature['geometry']),
+        polygon_feature_border_utm = shapely_polygon_from_gcs_to_utm(sg.asShape(polygon_feature['geometry']),
                                                                      reference_utm_zone)
         if not polygon_feature_border_utm.intersects(lane_group_polygon_utm):
             continue
