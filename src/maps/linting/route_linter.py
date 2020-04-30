@@ -15,7 +15,7 @@ from maps.map_layers import MapLayers
 from maps.map_types import MapType
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
 from maps.utils import emblog, routing_utils
-from maps.utils.geojson_utils import shapely_polygon_from_gcs_to_utm
+from maps.utils.geojson_utils import geojson_polygon_to_shapely_utm
 from maps.utils.ref_utils import hashify
 
 
@@ -29,11 +29,11 @@ def lint_route_preferences(route_lane_groups, lane_preference_layer, issue_layer
         lane_preference_intersections = 0
         rep_point = sg.asShape(lane_preference_polygon['geometry']).representative_point()
         reference_utm_zone = utm.latlon_to_zone_number(rep_point.y, rep_point.x)
-        polygon_feature_border_utm = shapely_polygon_from_gcs_to_utm(sg.asShape(lane_preference_polygon['geometry']),
-                                                                     reference_utm_zone)
-        for lane_group in route_lane_groups:
-            lane_group_border_utm = shapely_polygon_from_gcs_to_utm(sg.asShape(lane_group['geometry']),
+        polygon_feature_border_utm = geojson_polygon_to_shapely_utm(lane_preference_polygon['geometry'],
                                                                     reference_utm_zone)
+        for lane_group in route_lane_groups:
+            lane_group_border_utm = geojson_polygon_to_shapely_utm(lane_group['geometry'],
+                                                                   reference_utm_zone)
 
             if polygon_feature_border_utm.intersects(lane_group_border_utm):
                 lane_preference_intersections += 1
