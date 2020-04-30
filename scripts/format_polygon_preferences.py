@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
-"""This file is designed to help format polygons that may be generated using something like geojson.io and add refs
+"""
+This file is designed to help format polygons that may be generated using something like geojson.io and add refs
 to them so they work in the linter.
 """
 
