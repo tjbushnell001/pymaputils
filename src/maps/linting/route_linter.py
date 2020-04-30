@@ -36,6 +36,7 @@ def lint_route_preferences(route_lane_groups, lane_preference_layer, issue_layer
                                                                     reference_utm_zone)
 
             if polygon_feature_border_utm.intersects(lane_group_border_utm):
+                lane_preference_intersections += 1
                 preferred_lanes = lane_preference_polygon['properties'].get('preferred_lanes', [])
                 lanes_to_avoid = lane_preference_polygon['properties'].get('lanes_to_avoid', [])
                 n_lanes = len(lane_group['properties']['lane_segment_refs'])
@@ -49,7 +50,13 @@ def lint_route_preferences(route_lane_groups, lane_preference_layer, issue_layer
                                   + " not valid: There are not that many lanes in lane group " \
                                   + str(lane_group['ref'])
                         issue_layer.add_issue(lane_preference_polygon, Issue(IssueType.LANE_NOT_IN_GROUP, msg=message))
-                lane_preference_intersections += 1
+
+        if lane_preference_intersections == 0:
+            issue_layer.add_issue(lane_preference_polygon,
+                                  Issue(IssueType.POLYGON_INTERSECTS_WITH_NO_LANE_GROUPS,
+                                        msg="Polygon {} in route {} doesn't intersect with any lane groups.".format(
+                                            lane_preference_polygon['ref']['id'],
+                                            lane_preference_polygon['ref']['route_id'])))
 
 
 def check_intersecting_lane_group_and_polygon(lane_group, lane_preference_polygon, issue_layer):
