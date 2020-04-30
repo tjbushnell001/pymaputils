@@ -37,35 +37,29 @@ def lint_route_preferences(route_lane_groups, lane_preference_layer, issue_layer
 
             if polygon_feature_border_utm.intersects(lane_group_border_utm):
                 lane_preference_intersections += 1
-                preferred_lanes = lane_preference_polygon['properties'].get('preferred_lanes', [])
-                lanes_to_avoid = lane_preference_polygon['properties'].get('lanes_to_avoid', [])
-                n_lanes = len(lane_group['properties']['lane_segment_refs'])
-                for lane_num in itertools.chain(preferred_lanes, lanes_to_avoid):
-                    if not 1 <= lane_num <= n_lanes:
-                        message = "Lane " + str(lane_num) \
-                                  + " in polygon " \
-                                  + str(lane_preference_polygon['ref']['id']) \
-                                  + " in route " \
-                                  + str(lane_preference_polygon['ref']['route_id']) \
-                                  + " not valid: There are not that many lanes in lane group " \
-                                  + str(lane_group['ref'])
-                        issue_layer.add_issue(lane_preference_polygon, Issue(IssueType.LANE_NOT_IN_GROUP, msg=message))
+                check_preference_lanes_valid(lane_group, lane_preference_polygon, issue_layer)
 
         if lane_preference_intersections == 0:
             issue_layer.add_issue(lane_preference_polygon,
                                   Issue(IssueType.POLYGON_INTERSECTS_WITH_NO_LANE_GROUPS,
-                                        msg="Polygon {} in route {} doesn't intersect with any lane groups.".format(
+                                        msg=("Polygon {} in route {} doesn't intersect"
+                                             "with any lane groups.").format(
                                             lane_preference_polygon['ref']['id'],
                                             lane_preference_polygon['ref']['route_id'])))
 
 
-def check_intersecting_lane_group_and_polygon(lane_group, lane_preference_polygon, issue_layer):
-    """
-    :param lane_group: 
-    :param lane_preference_polygon: 
-    :param issue_layer: 
-    :return: 
-    """
+def check_preference_lanes_valid(lane_group, lane_preference_polygon, issue_layer):
+    preferred_lanes = lane_preference_polygon['properties'].get('preferred_lanes', [])
+    lanes_to_avoid = lane_preference_polygon['properties'].get('lanes_to_avoid', [])
+    n_lanes = len(lane_group['properties']['lane_segment_refs'])
+    for lane_num in itertools.chain(preferred_lanes, lanes_to_avoid):
+        if not 1 <= lane_num <= n_lanes:
+            message = ("Lane {} in polygon {} in route {} not valid. "
+                       "There are not that many lanes in lane group {}").format(
+                lane_num, lane_preference_polygon['ref']['id'],
+                lane_preference_polygon['ref']['route_id'], lane_group['ref'])
+
+            issue_layer.add_issue(lane_preference_polygon, Issue(IssueType.LANE_NOT_IN_GROUP, msg=message))
 
 
 def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference_layer=None):
