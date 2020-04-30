@@ -7,7 +7,6 @@ from maps.lane_maps import ConvertedLaneMapLayer
 from maps.lidar_maps import LidarLineLayer
 from maps.map_types import MapType
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
-from maps.utils.ref_utils import hashify
 
 
 class MapLayers(object):
@@ -130,15 +129,7 @@ class MapLayers(object):
                     self.get_dir(MapType.LANE_PREFERENCE),
                     as_dict=False
                 )
-                # Fix issue with refs in geojson loading
-                # This kinda sucks to have to do but the fix would be to move `ref` value for all possible types
-                # Or change the geojson library itself
-                for feature_map in self.layers[MapType.LANE_PREFERENCE].values():
-                    for feature in feature_map['features']:
-                        del feature['ref']['coordinates']
-                        feature['ref'] = hashify(feature['ref'])
             return self.layers[MapType.LANE_PREFERENCE]
-
         raise NotImplementedError()
 
     def get_all_layers(self, layer_type, **kwargs):

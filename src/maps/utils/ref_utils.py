@@ -15,7 +15,7 @@ class HashableDict(dict):
 
 def hashify(obj):
     """
-    Recursively convert all dicts to HashableDicts. Does a deep search
+    Recursively convert all dicts to HashableDicts and lists into tuples. Does a deep search
     into all lists and dicts.
 
     :param obj: the object to be hashified
@@ -24,7 +24,7 @@ def hashify(obj):
     if isinstance(obj, HashableDict):
         return obj
     elif isinstance(obj, list):
-        return [hashify(i) for i in obj]
+        return tuple(hashify(i) for i in obj)
     elif isinstance(obj, dict):
         return HashableDict({key: hashify(value) for key, value in obj.iteritems()})
     return obj

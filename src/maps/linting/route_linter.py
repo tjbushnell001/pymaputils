@@ -16,6 +16,7 @@ from maps.map_types import MapType
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
 from maps.utils import emblog, routing_utils
 from maps.utils.geojson_utils import shapely_polygon_from_gcs_to_utm
+from maps.utils.ref_utils import hashify
 
 
 def lint_lane_group(lane_group, issue_layer):
@@ -23,18 +24,16 @@ def lint_lane_group(lane_group, issue_layer):
         issue_layer.add_issue(lane_group, Issue(IssueType.NO_LANES_IN_LANE_GROUP))
 
 
-def lint_route_preferences(route, route_id, lane_preference_layer, issue_layer):
+def lint_route_preferences(route, lane_preference_layer, issue_layer):
     for lane_group in route:
-        lint_lane_group_preferences(lane_group, route_id, lane_preference_layer, issue_layer)
+        lint_lane_group_preferences(lane_group, lane_preference_layer, issue_layer)
 
 
-def lint_lane_group_preferences(lane_group, route_id, lane_preference_layer, issue_layer):
+def lint_lane_group_preferences(lane_group, lane_preference_layer, issue_layer):
     reference_utm_zone = utm.latlon_to_zone_number(*reversed(lane_group['geometry']['coordinates'][0][0]))
     lane_group_polygon_utm = shapely_polygon_from_gcs_to_utm(sg.asShape(lane_group['geometry']), reference_utm_zone)
     n_lanes = len(lane_group['properties']['lane_segment_refs'])
     for polygon_feature in lane_preference_layer['features']:
-        if polygon_feature['properties']['route'] != route_id:
-            continue
         polygon_feature_border_utm = shapely_polygon_from_gcs_to_utm(sg.asShape(polygon_feature['geometry']),
                                                                      reference_utm_zone)
         if not polygon_feature_border_utm.intersects(lane_group_polygon_utm):
@@ -64,7 +63,7 @@ def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference
     if lane_preference_layer is None:
         emblog.info(route_id + " doesn't have any associated lane preference layers.")
     else:
-        lint_route_preferences(route_lane_groups, route_id, lane_preference_layer, issue_layer)
+        lint_route_preferences(route_lane_groups, lane_preference_layer, issue_layer)
 
     for lane_group in route_lane_groups:
         # lint the lane group
@@ -107,8 +106,11 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
 
     lane_map = ConvertedLaneMapLayer(os.path.join(map_dir, 'tiles'), fix_dot=True)
     road_graph = GeoJsonTiledMapLayer(os.path.join(map_dir, 'road_tiles'), tile_level=ROAD_GRAPH_TILE_LEVEL)
-
     lane_preference_layers = MapLayers(map_dir).get_layer(MapType.LANE_PREFERENCE)
+    for layer in lane_preference_layers.itervalues():
+        for feature in layer.features:
+            feature.ref = hashify(feature.ref)
+
     issue_layer = IssueLayer(filter_types=issue_set)
 
     failed_routes = set()
