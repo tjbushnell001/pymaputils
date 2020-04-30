@@ -59,7 +59,8 @@ def check_preference_lanes_valid(lane_group, lane_preference_polygon, issue_laye
                 lane_num, lane_preference_polygon['ref']['id'],
                 lane_preference_polygon['ref']['route_id'], lane_group['ref'])
 
-            issue_layer.add_issue(lane_preference_polygon, Issue(IssueType.LANE_NOT_IN_GROUP, msg=message))
+            issue_layer.add_issue(lane_preference_polygon,
+                                  Issue(IssueType.PREFERENCE_LANE_NOT_IN_LANE_GROUP, msg=message))
 
 
 def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference_layer=None):
