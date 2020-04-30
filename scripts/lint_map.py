@@ -3,9 +3,14 @@
 import argparse
 import glob
 import os
+import sys
 
+# Not the cleanest solution, but this will make sure to find the location of the map lib
+# Note(jared) it makes me sad to add this back :(
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'src'))
 from maps.linting import route_linter
 from maps.utils import emblog
+
 emblog.set_ros(False)
 
 parser = argparse.ArgumentParser("Lint all da maps")
