@@ -102,7 +102,9 @@ def clean_file(filename):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('files', nargs='+', type=str, help="A list of Polygon geojson files that may not have refs")
-    parser.add_argument('--clean-only', dest='clean_only', action='store_true')
+    parser.add_argument('--clean-only', dest='clean_only', action='store_true',
+                        help="Strip lots of formatting."
+                             "Deletes any refs associated with a polygon and some geojson.io formatting")
     args = parser.parse_args()
 
     if args.clean_only:
