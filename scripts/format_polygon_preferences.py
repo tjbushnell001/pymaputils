@@ -35,7 +35,7 @@ class IDTracker:
         self.__taken_set.add(new_id)
 
 
-def reassign_polygon_ids(feature_set, route_id):
+def assign_polygon_refs(feature_set, route_id):
     id_tracker = IDTracker()
 
     for feature in feature_set['features']:
@@ -44,11 +44,13 @@ def reassign_polygon_ids(feature_set, route_id):
 
     for feature in feature_set['features']:
         if 'ref' not in feature['properties'] or 'ref' not in feature:
-            ref = {'id': id_tracker.get_next_id(),
-                   'geometry_type': 'Polygon',
-                   'route_id': route_id}
-            feature['properties']['ref'] = ref
-            feature['ref'] = ref
+            feature_id = id_tracker.get_next_id()
+            feature['ref'] = {'id': feature_id,
+                              'type': 'lane_preference_polygon_ref',
+                              'route_id': route_id}
+
+            feature['properties']['id'] = feature_id
+            feature['feature_type'] = 'lane_preference_polygon'
 
 
 def strip_geojson_io_formatting(feature_set):
@@ -65,6 +67,17 @@ def strip_refs(feature_set):
             del feature['ref']
         if 'ref' in feature['properties']:
             del feature['properties']['ref']
+
+
+def strip_route_from_properties(feature_set):
+    for feature in feature_set['features']:
+        if 'route' in feature['properties']:
+            del feature['properties']['route']
+
+
+def add_feature_types(feature_set):
+    for feature in feature_set['features']:
+        feature['feature_type']
 
 
 def fix_preferred_lanes_type(feature_set):
@@ -92,7 +105,7 @@ def save_geojson(feature_set, filename):
 def format_file(filename):
     feature_set = load_geojson(filename)
     route_id = os.path.splitext(os.path.basename(filename))[0]
-    reassign_polygon_ids(feature_set, route_id)
+    assign_polygon_refs(feature_set, route_id)
     strip_geojson_io_formatting(feature_set)
     fix_preferred_lanes_type(feature_set)
     save_geojson(feature_set, filename)
@@ -104,6 +117,7 @@ def clean_file(filename):
     strip_geojson_io_formatting(feature_set)
     strip_refs(feature_set)
     fix_preferred_lanes_type(feature_set)
+    strip_route_from_properties(feature_set)
     save_geojson(feature_set, filename)
 
 
