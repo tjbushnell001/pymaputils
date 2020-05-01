@@ -13,7 +13,8 @@ import geojson
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('files', nargs='+', type=str, help="A list of Polygon geojson files that may not have refs")
+    parser.add_argument('files', nargs='+', type=str,
+                        help="A list of Polygon geojson files that may not be formatter correctly")
     parser.add_argument('--clean-only', dest='clean_only', action='store_true',
                         help="Strip lots of formatting."
                              "Deletes any refs associated with a polygon and some geojson.io formatting")
@@ -116,6 +117,7 @@ def clean_file(filename):
     fix_preferred_lanes_type(feature_set)
     strip_route_from_properties(feature_set)
     save_geojson(feature_set, filename)
+    print "Cleaned", filename
 
 
 def main():
