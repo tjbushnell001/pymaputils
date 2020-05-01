@@ -7,11 +7,15 @@ import rospkg
 from maps.lane_maps import ConvertedLaneMapLayer
 from maps.utils import tile_linker
 
-parser = argparse.ArgumentParser("Build road graph tiles using tiled map.")
-parser.add_argument("--tile_dir", default=None, help='where to find the tiled maps')
 
-if __name__ == '__main__':
-    args = parser.parse_args()
+def parse_args():
+    parser = argparse.ArgumentParser("Build road graph tiles using tiled map.")
+    parser.add_argument("--tile_dir", default=None, help='where to find the tiled maps')
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
 
     map_dir = args.tile_dir
     if map_dir is None:
@@ -22,3 +26,7 @@ if __name__ == '__main__':
 
     for tile_id in lane_map.get_tile_list():
         tile_linker.relink_lane_tile(tile_id, lane_map, lane_map)
+
+
+if __name__ == '__main__':
+    main()
