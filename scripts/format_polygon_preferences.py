@@ -21,7 +21,7 @@ def parse_args():
     return parser.parse_args()
 
 
-class IDTracker:
+class IDTracker(object):
     def __init__(self, taken_set=None, begin_id=0):
         if taken_set is None:
             taken_set = set()
@@ -86,8 +86,8 @@ def fix_preferred_lanes_type(feature_set):
     """
     for feature in feature_set['features']:
         for prop in ('preferred_lanes', 'lanes_to_avoid'):
-            if prop in feature['properties'] and type(feature['properties'][prop]) is str:
-                feature['properties'][prop] = eval(feature['properties'][prop])
+            if prop in feature['properties'] and isinstance(feature['properties'][prop], str):
+                feature['properties'][prop] = geojson.loads(feature['properties'][prop])
 
 
 def load_geojson(filename):
