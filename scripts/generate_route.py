@@ -12,12 +12,16 @@ from maps.utils import geojson_utils, routing_utils
 import maps.routing
 import maps.road_graph
 
-parser = argparse.ArgumentParser("Generate a route given a route id and save to a file.")
-parser.add_argument('route_ids', nargs='+', help='route id to be generated')
-parser.add_argument('--route_dir', default="/tmp", help='Output directory for routes')
 
-if __name__ == '__main__':
-    args = parser.parse_args()
+def parse_args():
+    parser = argparse.ArgumentParser("Generate a route given a route id and save to a file.")
+    parser.add_argument('route_ids', nargs='+', help='route id to be generated')
+    parser.add_argument('--route_dir', default="/tmp", help='Output directory for routes')
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
 
     maps_dir = os.path.join(rospkg.RosPack().get_path('lane_map_server'), 'maps/tiled_maps/usa')
     map_reader_dir = os.path.join(rospkg.RosPack().get_path('map_reader'), 'maps')
@@ -47,5 +51,9 @@ if __name__ == '__main__':
 
         # TODO: convert this into a FeatureDict object
         geojson_utils.write_geojson_object(route_id, args.route_dir,
-                                         geojson_utils.create_feature_collection('route', route_id, features))
+                                           geojson_utils.create_feature_collection('route', route_id, features))
         print 'Wrote', os.path.join(args.route_dir, '{}.json'.format(route_id))
+
+
+if __name__ == '__main__':
+    main()
