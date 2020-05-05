@@ -23,16 +23,20 @@ node (label: 'aws-jenkins-slave-worker') {
     }
   }
 
-  stage('Running unittests') {
+  stage('Installing dependencies') {
     docker.image('python:2').inside('-u root') {
       sh "pip install -r requirements.txt"
+    }
+  }
+
+  stage('Running unittests') {
+    docker.image('python:2').inside('-u root') {
       sh "python -m unittest discover"
     }
   }
 
-  stage('Run map linter') {
+  stage('Running map linter') {
     docker.image('python:2').inside('-u root') {
-      sh "pip install -r requirements.txt"
       sh "python scripts/lint_map.py --map_dir tiled_maps/usa"
     }
   }
