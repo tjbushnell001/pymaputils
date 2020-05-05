@@ -36,6 +36,24 @@ def find_nearest(road_graph, feature_type, point):
     return None
 
 
+def is_free_space(road_graph, segment_id):
+    seg = road_graph.get_feature(segment_id)
+
+    return seg.properties.get('is_free_space', False)
+
+
+def walk_free_space_routes(road_graph, segment_id, walked_ids=None):
+    walked_ids = set() if walked_ids is None else walked_ids
+
+    walked_ids.add(segment_id)
+
+    for neighbor_id, _ in get_neighbors(road_graph, segment_id):
+        if neighbor_id not in walked_ids and is_free_space(road_graph, neighbor_id):
+            walk_free_space_routes(road_graph, neighbor_id, walked_ids)
+
+    return walked_ids
+
+
 def reconstruct_path(came_from, current):
     total_path = [current]
     while current in came_from:
@@ -199,7 +217,7 @@ def find_route(road_graph, waypoints, capabilities):
     prev_segment_id = None
     prev_wp_id = None
     prev_wp = None
-    for wp in waypoints:
+    for wp_index, wp in enumerate(waypoints):
         wp_id = wp.ref
         point = shapely.geometry.shape(wp.geometry)
 
@@ -264,6 +282,21 @@ def find_route(road_graph, waypoints, capabilities):
             route_wps.append(wp_id)
 
         if waypoint_type in ('trip_destination', 'sub_destination'):
+            free_space_segment = None
+
+            # If this segment or the next segment is free space, walk all of the connected
+            # free space segments and add them to the route
+            if is_free_space(road_graph, segment_id):
+                free_space_segment = segment_id
+            if free_space_segment is None:
+                for neighbor_id, _ in get_neighbors(road_graph, segment_id):
+                    if is_free_space(road_graph, neighbor_id):
+                        free_space_segment = neighbor_id
+                        break
+            if free_space_segment is not None:
+                free_space_segments = walk_free_space_routes(road_graph, free_space_segment)
+                routes.append(
+                    (list(free_space_segments), [route_wps[-1], waypoints[wp_index + 1].ref]))
             routes.append((route, route_wps))
             route = []
             route_wps = []

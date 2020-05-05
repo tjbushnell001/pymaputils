@@ -58,10 +58,11 @@ def traverse_lane_groups(lane_group, all_lane_groups, all_connectors, reverse=Fa
     """
     path = []
 
-    property_keys = ['direction_of_travel', 'is_ramp', 'functional_class', 'is_controlled_access']
-    path_properties = [lane_group.properties[k] for k in  property_keys]
+    property_keys = ['direction_of_travel', 'is_ramp', 'functional_class', 'is_controlled_access',
+                     'is_free_space']
+    path_properties = [lane_group.properties.get(k, False) for k in property_keys]
     while lane_group is not None:
-        lg_properties = [lane_group.properties[k] for k in property_keys]
+        lg_properties = [lane_group.properties.get(k, False) for k in property_keys]
         if path_properties != lg_properties:
             # only traverse lane groups with the same propertiess
             break
@@ -165,6 +166,7 @@ def build_road_tile(road_graph, road_tile_id, sub_tiles):
             length=length,
             direction_of_travel=dot,
             is_ramp=first_lg.properties['is_ramp'],
+            is_free_space=first_lg.properties.get('is_free_space', False),
             functional_class=first_lg.properties['functional_class'],
             is_controlled_access=first_lg.properties['is_controlled_access'],
             invalid=invalid)
