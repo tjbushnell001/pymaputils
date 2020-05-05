@@ -11,18 +11,20 @@ sys.path.append(os.path.join(os.path.dirname(sys.path[0]), 'src'))
 from maps.linting import route_linter
 from maps.utils import emblog
 
-emblog.set_ros(False)
 
-parser = argparse.ArgumentParser("Lint all da maps")
-parser.add_argument("--route_ids", nargs='+', help="a list of routes to lint")
-parser.add_argument("--map_dir", default=None, help="input dir for tiles, default to lane_map_server")
-parser.add_argument("--out_file", default=None, help="file to write issue layer output")
-parser.add_argument("--issue_type", dest="issue_types", action='append', default=None,
-                    help="list of issue types to search for")
+def parse_args():
+    parser = argparse.ArgumentParser("Lint all da maps")
+    parser.add_argument("--route_ids", nargs='+', help="a list of routes to lint")
+    parser.add_argument("--map_dir", default=None, help="input dir for tiles, default to lane_map_server")
+    parser.add_argument("--out_file", default=None, help="file to write issue layer output")
+    parser.add_argument("--issue_type", dest="issue_types", action='append', default=None,
+                        help="list of issue types to search for")
+    return parser.parse_args()
 
 
 def main():
-    args = parser.parse_args()
+    args = parse_args()
+    emblog.set_ros(False)
 
     map_dir = args.map_dir
     if map_dir is None:
