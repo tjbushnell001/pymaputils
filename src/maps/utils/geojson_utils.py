@@ -1,10 +1,10 @@
+import os
+
 import geojson
 import shapely
 import shapely.geometry
 import shapely.validation
-import os
 import utm
-
 from maps.utils import ref_utils
 
 
@@ -135,7 +135,7 @@ def write_geojson_object(file_name, prefix, feature_collection):
     """
     Write a geojson feature_collection to disk as a json file.
 
-    :param file_name: the name of the file
+    :param file_name: the name of the file (without suffix)
     :param prefix: the file path to write the geojson file to
     :param feature_collection: the feature collection object
     :return: None
@@ -157,3 +157,18 @@ def connector_ref_from_junction_ref(junction_ref):
         {'id': junction_ref['connector_id'],
          'tile_id': junction_ref['tile_id'],
          'type': 'connector_ref'})
+
+
+def geojson_polygon_to_shapely_utm(geojson_polygon, reference_utm_zone):
+    """
+    Transform a polygon from latlng to UTM
+    :param geojson_polygon: a polygon feature in geojson form (usually feature['geometry']
+    :param reference_utm_zone: The UTM zone to convert to
+    :return: A Shapely polygon in UTM coordinates
+    """
+    utm_polygon_points = []
+    for lon, lat in shapely.geometry.asShape(geojson_polygon).exterior.coords:
+        utm_x, utm_y, _, _ = utm.from_latlon(lat, lon, reference_utm_zone)
+        utm_polygon_points.append((utm_x, utm_y))
+
+    return shapely.geometry.Polygon(utm_polygon_points)

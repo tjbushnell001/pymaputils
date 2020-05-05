@@ -10,7 +10,7 @@ class HashableDict(dict):
     fully index-able ids.
     """
     def __hash__(self):
-        return hash(tuple(sorted(self.values())))
+        return hash(tuple(sorted(self.values())))  # note: this will not work in Python 3
 
 
 def hashify(obj):

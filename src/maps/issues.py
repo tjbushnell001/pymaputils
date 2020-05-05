@@ -2,10 +2,11 @@ import geojson
 import json
 import shapely.geometry as sg
 
-from collections import defaultdict
+from collections import Counter
 from enum import Enum
 from maps.utils import geojson_utils
 from maps.utils import ref_utils
+from maps.issue_types import IssueType
 
 
 class IssueLevel(Enum):
@@ -23,7 +24,8 @@ class IssueLayer(object):
     A set of features (i.e. FeatureIssueSet) and their associated issues.
     TODO(christian): Make this a GeoJsonMapLayer
     """
-    def __init__(self, filter_types = None):
+
+    def __init__(self, filter_types=None):
         """
         Arguments:
         filter_types: (optional) Only accept issues of the given type (iterable
@@ -38,7 +40,7 @@ class IssueLayer(object):
 
     def add_issue(self, feature, issue, point=None):
         if (self.filter_types is not None and
-            issue.issue_type not in self.filter_types):
+                issue.issue_type not in self.filter_types):
             # we're filtering and this isn't a support issue type
             return
 
@@ -84,7 +86,7 @@ class IssueLayer(object):
         return num_issues
 
     def count_issues_by_level(self):
-        num_issues = defaultdict(lambda: 0)
+        num_issues = Counter()
         for issue_set in self.features.itervalues():
             for issue in issue_set.issues.itervalues():
                 num_issues[issue.level] += 1
@@ -122,6 +124,7 @@ class IssueLayer(object):
 
 class FeatureIssueSet(object):
     """ The set of all issues associated with a feature. """
+
     def __init__(self, feature_ref, point):
         self.point = point
         self.feature_ref = feature_ref
@@ -130,20 +133,10 @@ class FeatureIssueSet(object):
 
     @classmethod
     def from_feature(cls, feature):
-        geom_type = feature.geometry['type']
-
-        if geom_type == 'LineString':
-            point = sg.LineString(feature.geometry['coordinates']).representative_point()
-        elif geom_type == 'Point':
-            point = sg.Point(feature.geometry['coordinates']).representative_point()
-        elif geom_type == 'Polygon':
-            point = sg.Polygon(feature.geometry['coordinates']).representative_point()
-        else:
-            raise NotImplementedError("Geometry type {} not supported in Issues yet".format(feature.geometry['type']))
-
+        point = sg.asShape(feature.geometry).representative_point()
         issue_set = cls(feature.ref, point)
-        for issue_type in feature.properties.get('ignore_issues', []):
-            issue_set.add_ignore(issue_type)
+        for issue_type_name in feature.properties.get('ignore_issues', []):
+            issue_set.add_ignore(IssueType[issue_type_name])
 
         return issue_set
 
@@ -160,7 +153,7 @@ class FeatureIssueSet(object):
     def add_issue(self, issue):
         if issue.issue_type in self.ignore_issues:
             issue.level = IssueLevel.IGNORE
-        ref = ref_utils.hashify({'feature_ref': self.feature_ref, 'type': issue.issue_type})
+        ref = ref_utils.hashify({'feature_ref': self.feature_ref, 'type': issue.issue_type.value})
         if ref not in self.issues:
             self.issues[ref] = issue
         elif issue.level.value >= self.issues[ref].level.value:
@@ -172,6 +165,7 @@ class FeatureIssueSet(object):
 
 class Issue(object):
     """ A base "issue" object. This basically holds the type, a message describing the issue and it's severity. """
+
     def __init__(self, issue_type, level=IssueLevel.ERROR, msg=""):
         """
         :param issue_type: a string id

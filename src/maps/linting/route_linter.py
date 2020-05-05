@@ -1,28 +1,34 @@
 """ Library for linting routes. """
 import os
-import maps.routing
 
-from maps.linting import junction_linter, lane_linter
+import maps.routing
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
-from maps.issues import IssueLayer, IssueLevel, Issue
 from maps.issue_types import IssueType
+from maps.issues import IssueLayer, IssueLevel, Issue
 from maps.lane_maps import ConvertedLaneMapLayer
+from maps.linting import junction_linter, lane_linter, lane_preference_linter
+from maps.map_layers import MapLayers
+from maps.map_types import MapType
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
-from maps.utils import emblog
-from maps.utils import routing_utils
+from maps.utils import emblog, routing_utils
 
 
 def lint_lane_group(lane_group, issue_layer):
     if len(lane_group.properties['lane_segment_refs']) == 0:
-        issue_layer.add_issue(lane_group, Issue(IssueType.NO_LANES_IN_LANE_GROUP.name))
+        issue_layer.add_issue(lane_group, Issue(IssueType.NO_LANES_IN_LANE_GROUP))
 
 
-def lint_route(route, route_id, lane_map, road_map, issue_layer):
+def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference_layer=None):
     junction_set = set()
 
     print "Getting LaneGroups in route: {}".format(route_id)
-    route_lane_groups = routing_utils.get_lane_groups_in_route(route, road_map, lane_map)
+    route_lane_groups = list(routing_utils.get_lane_groups_in_route(route, road_map, lane_map))
     print "Linting lane groups..."
+
+    if lane_preference_layer is None:
+        emblog.info(route_id + " doesn't have any associated lane preference layers.")
+    else:
+        lane_preference_linter.lint_route_preferences(route_lane_groups, lane_preference_layer, issue_layer)
 
     for lane_group in route_lane_groups:
         # lint the lane group
@@ -46,7 +52,7 @@ def lint_route(route, route_id, lane_map, road_map, issue_layer):
 
                 junction = lane_map.get_feature(junction_ref)
                 if junction is None:
-                    issue_layer.add_issue(lane, Issue(IssueType.NON_EXISTANT_JUNCTION_REF.name, msg=str(lane)))
+                    issue_layer.add_issue(lane, Issue(IssueType.NON_EXISTENT_JUNCTION_REF, msg=str(lane)))
                 else:
                     junction_linter.lint_junction(junction, lane_map, issue_layer)
 
@@ -65,6 +71,8 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
 
     lane_map = ConvertedLaneMapLayer(os.path.join(map_dir, 'tiles'), fix_dot=True)
     road_graph = GeoJsonTiledMapLayer(os.path.join(map_dir, 'road_tiles'), tile_level=ROAD_GRAPH_TILE_LEVEL)
+    lane_preference_layers = MapLayers(map_dir).get_layer(MapType.LANE_PREFERENCE, as_dict=True)
+
     issue_layer = IssueLayer(filter_types=issue_set)
 
     failed_routes = set()
@@ -87,7 +95,7 @@ def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
             print
             print "Linting route [{}]".format(route_id)
 
-            lint_route(routes, route_id, lane_map, road_graph, issue_layer)
+            lint_route(routes, route_id, lane_map, road_graph, issue_layer, lane_preference_layers.get(route_id))
 
         curr_counts = issue_layer.count_issues_by_level()
 
