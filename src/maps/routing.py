@@ -47,7 +47,7 @@ def walk_free_space_routes(road_graph, segment_id, walked_ids=None):
 
     walked_ids.add(segment_id)
 
-    for neighbor_id, neighbor_dist in get_neighbors(road_graph, segment_id):
+    for neighbor_id, _ in get_neighbors(road_graph, segment_id):
         if neighbor_id not in walked_ids and is_free_space(road_graph, neighbor_id):
             walk_free_space_routes(road_graph, neighbor_id, walked_ids)
 
@@ -289,7 +289,7 @@ def find_route(road_graph, waypoints, capabilities):
             if is_free_space(road_graph, segment_id):
                 free_space_segment = segment_id
             if free_space_segment is None:
-                for neighbor_id, neighbor_dist in get_neighbors(road_graph, segment_id):
+                for neighbor_id, _ in get_neighbors(road_graph, segment_id):
                     if is_free_space(road_graph, neighbor_id):
                         free_space_segment = neighbor_id
                         break
