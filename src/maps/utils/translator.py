@@ -66,7 +66,7 @@ VALID_LANE_TYPES = {
 VALID_LANE_TRANSITION_TYPES = {None, 'UNKNOWN', 'MERGE', 'SPLIT'}
 
 
-EXTRA_FIELDS = {'last_edited', 'ignore_issues', 'note', 'source'}
+EXTRA_FIELDS = {'last_edited', 'ignore_issues', 'note', 'source', 'is_free_space'}
 
 
 # ---------------------------------------
