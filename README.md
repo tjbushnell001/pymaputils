@@ -5,8 +5,8 @@ Centralizing Embark's Python mapping utilities to be used across
 projects and repos.
 
 ## How do I use this library?
-There are several options, some of which are better or worse depending
-on your use case. If you need guidance, contact Eng Ops.
+The following options are better or worse depending on your use case.
+If you need guidance, contact Eng Ops.
 - **Clone into the relevant repo as a git submodule**
     - Allows for concurrent development in `pymaputils` and parent repo.
     - Requires redundant PR workflow (i.e. in `pymaputils` and
@@ -17,12 +17,7 @@ on your use case. If you need guidance, contact Eng Ops.
     - Easy to use in Databricks.
     - Automatic dependency management. (Thanks `install_requires`!)
     - Source isn't changing; user knows what to expect.
-    - No accessibility of raw source code.    
-- **Copy source directly (not recommended)**
-    - Don't need to hassle with any setup; possibly convenient for quick
-      prototyping/scripting.
-    - Assumes changes will NOT be made to source and/or any changes made
-      will NOT need to persist.
+    - No accessibility of raw source code.
 
 ## Setup & Dependencies
 
