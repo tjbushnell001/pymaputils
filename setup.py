@@ -14,7 +14,7 @@ def read_requirements():
 
 setuptools.setup(
     name="embark-pymaputils",
-    version="0.0.1",
+    version="0.0.2",
     description="Embark Python Map Utils",
     url="https://github.com/embarktrucks/pymaputils",
     packages=setuptools.find_packages('src'),
