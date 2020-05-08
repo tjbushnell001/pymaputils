@@ -1,0 +1,7 @@
+# Notes: Similar to brain, this file is not intended to define code
+# "ownership". However, for each listed component, it defines which people
+# are expected to be informed of changes to that component. At least one of
+# those people should be given sufficient time to review the change.
+
+* @SuperSwellSam
+/src/maps/linting @cjwawrzonek
