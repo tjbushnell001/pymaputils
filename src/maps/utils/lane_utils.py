@@ -103,26 +103,6 @@ def get_lane_refs_until_junction(lane_map, initial_lane_ref, final_junction_ref,
     # we were unable to find the junction in the number of iterations
     return None
 
-def get_next_merge_ramp(lane_map, lane_ref):
-    merge_lane = get_next_merge_lane(lane_map, lane_ref)
-    if merge_lane is None:
-        return None
-
-    merge_junction = get_next_merge_junction(
-        lane_map, lane_ref)
-    if not merge_junction:
-        return None
-
-    merge_inflow_refs = merge_junction["properties"]["inflow_refs"]
-
-    merge_inflow_refs.sort(key=lambda x: x["id"])
-    for inflow_ref in merge_inflow_refs:
-        inflow = lane_map.get_feature(inflow_ref)
-        if inflow["properties"]["lane_transition_type"] == "MERGE":
-            return inflow
-
-    return None
-
 
 def get_next_merge_lane(lane_map, lane_ref, skip_curr_lane=False, max_iterations=10):
     """
@@ -145,15 +125,18 @@ def get_next_merge_lane(lane_map, lane_ref, skip_curr_lane=False, max_iterations
             merge_inflow_refs = merge_junction["properties"]["inflow_refs"]
 
             merging_refs = filter(
-                lambda x: lane_map.get_feature(x)["properties"]["lane_transition_type"] == "MERGE",
+                lambda x: lane_map.get_feature(
+                    ref_utils.lane_group_ref_from_lane_ref(x))["properties"]['is_ramp'],
                 merge_inflow_refs
             )
 
-            # this means that there is no lane marked with the MERGE
-            # lane_transition_type, since we have a lane marked with 'merging'
-            # we would expect a merging lane to have this - this is likely an issue with the map
-            assert len(merging_refs) > 0
-            return lane_map.get_feature(merging_refs[0])
+            # this means that we have an on ramp
+            # this
+            #assert len(merging_refs) > 0
+            if len(merging_refs) > 0:
+                return lane_map.get_feature(merging_refs[0])
+
+            # else we have a lane reduction
 
         lane = load_next_lane(lane, lane_map)
         i += 1
