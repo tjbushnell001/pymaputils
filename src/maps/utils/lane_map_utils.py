@@ -93,3 +93,12 @@ def follow_lanes(initial_lane, lane_map, next_fn):
     while lane is not None:
         yield lane
         lane = next_fn(lane, lane_map)
+
+def non_emergency_lanes(lane_group, lane_map):
+    non_emergency_lanes = []
+    tile = lane_map.get_tile(lane_group['ref']['tile_id'])
+    for lane_segment_ref in lane_group['properties']['lane_segment_refs']:
+        lane = tile.get_features('lane')[lane_segment_ref]
+        if not lane['properties']['is_emergency_lane']:
+            non_emergency_lanes.append(lane)
+    return non_emergency_lanes
