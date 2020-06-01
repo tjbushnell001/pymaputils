@@ -168,7 +168,10 @@ class MapLayers(object):
 
     def create_road_graph_layer(self, cache_tiles=False, load_tiles=True):
         tile_dir = self.get_dir(MapType.ROAD)
-        return GeoJsonTiledMapLayer(tile_dir, ROAD_GRAPH_TILE_LEVEL, cache_tiles=cache_tiles, load_tiles=load_tiles, layer_type=MapType.ROAD)
+        return GeoJsonTiledMapLayer(tile_dir, ROAD_GRAPH_TILE_LEVEL,
+                                    cache_tiles=cache_tiles,
+                                    load_tiles=load_tiles,
+                                    layer_type=MapType.ROAD)
 
     @staticmethod
     def load_single_layers(map_dir, spec='*.json', as_dict=True):
