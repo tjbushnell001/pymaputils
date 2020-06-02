@@ -61,7 +61,7 @@ def remove_non_polygons(feature_set):
     polygons = [feature for feature in feature_set['features'] if feature['geometry']['type'] == 'Polygon']
     n_removes = len(feature_set['features']) - len(polygons)
     if n_removes != 0:
-      print "Removed", n_removes, "non-polygons"
+        print "Removed", n_removes, "non-polygons"
     feature_set['features'] = polygons
 
 
