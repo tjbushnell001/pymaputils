@@ -104,4 +104,4 @@ def non_emergency_lanes(lane_group, lane_map):
         lane = tile.get_features('lane')[lane_segment_ref]
         if not lane['properties']['is_emergency_lane']:
             non_emergency_lane_list.append(lane)
-    return non_emergency_lanes
+    return non_emergency_lane_list
