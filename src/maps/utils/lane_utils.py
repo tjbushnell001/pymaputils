@@ -273,10 +273,6 @@ def add_adjacent_lane_refs_to_map(lane_map, lane_occupancy, ego_lane_ref, lane_r
     return lane_refs_map
 
 
-def add_merge_lane_refs_to_map(lane_map, lane_occupancy, ego_lane_ref, lane_refs_map):
-    pass
-
-
 def get_lane_refs_map(lane_map, lane_occupancy):
     """
     Returns a mapping from relative lane to lane ref.
