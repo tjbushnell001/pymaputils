@@ -12,12 +12,14 @@ FORWARD_TRANSITION_PRIORITY = {
 
 
 class RelativeLane(Enum):
-    LEFT_LEFT_ADJACENT   = -2
-    LEFT_ADJACENT        = -1
-    EGO                  = 0
-    RIGHT_ADJACENT       = 1
-    RIGHT_RIGHT_ADJACENT = 2
-    MERGE                = 3
+    LEFT_LEFT_ADJACENT      = -2
+    LEFT_ADJACENT           = -1
+    EGO                     = 0
+    RIGHT_ADJACENT          = 1
+    RIGHT_RIGHT_ADJACENT    = 2
+    MERGE                   = 3
+    LANE_CHANGE_SOURCE      = 4
+    LANE_CHANGE_DESTINATION = 5
 
 
 class Direction(Enum):
@@ -252,11 +254,10 @@ def add_adjacent_lane_refs_to_map(lane_map, lane_occupancy, ego_lane_ref, lane_r
         ## are then get the junctions and back the merge lane from that. Then we can get
         ## perpendicular/projected distance from `EGO` to merge.
 
-        #lg = ref_utils.lane_group_ref_from_lane_ref(
-        #    lane_ref).properties['is_ramp']
-        #if not lg.properties['is_ramp']:
-        #    lane_refs_map[relative_lane] = lane_ref
-        lane_refs_map[relative_lane] = lane_ref
+        lg_ref = ref_utils.lane_group_ref_from_lane_ref(lane_ref)
+        lg = lane_map.get_feature(lg_ref)
+        if not lg['properties']['is_ramp']:
+            lane_refs_map[relative_lane] = lane_ref
 
     outer_lane_ref = get_adjacent_lane_ref(lane_map, lane_occupancy, lane_ref, left=left)
     if outer_lane_ref:
@@ -264,11 +265,10 @@ def add_adjacent_lane_refs_to_map(lane_map, lane_occupancy, ego_lane_ref, lane_r
         if left:
             relative_lane = RelativeLane.LEFT_LEFT_ADJACENT
 
-        #outer_lg = ref_utils.lane_group_ref_from_lane_ref(
-        #    outer_lane_ref).properties['is_ramp']
-        #if not outer_lg.properties['is_ramp']:
-        #    lane_refs_map[relative_lane] = outer_lane_ref
-        lane_refs_map[relative_lane] = outer_lane_ref
+        outer_lg_ref = ref_utils.lane_group_ref_from_lane_ref(outer_lane_ref)
+        outer_lg = lane_map.get_feature(outer_lg_ref)
+        if not outer_lg['properties']['is_ramp']:
+            lane_refs_map[relative_lane] = outer_lane_ref
 
     return lane_refs_map
 
@@ -286,7 +286,7 @@ def get_lane_refs_map(lane_map, lane_occupancy):
     :return: a map from RelativeLane to lane ref.
     """
     lane_refs_map = {}
-    ego_lane_ref = get_ego_lane_ref(lane_occupancy)
+    ego_lane_ref = get_ego_lane_ref(lane_map, lane_occupancy)
     if not ego_lane_ref:
         return lane_refs_map
 
@@ -324,7 +324,7 @@ def get_adjacent_lane_ref(lane_map, lane_occupancy, lane_ref, left=True):
 
 
 def get_adjacent_lane(lane_map, lane_occupancy, left=True):
-    ego_lane_ref = get_ego_lane_ref(lane_occupancy)
+    ego_lane_ref = get_ego_lane_ref(lane_map, lane_occupancy)
 
     ego_lane = lane_map.get_feature(ego_lane_ref)
 
@@ -388,11 +388,20 @@ def get_rightmost_lane_boundary(lane_map,
     return lane_map.get_feature(right_boundary_ref)
 
 
-def get_ego_lane_ref(lane_occupancy):
+def get_ego_lane_ref(lane_map, lane_occupancy):
     """
     Return the lane ref for the ego lane.
     """
     if lane_occupancy is None or not lane_occupancy.possible_ego_lanes:
         return None
 
+    for possible_ego_lane_ref in lane_occupancy.possible_ego_lanes:
+        lane_group = lane_map.get_feature(
+            ref_utils.lane_group_ref_from_lane_ref(possible_ego_lane_ref))
+
+        if not lane_group['properties']['is_ramp']:
+            # Most likely, we're not on a ramp.
+            return ref_utils.lane_ref_msg_to_dict(possible_ego_lane_ref)
+
+    # If all the lanes are ramps, just take the first.
     return ref_utils.lane_ref_msg_to_dict(lane_occupancy.possible_ego_lanes[0])
