@@ -42,11 +42,11 @@ def assign_polygon_refs(feature_set, route_id):
     id_tracker = IDTracker()
 
     for feature in feature_set['features']:
-        if 'ref' in feature['properties']:
-            id_tracker.add_taken_id(feature['properties']['ref']['id'])
+        if 'ref' in feature:
+            id_tracker.add_taken_id(feature['ref']['id'])
 
     for feature in feature_set['features']:
-        if 'ref' not in feature['properties'] or 'ref' not in feature:
+        if 'ref' not in feature:
             feature_id = id_tracker.get_next_id()
             feature['ref'] = {'id': feature_id,
                               'type': 'lane_preference_polygon_ref',
@@ -54,6 +54,15 @@ def assign_polygon_refs(feature_set, route_id):
 
             feature['properties']['id'] = feature_id
             feature['feature_type'] = 'lane_preference_polygon'
+            print "adding ref on polygon ", feature_id
+
+
+def remove_non_polygons(feature_set):
+    polygons = [feature for feature in feature_set['features'] if feature['geometry']['type'] == 'Polygon']
+    n_removes = len(feature_set['features']) - len(polygons)
+    if n_removes != 0:
+        print "Removed", n_removes, "non-polygons"
+    feature_set['features'] = polygons
 
 
 def strip_geojson_io_formatting(feature_set):
@@ -62,6 +71,7 @@ def strip_geojson_io_formatting(feature_set):
         for feature in feature_set['features']:
             if prop in feature['properties']:
                 del feature['properties'][prop]
+                print "Cleaned", prop, "property"
 
 
 def strip_refs(feature_set):
@@ -88,6 +98,7 @@ def fix_preferred_lanes_type(feature_set):
         for prop in ('preferred_lanes', 'lanes_to_avoid'):
             if prop in feature['properties'] and isinstance(feature['properties'][prop], str):
                 feature['properties'][prop] = geojson.loads(feature['properties'][prop])
+                print "Changed", prop, "from str to type"
 
 
 def load_geojson(filename):
@@ -103,6 +114,7 @@ def save_geojson(feature_set, filename):
 def format_file(filename):
     feature_set = load_geojson(filename)
     route_id = os.path.splitext(os.path.basename(filename))[0]
+    remove_non_polygons(feature_set)
     assign_polygon_refs(feature_set, route_id)
     strip_geojson_io_formatting(feature_set)
     fix_preferred_lanes_type(feature_set)

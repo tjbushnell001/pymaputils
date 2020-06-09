@@ -4,13 +4,14 @@ import utm
 import shapely.geometry as sg
 
 from maps.utils.geojson_utils import geojson_polygon_to_shapely_utm
+from maps.utils import lane_map_utils
 from maps.issues import Issue
 from maps.issue_types import IssueType
 
 
-def lint_route_preferences(route_lane_groups, lane_preference_layer, issue_layer):
+def lint_route_preferences(lane_map, route_lane_groups, lane_preference_layer, issue_layer):
     """
-
+    :param lane_map: the lane map layer
     :param route_lane_groups: a list of lane groups
     :param lane_preference_layer: A FeatureDict with the lane preferences in it
     :param issue_layer: an IssueLayer to add issues to
@@ -28,7 +29,7 @@ def lint_route_preferences(route_lane_groups, lane_preference_layer, issue_layer
 
             if polygon_feature_border_utm.intersects(lane_group_border_utm):
                 lane_preference_intersections += 1
-                check_preference_lanes_valid(lane_group, lane_preference_polygon, issue_layer)
+                check_preference_lanes_valid(lane_map, lane_group, lane_preference_polygon, issue_layer)
 
         if lane_preference_intersections == 0:
             issue_layer.add_issue(lane_preference_polygon,
@@ -39,10 +40,11 @@ def lint_route_preferences(route_lane_groups, lane_preference_layer, issue_layer
                                             lane_preference_polygon['ref']['route_id'])))
 
 
-def check_preference_lanes_valid(lane_group, lane_preference_polygon, issue_layer):
+def check_preference_lanes_valid(lane_map, lane_group, lane_preference_polygon, issue_layer):
     """
     Checks if the lanes asked for in preferences exist in the lane group.
     Should usually be used *after* checking if lane_group and lane_preference_polygon intersect, not before.
+    :param lane_map: the lane map layer
     :param lane_group: the lane group to check
     :param lane_preference_polygon: a GeoJson polygon to check
     :param issue_layer:
@@ -50,7 +52,8 @@ def check_preference_lanes_valid(lane_group, lane_preference_polygon, issue_laye
     """
     preferred_lanes = lane_preference_polygon['properties'].get('preferred_lanes', [])
     lanes_to_avoid = lane_preference_polygon['properties'].get('lanes_to_avoid', [])
-    n_lanes = len(lane_group['properties']['lane_segment_refs'])
+    n_lanes = len(lane_map_utils.non_emergency_lanes(lane_group, lane_map))
+
     for lane_num in itertools.chain(preferred_lanes, lanes_to_avoid):
         if not 1 <= lane_num <= n_lanes:
             message = ("Lane {} in polygon {} in route {} not valid. "

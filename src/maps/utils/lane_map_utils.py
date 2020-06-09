@@ -16,9 +16,11 @@ BACKWARD_TRANSITION_PRIORITY = {
     None: 3,  # INVALID
 }
 
+
 class Direction(Enum):
     FORWARD = 0
     BACKWARD = 1
+
 
 def get_nominal_lanes(lane_map, candidate_lanes, direction=Direction.FORWARD):
     """
@@ -43,8 +45,6 @@ def get_nominal_lanes(lane_map, candidate_lanes, direction=Direction.FORWARD):
             emblog.error('MISSING LANE GROUP: %s' % lg_ref)
             continue
 
-
-
         priority = (lg.properties['is_ramp'],
                     transition_priority[lane.properties['lane_transition_type']],
                     lg_ref['tile_id'], lg_ref['id'], lane.properties['lane_num'])
@@ -63,6 +63,7 @@ def get_nominal_lanes(lane_map, candidate_lanes, direction=Direction.FORWARD):
             break
         results.append(lane)
     return results
+
 
 def get_next_likely_lane(lane, lane_map, direction=Direction.FORWARD):
     if lane is None:
@@ -88,8 +89,19 @@ def get_next_likely_lane(lane, lane_map, direction=Direction.FORWARD):
 
     return likely_lanes[0]
 
+
 def follow_lanes(initial_lane, lane_map, next_fn):
     lane = initial_lane
     while lane is not None:
         yield lane
         lane = next_fn(lane, lane_map)
+
+
+def non_emergency_lanes(lane_group, lane_map):
+    non_emergency_lane_list = []
+    tile = lane_map.get_tile(lane_group['ref']['tile_id'])
+    for lane_segment_ref in lane_group['properties']['lane_segment_refs']:
+        lane = tile.get_features('lane')[lane_segment_ref]
+        if not lane['properties']['is_emergency_lane']:
+            non_emergency_lane_list.append(lane)
+    return non_emergency_lane_list

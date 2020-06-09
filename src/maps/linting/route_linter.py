@@ -10,7 +10,7 @@ from maps.linting import junction_linter, lane_linter, lane_preference_linter
 from maps.map_layers import MapLayers
 from maps.map_types import MapType
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
-from maps.utils import emblog, routing_utils
+from maps.utils import emblog, lane_map_utils, routing_utils
 
 
 def lint_lane_group(lane_group, issue_layer):
@@ -28,17 +28,13 @@ def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference
     if lane_preference_layer is None:
         emblog.info(route_id + " doesn't have any associated lane preference layers.")
     else:
-        lane_preference_linter.lint_route_preferences(route_lane_groups, lane_preference_layer, issue_layer)
+        lane_preference_linter.lint_route_preferences(lane_map, route_lane_groups, lane_preference_layer, issue_layer)
 
     for lane_group in route_lane_groups:
         # lint the lane group
         lint_lane_group(lane_group, issue_layer)
 
-        lane_tile = lane_map.get_tile(lane_group['ref']['tile_id'])
-        for lane_segment_ref in lane_group.properties['lane_segment_refs']:
-            lane = lane_tile.get_features('lane')[lane_segment_ref]
-            if lane.properties['is_emergency_lane']:
-                continue
+        for lane in lane_map_utils.non_emergency_lanes(lane_group, lane_map):
 
             # lint each lane
             lane_linter.lint_lane(lane, lane_map, issue_layer)
