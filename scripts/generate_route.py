@@ -5,16 +5,16 @@ route layers.
 """
 import argparse
 import os
-import rospkg
 
-from maps.geojson_tiled_map import GeoJsonTiledMapLayer
 from maps.utils import geojson_utils, routing_utils
 import maps.routing
-import maps.road_graph
-
+import maps.map_layers
+from maps.map_types import MapType
 
 def parse_args():
     parser = argparse.ArgumentParser("Generate a route given a route id and save to a file.")
+
+    parser.add_argument('maps_dir', help='directory containing maps')
     parser.add_argument('route_ids', nargs='+', help='route id to be generated')
     parser.add_argument('--route_dir', default="/tmp", help='Output directory for routes')
     return parser.parse_args()
@@ -23,15 +23,17 @@ def parse_args():
 def main():
     args = parse_args()
 
-    maps_dir = os.path.join(rospkg.RosPack().get_path('lane_map_server'), 'maps/tiled_maps/usa')
-    map_reader_dir = os.path.join(rospkg.RosPack().get_path('map_reader'), 'maps')
+    map_reader_dir = os.path.join(args.maps_dir, 'map_reader')
+    layers = maps.map_layers.MapLayers(map_dir=args.maps_dir,
+                                       map_reader_dir=map_reader_dir)
 
-    road_graph = GeoJsonTiledMapLayer(os.path.join(maps_dir, 'road_tiles'),
-                                      maps.road_graph.ROAD_GRAPH_TILE_LEVEL)
+    road_graph = layers.get_layer(MapType.ROAD, cache_tiles=True)
 
     for route_id in args.route_ids:
-        # load waypoints from map reader
-        all_waypoints = routing_utils.load_waypoints_from_map_reader(map_reader_dir, route_id)
+        route_map = layers.get_layer(MapType.MAP_READER, layer_name=route_id)
+
+        # load waypoints for this route
+        all_waypoints = routing_utils.create_waypoints_from_map_reader(route_map, route_id)
 
         # find the route
         routes = maps.routing.find_route(road_graph, all_waypoints,
