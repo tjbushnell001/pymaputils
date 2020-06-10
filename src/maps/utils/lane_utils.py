@@ -242,7 +242,8 @@ def add_adjacent_lane_refs_to_map(lane_map, lane_occupancy, ego_lane_ref,
     # `lane_transition_type`. We also need to handle lane reductions
     # since `load_next_lane(...)` will load the same next lane for two
     # start lanes which is undesirable.
-    lane_ref = get_adjacent_lane_ref(lane_map, lane_occupancy, ego_lane_ref, left=left)
+    lane_ref = get_adjacent_lane_ref(
+        lane_map, lane_occupancy, ego_lane_ref, left=left)
     if lane_ref:
         relative_lane = RelativeLane.RIGHT_ADJACENT
         if left:
@@ -253,7 +254,8 @@ def add_adjacent_lane_refs_to_map(lane_map, lane_occupancy, ego_lane_ref,
         if not lg['properties']['is_ramp']:
             lane_refs_map[relative_lane] = lane_ref
 
-    outer_lane_ref = get_adjacent_lane_ref(lane_map, lane_occupancy, lane_ref, left=left)
+    outer_lane_ref = get_adjacent_lane_ref(
+        lane_map, lane_occupancy, lane_ref, left=left)
     if outer_lane_ref:
         relative_lane = RelativeLane.RIGHT_RIGHT_ADJACENT
         if left:
@@ -309,7 +311,8 @@ def get_adjacent_lane_ref(lane_map, lane_occupancy, lane_ref, left=True):
     lane_num = lane.properties['lane_num']
     adjacent_lane_num = lane_num + (-1 if left else 1)
 
-    lanes = get_lanes_from_lane_occupancy(lane_map, lane_occupancy, tile_id=lane_ref['tile_id'])
+    lanes = get_lanes_from_lane_occupancy(
+        lane_map, lane_occupancy, tile_id=lane_ref['tile_id'])
 
     for lane in lanes:
         if lane.properties['lane_num'] == adjacent_lane_num:
