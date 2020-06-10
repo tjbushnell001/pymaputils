@@ -226,18 +226,28 @@ def get_lanes_from_lane_occupancy(lane_map, lane_occupancy, tile_id=None):
     return lanes
 
 
-def add_adjacent_lane_refs_to_map(lane_map, lane_occupancy, ego_lane_ref, lane_refs_map, left):
+def add_adjacent_lane_refs_to_map(lane_map, lane_occupancy, ego_lane_ref,
+                                  lane_refs_map, left=True):
+    """
+    Adds the lane refs to the left or right of ego_lane_ref to the map.
+
+    :param lane_map: lane map layer
+    :param lane_occupancy: lane occupancy msg
+    :param ego_lane_ref: the lane ref referencing ego lane
+    :param lane_refs_map: the map from RelativeLane to lane ref under
+                          construction
+    """
+    # TODO: Avoid adding merges. This avoids ramps, but not the final lane
+    # that merges with the freeway. We might be able to check
+    # `lane_transition_type`. We also need to handle lane reductions
+    # since `load_next_lane(...)` will load the same next lane for two
+    # start lanes which is undesirable.
     lane_ref = get_adjacent_lane_ref(lane_map, lane_occupancy, ego_lane_ref, left=left)
     if lane_ref:
         relative_lane = RelativeLane.RIGHT_ADJACENT
         if left:
             relative_lane = RelativeLane.LEFT_ADJACENT
 
-        # TODO: Avoid adding merges. This avoids ramps, but not the final lane
-        # that merges with the freeway. We might be able to check
-        # `lane_transition_type`. We also need to handle lane reductions
-        # since `load_next_lane(...)` will load the same next lane for two
-        # start lanes which is undesirable.
         lg_ref = ref_utils.lane_group_ref_from_lane_ref(lane_ref)
         lg = lane_map.get_feature(lg_ref)
         if not lg['properties']['is_ramp']:
@@ -253,8 +263,6 @@ def add_adjacent_lane_refs_to_map(lane_map, lane_occupancy, ego_lane_ref, lane_r
         outer_lg = lane_map.get_feature(outer_lg_ref)
         if not outer_lg['properties']['is_ramp']:
             lane_refs_map[relative_lane] = outer_lane_ref
-
-    return lane_refs_map
 
 
 def get_lane_refs_map(lane_map, lane_occupancy):
