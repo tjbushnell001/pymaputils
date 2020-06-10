@@ -101,7 +101,7 @@ def get_next_merge_ramp(lane_map, lane_ref):
     return None
 
 
-def get_next_merge_lane(lane_map, lane_ref, skip_curr_lane=False, max_iterations=10):
+def get_next_merge_lane(lane_map, lane_ref, skip_curr_lane=False):
     """
     Returns the next merge lane, given a starting lane_ref.
 
@@ -115,23 +115,10 @@ def get_next_merge_lane(lane_map, lane_ref, skip_curr_lane=False, max_iterations
     if skip_curr_lane:
         lane = load_next_lane(lane, lane_map)
 
-    iterations = 0
-    while lane and iterations < max_iterations:
-        if lane.properties['merging']:
-            merge_junction = lane_map.get_feature(lane.properties['end_junction_ref'])
-            merge_inflow_refs = merge_junction.properties['inflow_refs']
-
-            merging_refs = filter(
-                lambda x: lane_map.get_feature(
-                    ref_utils.lane_group_ref_from_lane_ref(x)).properties['is_ramp'],
-                merge_inflow_refs)
-
-            # this means that we have an on ramp
-            if len(merging_refs) > 0:
-                return lane_map.get_feature(merging_refs[0])
-
+    while lane:
+        if lane["properties"]["merging"]:
+            return lane
         lane = load_next_lane(lane, lane_map)
-        iterations += 1
 
     return None
 
@@ -140,17 +127,17 @@ def get_next_merge_junction(lane_map, lane_ref):
     lane = lane_map.get_feature(lane_ref)
 
     while True:
-        end_junction_ref = lane['properties']['end_junction_ref']
+        end_junction_ref = lane["properties"]["end_junction_ref"]
         end_junction = lane_map.get_feature(end_junction_ref)
 
         # This lane is merging, so return the junction.
-        if lane['properties']['merging']:
+        if lane["properties"]["merging"]:
             return end_junction
 
-        if not end_junction or not end_junction['properties']:
+        if not end_junction or not end_junction["properties"]:
             return None
 
-        outflow_refs = end_junction['properties']['outflow_refs']
+        outflow_refs = end_junction["properties"]["outflow_refs"]
         if not outflow_refs:
             return None
 
@@ -246,14 +233,11 @@ def add_adjacent_lane_refs_to_map(lane_map, lane_occupancy, ego_lane_ref, lane_r
         if left:
             relative_lane = RelativeLane.LEFT_ADJACENT
 
-        ## TODO: We need to avoid adding merges. This avoids ramps, but not the lane
-        ## that eventually connects with the freeway. There we need to check
-        ## `lane_transition_type` I think?
-
-        ## AN IDEA: Check if `EGO` or `LEFT_ADJACENT` etc. etc. are `merging`. If they
-        ## are then get the junctions and back the merge lane from that. Then we can get
-        ## perpendicular/projected distance from `EGO` to merge.
-
+        # TODO: Avoid adding merges. This avoids ramps, but not the final lane
+        # that merges with the freeway. We might be able to check
+        # `lane_transition_type`. We also need to handle lane reductions
+        # since `load_next_lane(...)` will load the same next lane for two
+        # start lanes which is undesirable.
         lg_ref = ref_utils.lane_group_ref_from_lane_ref(lane_ref)
         lg = lane_map.get_feature(lg_ref)
         if not lg['properties']['is_ramp']:
@@ -288,18 +272,25 @@ def get_lane_refs_map(lane_map, lane_occupancy):
 
     lane_refs_map[RelativeLane.EGO] = ego_lane_ref
 
+    # TODO: Add lane refs for RelativeLane.MERGE.
     add_adjacent_lane_refs_to_map(
         lane_map, lane_occupancy, ego_lane_ref, lane_refs_map, left=True)
     add_adjacent_lane_refs_to_map(
         lane_map, lane_occupancy, ego_lane_ref, lane_refs_map, left=False)
 
-    # TODO: RelativeLane.MERGE. We need to add the merge lane and make sure EGO or
-    # others are never set to that MERGE lane.
-
     return lane_refs_map
 
 
 def get_adjacent_lane_ref(lane_map, lane_occupancy, lane_ref, left=True):
+    """
+    Returns the lane ref to the right or left of lane_ref, if it exists.
+
+    :param lane_map: lane map layer
+    :param lane_occupancy: lane occupancy msg
+    :param lane_ref: lane ref to use as a reference
+    :param left: True if we want the left adjacent, False if we want right.
+    :return: the adjacent lane.
+    """
     if lane_ref is None:
         return None
 
@@ -320,6 +311,14 @@ def get_adjacent_lane_ref(lane_map, lane_occupancy, lane_ref, left=True):
 
 
 def get_adjacent_lane(lane_map, lane_occupancy, left=True):
+    """
+    Returns the left or right adjacent lane to ego, if it exists.
+
+    :param lane_map: lane map layer
+    :param lane_occupancy: lane occupancy msg
+    :param left: True if we want the left adjacent, False if we want right.
+    :return: the adjacent lane.
+    """
     ego_lane_ref = get_ego_lane_ref(lane_map, lane_occupancy)
 
     ego_lane = lane_map.get_feature(ego_lane_ref)
@@ -396,7 +395,8 @@ def get_ego_lane_ref(lane_map, lane_occupancy):
             ref_utils.lane_group_ref_from_lane_ref(possible_ego_lane_ref))
 
         if not lane_group['properties']['is_ramp']:
-            # Most likely, we're not on a ramp.
+            # Most of the time we're not on a merge ramp. This helps avoid
+            # confusion in criss-crossing lanes.
             return ref_utils.lane_ref_msg_to_dict(possible_ego_lane_ref)
 
     # If all the lanes are ramps, just take the first.
