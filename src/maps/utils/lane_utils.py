@@ -331,19 +331,13 @@ def get_adjacent_lane(lane_map, lane_occupancy, left=True):
     :return: the adjacent lane.
     """
     ego_lane_ref = get_ego_lane_ref(lane_map, lane_occupancy)
+    adjacent_lane_ref = get_adjacent_lane_ref(
+        lane_map, lane_occupancy, ego_lane_ref, left=left)
 
-    ego_lane = lane_map.get_feature(ego_lane_ref)
+    if not adjacent_lane_ref:
+        return None
 
-    lane_num = ego_lane.properties['lane_num']
-    adjacent_lane_num = lane_num + (-1 if left else 1)
-
-    lanes = get_lanes_from_lane_occupancy(lane_map, lane_occupancy)
-
-    for lane in lanes:
-        if lane.properties['lane_num'] == adjacent_lane_num:
-            return lane
-
-    return None
+    return lane_map.get_feature(adjacent_lane_ref)
 
 
 def get_rightmost_lane(lane_map, lane_occupancy, include_emergency_lanes=False):
