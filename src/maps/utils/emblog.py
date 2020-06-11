@@ -12,6 +12,11 @@ try:
             USE_ROS = False
     except rostopic.ROSTopicIOException:
         USE_ROS = False
+    except ValueError as e:
+        if str(e) == "ROS master URI is not set":
+            USE_ROS = False
+        else:
+            raise e
 except ImportError:
     USE_ROS = False
 
