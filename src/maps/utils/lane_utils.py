@@ -226,16 +226,24 @@ def get_lanes_from_lane_occupancy(lane_map, lane_occupancy, tile_id=None):
     return lanes
 
 
-def add_adjacent_lane_refs_to_map(lane_map, lane_occupancy, ego_lane_ref,
-                                  lane_refs_map, left=True):
+def add_lane_ref_to_dict(lane_map, lane_ref, relative_lane, lane_refs_dict):
+    lg_ref = ref_utils.lane_group_ref_from_lane_ref(lane_ref)
+    lg = lane_map.get_feature(lg_ref)
+    if not lg['properties']['is_ramp']:
+        lane_refs_dict[relative_lane] = lane_ref
+
+
+def add_adjacent_lane_refs_to_dict(lane_map, lane_occupancy, ego_lane_ref,
+                                   lane_refs_dict, left=True):
     """
-    Adds the lane refs to the left or right of ego_lane_ref to the map.
+    Adds lane refs of the (left and left left) OR (right and right right)
+    of ego_lane_ref to the lane_refs_dict.
 
     :param lane_map: lane map layer
     :param lane_occupancy: lane occupancy msg
     :param ego_lane_ref: the lane ref referencing ego lane
-    :param lane_refs_map: the map from RelativeLane to lane ref under
-                          construction
+    :param lane_refs_dict: the dict from RelativeLane to lane ref under
+                           construction
     """
     # TODO: Avoid adding merges. This avoids ramps, but not the final lane
     # that merges with the freeway. We might be able to check
@@ -249,10 +257,7 @@ def add_adjacent_lane_refs_to_map(lane_map, lane_occupancy, ego_lane_ref,
         if left:
             relative_lane = RelativeLane.LEFT_ADJACENT
 
-        lg_ref = ref_utils.lane_group_ref_from_lane_ref(lane_ref)
-        lg = lane_map.get_feature(lg_ref)
-        if not lg['properties']['is_ramp']:
-            lane_refs_map[relative_lane] = lane_ref
+        add_lane_ref_to_dict(lane_map, lane_ref, relative_lane, lane_refs_dict)
 
     outer_lane_ref = get_adjacent_lane_ref(
         lane_map, lane_occupancy, lane_ref, left=left)
@@ -261,13 +266,10 @@ def add_adjacent_lane_refs_to_map(lane_map, lane_occupancy, ego_lane_ref,
         if left:
             relative_lane = RelativeLane.LEFT_LEFT_ADJACENT
 
-        outer_lg_ref = ref_utils.lane_group_ref_from_lane_ref(outer_lane_ref)
-        outer_lg = lane_map.get_feature(outer_lg_ref)
-        if not outer_lg['properties']['is_ramp']:
-            lane_refs_map[relative_lane] = outer_lane_ref
+        add_lane_ref_to_dict(lane_map, outer_lane_ref, relative_lane, lane_refs_dict)
 
 
-def get_lane_refs_map(lane_map, lane_occupancy):
+def get_lane_refs_dict(lane_map, lane_occupancy):
     """
     Returns a mapping from relative lane to lane ref.
 
@@ -275,20 +277,20 @@ def get_lane_refs_map(lane_map, lane_occupancy):
     :param lane_occupancy: lane occupancy msg
     :return: a map from RelativeLane to lane ref.
     """
-    lane_refs_map = {}
+    lane_refs_dict = {}
     ego_lane_ref = get_ego_lane_ref(lane_map, lane_occupancy)
     if not ego_lane_ref:
-        return lane_refs_map
+        return lane_refs_dict
 
-    lane_refs_map[RelativeLane.EGO] = ego_lane_ref
+    lane_refs_dict[RelativeLane.EGO] = ego_lane_ref
 
     # TODO: Add lane refs for RelativeLane.MERGE.
-    add_adjacent_lane_refs_to_map(
-        lane_map, lane_occupancy, ego_lane_ref, lane_refs_map, left=True)
-    add_adjacent_lane_refs_to_map(
-        lane_map, lane_occupancy, ego_lane_ref, lane_refs_map, left=False)
+    add_adjacent_lane_refs_to_dict(
+        lane_map, lane_occupancy, ego_lane_ref, lane_refs_dict, left=True)
+    add_adjacent_lane_refs_to_dict(
+        lane_map, lane_occupancy, ego_lane_ref, lane_refs_dict, left=False)
 
-    return lane_refs_map
+    return lane_refs_dict
 
 
 def get_adjacent_lane_ref(lane_map, lane_occupancy, lane_ref, left=True):
@@ -299,7 +301,7 @@ def get_adjacent_lane_ref(lane_map, lane_occupancy, lane_ref, left=True):
     :param lane_occupancy: lane occupancy msg
     :param lane_ref: lane ref to use as a reference
     :param left: True if we want the left adjacent, False if we want right.
-    :return: the adjacent lane.
+    :return: the adjacent lane ref.
     """
     if lane_ref is None:
         return None
