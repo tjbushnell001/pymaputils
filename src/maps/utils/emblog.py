@@ -4,11 +4,11 @@ try:
     import rospy
     import rostopic
     try:
-        rostopic.get_topic_class('/rosout')
         try:
+            rostopic.get_topic_class('/rosout')
             rospy.Time.now()
             USE_ROS = True
-        except rospy.exceptions.ROSInitException:
+        except (ValueError, rospy.exceptions.ROSInitException):
             USE_ROS = False
     except rostopic.ROSTopicIOException:
         USE_ROS = False
