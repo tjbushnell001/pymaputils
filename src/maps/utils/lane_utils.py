@@ -101,24 +101,35 @@ def get_next_merge_ramp(lane_map, lane_ref):
     return None
 
 
-def get_next_merge_lane(lane_map, lane_ref, skip_curr_lane=False):
+def get_next_merge_lane(lane_map, lane_ref, max_iterations=5):
     """
     Returns the next merge lane, given a starting lane_ref.
 
     :param lane_map:
     :param lane_ref: lane ref of starting lane
-    :param skip_curr_lane: if True, include given lane. else, skip ahead.
+    :param max_lanes: the maximum number of lanes ahead to look
     :return: next merge lane
     """
     lane = lane_map.get_feature(lane_ref)
 
-    if skip_curr_lane:
-        lane = load_next_lane(lane, lane_map)
-
-    while lane:
+    iterations = 0
+    while lane and iterations < max_iterations:
         if lane["properties"]["merging"]:
-            return lane
+            merge_junction = lane_map.get_feature(
+                lane["properties"]["end_junction_ref"])
+            merge_inflow_refs = merge_junction["properties"]["inflow_refs"]
+
+            for merge_inflow_ref in merge_inflow_refs:
+                lg_ref = ref_utils.lane_group_ref_from_lane_ref(merge_inflow_ref)
+                if lane_map.get_feature(lg_ref)["properties"]["is_ramp"]:
+                    # We have an on-ramp. This takes rightmost merge lane.
+                    return lane_map.get_feature(merge_inflow_ref)
+
+            # TODO: This means we have a lane reduction. Handle this.
+            #       Lane reductions will have `lane_transition_type == 'MERGE'`
+
         lane = load_next_lane(lane, lane_map)
+        iterations += 1
 
     return None
 
@@ -244,12 +255,8 @@ def add_adjacent_lane_refs_to_dict(lane_map, lane_occupancy, ego_lane_ref,
     :param ego_lane_ref: the lane ref referencing ego lane
     :param lane_refs_dict: the dict from RelativeLane to lane ref under
                            construction
+    :param left: whether we should add the left or right lane refs.
     """
-    # TODO: Avoid adding merges. This avoids ramps, but not the final lane
-    # that merges with the freeway. We might be able to check
-    # `lane_transition_type`. We also need to handle lane reductions
-    # since `load_next_lane(...)` will load the same next lane for two
-    # start lanes which is undesirable.
     lane_ref = get_adjacent_lane_ref(
         lane_map, lane_occupancy, ego_lane_ref, left=left)
     if lane_ref:
@@ -269,6 +276,22 @@ def add_adjacent_lane_refs_to_dict(lane_map, lane_occupancy, ego_lane_ref,
         add_lane_ref_to_dict(lane_map, outer_lane_ref, relative_lane, lane_refs_dict)
 
 
+def add_merge_lane_refs_to_dict(lane_map, ego_lane_ref, lane_refs_dict):
+    """
+    Add merge lane refs to the lane_refs_dict.
+
+    :param lane_map: lane map layer
+    :param ego_lane_ref: the lane ref referencing ego lane
+    :param lane_refs_dict: the dict from RelativeLane to lane ref under
+                           construction
+    """
+    merge_lane = get_next_merge_lane(lane_map, ego_lane_ref)
+    if not merge_lane:
+        return
+
+    lane_refs_dict[RelativeLane.MERGE] = merge_lane["ref"]
+
+
 def get_lane_refs_dict(lane_map, lane_occupancy):
     """
     Returns a mapping from relative lane to lane ref.
@@ -284,11 +307,11 @@ def get_lane_refs_dict(lane_map, lane_occupancy):
 
     lane_refs_dict[RelativeLane.EGO] = ego_lane_ref
 
-    # TODO: Add lane refs for RelativeLane.MERGE.
     add_adjacent_lane_refs_to_dict(
         lane_map, lane_occupancy, ego_lane_ref, lane_refs_dict, left=True)
     add_adjacent_lane_refs_to_dict(
         lane_map, lane_occupancy, ego_lane_ref, lane_refs_dict, left=False)
+    add_merge_lane_refs_to_dict(lane_map, ego_lane_ref, lane_refs_dict)
 
     return lane_refs_dict
 
