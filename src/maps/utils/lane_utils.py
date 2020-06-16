@@ -121,12 +121,15 @@ def get_next_merge_lane(lane_map, lane_ref, max_iterations=5):
 
             for merge_inflow_ref in merge_inflow_refs:
                 lg_ref = ref_utils.lane_group_ref_from_lane_ref(merge_inflow_ref)
-                if lane_map.get_feature(lg_ref)["properties"]["is_ramp"]:
-                    # We have an on-ramp. This takes rightmost merge lane.
-                    return lane_map.get_feature(merge_inflow_ref)
+                is_ramp = lane_map.get_feature(lg_ref)["properties"]["is_ramp"]
 
-            # TODO: This means we have a lane reduction. Handle this.
-            #       Lane reductions will have `lane_transition_type == 'MERGE'`
+                inflow = lane_map.get_feature(merge_inflow_ref)
+                inflow_transition = inflow["properties"]["lane_transition_type"]
+                is_lane_reduction = inflow_transition == "MERGE"
+                if is_ramp or is_lane_reduction:
+                    # We have an on-ramp or a lane reduction. This takes
+                    # rightmost merge lane.
+                    return lane_map.get_feature(merge_inflow_ref)
 
         lane = load_next_lane(lane, lane_map)
         iterations += 1
