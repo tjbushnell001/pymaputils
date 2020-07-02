@@ -12,6 +12,9 @@ from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
 class MapLayers(object):
     def __init__(self, map_dir=None, free_space_dir=None, radar_zones_dir=None,
                  map_reader_dir=None):
+        # Note: if directories are not explicitly set, it's assumed that
+        # they can be retrieved from a ros param server.
+
         self.layers = {}
 
         self._map_dir = map_dir
@@ -28,34 +31,47 @@ class MapLayers(object):
     @property
     def map_dir(self):
         if self._map_dir is None:
-            import rospy
-            self._map_dir = rospy.get_param('/maps/map_dir')
+            self._map_dir = self._get_ros_param('/maps/map_dir')
         return self._map_dir
 
     @property
     def free_space_dir(self):
         if self._free_space_dir is None:
-            import rospy
-            self._free_space_dir = rospy.get_param('/maps/free_space_dir')
+            self._free_space_dir = self._get_ros_param('/maps/free_space_dir')
         return self._free_space_dir
 
     @property
     def radar_zones_dir(self):
         if self._radar_zones_dir is None:
-            import rospy
-            self._radar_zones_dir = rospy.get_param('/maps/radar_zones_dir')
+            self._radar_zones_dir = self._get_ros_param('/maps/radar_zones_dir')
         return self._radar_zones_dir
 
     @property
     def map_reader_dir(self):
         if self._map_reader_dir is None:
-            import rospy
-            self._map_reader_dir = rospy.get_param('/maps/map_reader_dir')
+            self._map_reader_dir = self._get_ros_param('/maps/map_reader_dir')
         return self._map_reader_dir
 
     @property
     def lidar_lines_dir(self):
         return os.path.join(self.map_dir, 'lidar_maps')
+
+    def _get_ros_param(self, param):
+        """
+        Returns requested rosparam.
+
+        If this method is called, it's assumed that rospy library is installed
+        and that relevant rosparam exists in ros param server.
+        """
+        try:
+            import rospy
+        except ImportError as e:
+            msg = ("rospy not found. If rospy is not expected as a "
+                   "dependency, need to pass relevant map directories "
+                   "directly to MapLayers() object.")
+            raise ImportError(e.message + "\n" + msg)
+
+        return rospy.get_param(param)
 
     # ----------------------------------------------
     # Main Getter
