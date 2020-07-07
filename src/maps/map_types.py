@@ -15,6 +15,15 @@ class MapType(Enum):
 
 
 class LaneAnnotationLayerName(object):
+    """
+    Defines Lane Annotation Layer names used as filenames in tiled_maps.
+
+    Sample usage:
+    rmz = maps.get_layer(MapType.LANE_ANNOTATION,
+                         LaneAnnotationLayerName.ROAD_MARKING_ZONES)
+    rather than hardcoding string like in:
+    rmz = maps.get_layer(MapType.LANE_ANNOTATION, 'road_marking_zones')
+    """
     NO_PASSING_ZONES = 'no_passing_zones'
     DISENGAGE_ZONES = 'disengage_zones'
     DISENGAGE_ZONES_LTG = 'disengage_zones_ltg'
