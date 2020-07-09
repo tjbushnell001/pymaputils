@@ -14,6 +14,8 @@ class MapType(Enum):
     LANE_PREFERENCE = "LANE_PREFERENCE"
 
 
+# TODO: update downstream users' Enum dependencies to use more recent
+#       version of Enum so that this class can inherit from Enum instead
 class LaneAnnotationLayerName(object):
     """
     Defines Lane Annotation Layer names used as filenames in tiled_maps.
