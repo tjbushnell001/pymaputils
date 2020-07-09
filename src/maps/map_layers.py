@@ -25,8 +25,9 @@ class MapLayers(object):
     # ----------------------------------------------
     # Lazy Load Layer Dirs
     # ----------------------------------------------
-    # Dirs are lazy loaded at fetch time to ensure that map layers can be used outside of a ros
-    # environment (defaults are not called on unused map layers)
+    # Dirs are lazy loaded at fetch time to ensure that map layers can be
+    # used outside of a ros environment (defaults are not called on unused
+    # map layers)
 
     @property
     def map_dir(self):
@@ -135,7 +136,8 @@ class MapLayers(object):
 
         elif layer_type == MapType.LIDAR_LINE:
             if MapType.LIDAR_LINE not in self.layers:
-                self.layers[MapType.LIDAR_LINE] = LidarLineLayer(self.get_dir(MapType.LIDAR_LINE))
+                self.layers[MapType.LIDAR_LINE] = LidarLineLayer(
+                    self.get_dir(MapType.LIDAR_LINE))
             return self.layers[MapType.LIDAR_LINE]
 
         elif layer_type == MapType.LANE_PREFERENCE:
@@ -168,7 +170,8 @@ class MapLayers(object):
         elif layer_type == MapType.RADAR_ZONE:
             return self.radar_zones_dir
         elif layer_type == MapType.LOCALIZATION_ZONE:
-            return os.path.join(self.map_dir, '../../localization_filter_zones.json')
+            return os.path.join(
+                self.map_dir, '../../localization_filter_zones.json')
         elif layer_type == MapType.LIDAR_LINE:
             return self.lidar_lines_dir
         elif layer_type == MapType.LANE_PREFERENCE:
@@ -178,9 +181,11 @@ class MapLayers(object):
     # Layer Constructors
     # ----------------------------------------------
 
-    def create_lane_map_layer(self, cache_tiles=False, load_tiles=True, fix_dot=True):
+    def create_lane_map_layer(self, cache_tiles=False, load_tiles=True,
+                              fix_dot=True):
         tile_dir = self.get_dir(MapType.LANE)
-        return ConvertedLaneMapLayer(tile_dir, cache_tiles=cache_tiles, load_tiles=load_tiles, fix_dot=fix_dot)
+        return ConvertedLaneMapLayer(tile_dir, cache_tiles=cache_tiles,
+                                     load_tiles=load_tiles, fix_dot=fix_dot)
 
     def create_road_graph_layer(self, cache_tiles=False, load_tiles=True):
         tile_dir = self.get_dir(MapType.ROAD)
@@ -191,11 +196,13 @@ class MapLayers(object):
 
     @staticmethod
     def load_single_layers(map_dir, spec='*.json', as_dict=True):
-        # TODO: This loads all data from a layer at once. Add a new class to lazy load different files.
+        # TODO: This loads all data from a layer at once. Add a new class to
+        # lazy load different files.
         layers = {}
         for fn in glob.glob(os.path.join(map_dir, spec)):
             layer_name = os.path.splitext(os.path.basename(fn))[0]
             if len(layer_name) == 0:
                 continue
-            layers[layer_name] = feature_dict.load_from_file(fn, feature_dict=as_dict)
+            layers[layer_name] = feature_dict.load_from_file(
+                fn, feature_dict=as_dict)
         return layers
