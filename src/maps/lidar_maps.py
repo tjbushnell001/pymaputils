@@ -1,53 +1,36 @@
 import glob
 import os
-
+from maps.map_types import MapType
 from maps import feature_dict
+from maps.tiled_map_layer import JsonTiledMapLayer
+from lane_maps import LANE_MAP_TILE_LEVEL
+from lidar_lane_generation import lidar_gen_utils
 
-
-class LidarLineLayer(object):
-    def __init__(self, map_dir):
-        self.map_dir = map_dir
-        if not os.path.exists(self.map_dir):
-            raise "No lidar map data found at: {}".format(self.map_dir)
-        self.sub_dirs = next(os.walk(self.map_dir))[1]
-
-    def __getitem__(self, key):
-        return self.get_section(key)
-
-    def get_section(self, section_id):
-        if not self.section_exists(section_id):
+# 
+class LidarLineLayer(JsonTiledMapLayer):
+    def __init__(self, map_dir, cache_tiles=True, load_tiles=True):
+        super(LidarLineLayer, self).__init__(map_dir, LANE_MAP_TILE_LEVEL, cache_tiles=cache_tiles,
+                                                    load_tiles=load_tiles, layer_type=MapType.LIDAR_LINE,
+                                                    json_separators=(', ', ': '))
+    def load_tile(self, tile_id):
+        if not self.tile_exists(tile_id):
             return None
 
-        fn = self.get_section_path(section_id)
-        if fn is None:
-            return None
-        return feature_dict.load_from_file(fn)
 
-    def get_sections(self):
-        sections = []
-        for sub_dir in self.sub_dirs:
-            for fn in glob.glob(os.path.join(self.map_dir, sub_dir, '*.json')):
-                sections.append(os.path.splitext(os.path.basename(fn))[0])
-        return sections
+        fn = self.get_tile_filename(tile_id)
 
-    # --------------------------------------
-    # Disk Operations
-    # --------------------------------------
+        # load the here maps json tile
+        #raw_tile = super(LidarLineLayer, self).load_tile(tile_id)
 
-    def section_exists(self, section_id):
-        return self.get_section_path(section_id) is not None
+        # translate tile to geojson lane maps
+        #tile = translator.convert_tile_to_geojson(raw_tile, self.tile_level, self.fix_dot)
 
-    def get_section_path(self, section_id):
-        for sub_dir in self.sub_dirs:
-            fn = os.path.join(self.map_dir, sub_dir, "{}.json".format(section_id))
-            if os.path.exists(fn) and os.path.isfile(fn):
-                return fn
-        return None
+        fd = feature_dict.load_from_file(fn)
+            
+        return lidar_gen_utils.geojson_to_lane_segments(fd)
+    
+    def save_tile(self, tile_id, tile):
+        raw_tile = lidar_gen_utils.lat_lng_lane_segments_to_geojson(tile, tile_id)
+        super(LidarLineLayer, self).save_tile(tile_id, raw_tile)
 
-    def get_feature(self, ref):
-        section = self.get_section(ref['section_id'])
-        if section is None:
-            return None
-
-        feature_type = ref['type'].replace('_ref', '')
-        return section.get_features(feature_type).get(ref)
+        self.add_tile(tile_id, tile)

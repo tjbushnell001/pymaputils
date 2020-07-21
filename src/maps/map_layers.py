@@ -28,8 +28,22 @@ class MapLayers(object):
     @property
     def map_dir(self):
         if self._map_dir is None:
-            import rospy
-            self._map_dir = rospy.get_param('/maps/map_dir')
+            import rosgraph
+            # If ros is running, use the rosparam
+            if rosgraph.is_master_online():
+                import rospy
+                self._map_dir = rospy.get_param('/maps/map_dir')
+            # Else, assume we are in brain, check for the tiled maps directory in the home dir
+            else:
+                home = os.path.expanduser('~')
+                self._map_dir = home + '/tiled_maps/usa'
+                if not os.path.exists(self._map_dir):
+            # else, bail
+                    print 'No tiled maps directory found.'
+                    assert False
+                
+                
+
         return self._map_dir
 
     @property
@@ -55,7 +69,7 @@ class MapLayers(object):
 
     @property
     def lidar_lines_dir(self):
-        return os.path.join(self.map_dir, 'lidar_maps')
+        return os.path.join(self.map_dir, 'lidar_maps/tiles')
 
     # ----------------------------------------------
     # Main Getter

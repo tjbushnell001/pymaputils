@@ -65,6 +65,10 @@ class FeatureDict(object):
                     del self.feature_type_map[feature_type]
         # TODO: Delete the collection object as well
 
+    def merge_features(self, other, overwrite=False):
+        for feature in other.all_features():
+            self.add_feature(feature, overwrite)
+
 
 def load_from_file(file_path, feature_dict=True):
     """
