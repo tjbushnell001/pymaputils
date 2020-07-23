@@ -3,16 +3,20 @@ from maps.tiled_map_layer import JsonTiledMapLayer
 
 
 class GeoJsonTiledMapLayer(JsonTiledMapLayer):
-    def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True, layer_type=None):
+    def __init__(self, map_dir, tile_level, cache_tiles=True, load_tiles=True,
+                 layer_type=None):
         """
         Class that represents a tiled map of GeoJSON tiles.
 
-        :param map_dir: The root directory of this tiled map (usually lives one level below tiled_maps)
-        :param tile_level: the here_maps tile level. This basically defines the resolution of the tiles (larger number
-            means smaller tiles).
+        :param map_dir: The root directory of this tiled map (usually lives
+                        one level below tiled_maps)
+        :param tile_level: The here_maps tile level. This basically defines
+                           the resolution of the tiles (larger number means
+                           smaller tiles).
         """
         self.layer_type = layer_type
-        super(GeoJsonTiledMapLayer, self).__init__(map_dir, tile_level, cache_tiles=cache_tiles, load_tiles=load_tiles)
+        super(GeoJsonTiledMapLayer, self).__init__(
+            map_dir, tile_level, cache_tiles=cache_tiles, load_tiles=load_tiles)
 
     def load_tile(self, tile_id):
         """
