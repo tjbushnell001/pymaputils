@@ -1,5 +1,3 @@
-import glob
-import os
 from maps.map_types import MapType
 from maps import feature_dict
 from maps.tiled_map_layer import JsonTiledMapLayer
