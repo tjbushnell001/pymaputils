@@ -1,5 +1,6 @@
 import glob
 import os
+import socket
 
 from maps import feature_dict
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
@@ -32,19 +33,17 @@ class MapLayers(object):
     @property
     def map_dir(self):
         if self._map_dir is None:
-            import rosgraph
-            # If ros is running, use the rosparam
-            if rosgraph.is_master_online():
-                import rospy
-                self._map_dir = rospy.get_param('/maps/map_dir')
-            # Else, assume we are in brain, check for the tiled maps directory in the home dir
-            else:
+            try:
+                self._map_dir = self._get_ros_param('/maps/map_dir')
+            except ImportError as e:
+                # If we don't have ROS, we can't guess where the maps dir is
+                raise e
+            except socket.error as e:
+                # ROS is installed but not running
                 home = os.path.expanduser('~')
                 self._map_dir = home + '/tiled_maps/usa'
                 if not os.path.exists(self._map_dir):
-            # else, bail
-                    print 'No tiled maps directory found.'
-                    assert False
+                    raise IOError('No tiled maps directory found.')
 
         return self._map_dir
 
