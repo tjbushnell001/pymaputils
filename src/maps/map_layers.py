@@ -4,11 +4,9 @@ import socket
 
 from maps import feature_dict
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
-from maps.lane_maps import ConvertedLaneMapLayer
-from maps.lidar_maps import LidarLineLayer
+from maps.lane_maps import ConvertedLaneMapLayer, LANE_MAP_TILE_LEVEL
 from maps.map_types import MapType
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
-
 
 class MapLayers(object):
     def __init__(self, map_dir=None, free_space_dir=None, radar_zones_dir=None,
@@ -145,8 +143,7 @@ class MapLayers(object):
 
         elif layer_type == MapType.LIDAR_LINE:
             if MapType.LIDAR_LINE not in self.layers:
-                self.layers[MapType.LIDAR_LINE] = LidarLineLayer(
-                    self.get_dir(MapType.LIDAR_LINE))
+                self.layers[MapType.LIDAR_LINE] = self.create_tiled_map_layer(layer_type, LANE_MAP_TILE_LEVEL, **kwargs)
             return self.layers[MapType.LIDAR_LINE]
 
         elif layer_type == MapType.LANE_PREFERENCE:
@@ -195,13 +192,6 @@ class MapLayers(object):
         tile_dir = self.get_dir(MapType.LANE)
         return ConvertedLaneMapLayer(tile_dir, cache_tiles=cache_tiles,
                                      load_tiles=load_tiles, fix_dot=fix_dot)
-
-    def create_road_graph_layer(self, cache_tiles=False, load_tiles=True):
-        tile_dir = self.get_dir(MapType.ROAD)
-        return GeoJsonTiledMapLayer(tile_dir, ROAD_GRAPH_TILE_LEVEL,
-                                    cache_tiles=cache_tiles,
-                                    load_tiles=load_tiles,
-                                    layer_type=MapType.ROAD)
 
     def create_tiled_map_layer(self, layer_type, tile_level, cache_tiles=False, load_tiles=True):
         tile_dir = self.get_dir(MapType.ROAD)
