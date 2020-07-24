@@ -12,7 +12,6 @@ class TestImporting(unittest.TestCase):
         import maps.issue_types
         import maps.issues
         import maps.lane_maps
-        import maps.lidar_maps
         import maps.map_layers
         import maps.map_types
         import maps.road_graph
