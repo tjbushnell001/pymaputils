@@ -35,9 +35,6 @@ class MapLayers(object):
         if self._map_dir is None:
             try:
                 self._map_dir = self._get_ros_param('/maps/map_dir')
-            except ImportError as e:
-                # If we don't have ROS, we can't guess where the maps dir is
-                raise e
             except socket.error as e:
                 # ROS is installed but not running
                 home = os.path.expanduser('~')
@@ -98,7 +95,7 @@ class MapLayers(object):
 
         elif layer_type == MapType.ROAD:
             if MapType.ROAD not in self.layers:
-                self.layers[MapType.ROAD] = self.create_road_graph_layer(**kwargs)
+                self.layers[MapType.ROAD] = self.create_tiled_map_layer(layer_type, ROAD_GRAPH_TILE_LEVEL, **kwargs)
             return self.layers[MapType.ROAD]
 
         elif layer_type == MapType.DISENGAGE_ZONE:
@@ -205,6 +202,14 @@ class MapLayers(object):
                                     cache_tiles=cache_tiles,
                                     load_tiles=load_tiles,
                                     layer_type=MapType.ROAD)
+
+    def create_tiled_map_layer(self, layer_type, tile_level, cache_tiles=False, load_tiles=True):
+        tile_dir = self.get_dir(MapType.ROAD)
+        return GeoJsonTiledMapLayer(tile_dir, tile_level,
+                                    cache_tiles=cache_tiles,
+                                    load_tiles=load_tiles,
+                                    layer_type=layer_type)
+
 
     @staticmethod
     def load_single_layers(map_dir, spec='*.json', as_dict=True):
