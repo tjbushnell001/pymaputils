@@ -36,7 +36,7 @@ class MapLayers(object):
             except socket.error:
                 # ROS is installed but not running
                 home = os.path.expanduser('~')
-                self._map_dir = home + '/tiled_maps/usa'
+                self._map_dir = os.path.join(home, 'tiled_maps/usa')
                 if not os.path.exists(self._map_dir):
                     raise IOError('No tiled maps directory found.')
 
@@ -194,7 +194,7 @@ class MapLayers(object):
                                      load_tiles=load_tiles, fix_dot=fix_dot)
 
     def create_tiled_map_layer(self, layer_type, tile_level, cache_tiles=False, load_tiles=True):
-        tile_dir = self.get_dir(MapType.ROAD)
+        tile_dir = self.get_dir(layer_type)
         return GeoJsonTiledMapLayer(tile_dir, tile_level,
                                     cache_tiles=cache_tiles,
                                     load_tiles=load_tiles,
