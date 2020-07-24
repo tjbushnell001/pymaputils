@@ -156,4 +156,3 @@ def lidar_segment_ref(tile_id, route_id, segment_id, y_cluster, sub_cluster_id=0
         'y_cluster': y_cluster,
         'sub_cluster_id': sub_cluster_id,
     })
-
