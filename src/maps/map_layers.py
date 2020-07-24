@@ -33,7 +33,7 @@ class MapLayers(object):
         if self._map_dir is None:
             try:
                 self._map_dir = self._get_ros_param('/maps/map_dir')
-            except socket.error as e:
+            except socket.error:
                 # ROS is installed but not running
                 home = os.path.expanduser('~')
                 self._map_dir = home + '/tiled_maps/usa'
