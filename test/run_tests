@@ -1,5 +1,8 @@
 # remove any packages not in Pipfile from env
 pipenv clean
 
+# ensure dependencies are up to data and installed
+pipenv install -r ../requirements.txt
+
 # run all unit tests in env
 pipenv run python -m unittest discover
