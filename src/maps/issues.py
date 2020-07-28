@@ -38,13 +38,16 @@ class IssueLayer(object):
         if filter_types is not None:
             self.filter_types = set(filter_types)
 
-    def add_issue(self, feature, issue, point=None):
+    def add_issue(self, feature, issue, point=None, coordinates=None):
         if (self.filter_types is not None and
                 issue.issue_type not in self.filter_types):
             # we're filtering and this isn't a support issue type
             return
 
         issue_set = self.get_feature_issues(feature, create=True)
+
+        if coordinates is not None:
+            point = sg.asShape(feature.geometry).representative_point()
 
         if point is not None:
             issue_set.update_point(point)

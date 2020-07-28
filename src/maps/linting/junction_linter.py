@@ -7,6 +7,54 @@ import geopy
 
 LANE_TRANSITION_TYPES = {"MERGE": "M", "SPLIT": "S", "UNKNOWN": "N"}
 
+def validate_lane_connection(junction, inflow_lane, outflow_lane, issue_layer):
+    """
+    Adds an issue if the beginning of the new lane is closer to the second last coordinate of the previous lane.
+    """
+    coordinate_before_end = inflow_lane.geometry.coordinates[-2]
+    coordinate_end = inflow_lane.geometry.coordinates[-1]
+    coordinate_beginning = outflow_lane.geometry.coordinates[0]
+
+    d_inside_lane = geopy.distance.distance(coordinate_before_end, coordinate_end).meters
+    d_outside_lane = geopy.distance.distance(coordinate_before_end, coordinate_beginning).meters
+
+    if d_outside_lane < d_inside_lane:
+        issue_layer.add_issue(junction, Issue(IssueType.LANES_OVERLAP), point=None, coordinates=coordinate_end)
+
+def lint_lane_overlap(junction, lane_map, inflows, outflows, issue_layer):
+    """
+    Checks that the incoming lanes and lane boundaries don't overlap with the outgoing lanes and lane boundaries,
+    i.e. that the beginning of the new lane doesn't begin before the previous lane ended.
+    """
+    if len(inflows) == 0 or len(outflows) == 0:
+        return
+
+    inflow_lanes = [lane_map.get_feature(lane_ref) for lane_ref in inflows]
+    outflow_lanes = [lane_map.get_feature(lane_ref) for lane_ref in outflows]
+
+    for i in range(len(inflow_lanes)):
+        inflow_lane = inflow_lanes[i]
+        end_of_lane_coordinate = inflow_lane.geometry.coordinates[-1]
+
+        for j in range(len(outflow_lanes)):
+            outflow_lane = outflow_lanes[j]
+            start_of_lane_coordinate = outflow_lane.geometry.coordinates[0]
+
+            lane_dist = geopy.distance.distance(end_of_lane_coordinate, start_of_lane_coordinate).meters
+            # A junction is at most 0.1m from both its inflow and outflow lanes so the max distance between
+            # an inflow lane end and outflow lane beginning is double that (0.2m).
+            MAX_DISTANCE_BETWEEN_INFLOW_AND_OUTFLOW_LANE = 0.2
+            if lane_dist < MAX_DISTANCE_BETWEEN_INFLOW_AND_OUTFLOW_LANE:
+                validate_lane_connection(junction, inflow_lane, outflow_lane, issue_layer)
+
+                for line_id in ('left', 'right'):
+                    inflow_boundary_ref = inflow_lane.properties[line_id + '_boundary_ref']
+                    inflow_boundary = lane_map.get_feature(inflow_boundary_ref)
+                    outflow_boundary_ref = outflow_lane.properties[line_id + '_boundary_ref']
+                    outflow_boundary = lane_map.get_feature(outflow_boundary_ref)
+                    if inflow_boundary is not None and outflow_boundary is not None:
+                        validate_lane_connection(junction, inflow_boundary, outflow_boundary, issue_layer)
+
 
 def lint_junction(junction, lane_map, issue_layer):
     """
@@ -23,6 +71,8 @@ def lint_junction(junction, lane_map, issue_layer):
     in_transitions = junction_transition_summary(lane_map, inflows)
     out_transitions = junction_transition_summary(lane_map, outflows)
     transition_msg = junction_transition_message(in_transitions, out_transitions)
+
+    lint_lane_overlap(junction, lane_map, inflows, outflows, issue_layer)
 
     # 1. check that junction has any outflows
     if len(outflows) == 0:
