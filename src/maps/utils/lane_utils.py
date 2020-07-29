@@ -11,6 +11,17 @@ FORWARD_TRANSITION_PRIORITY = {
 }
 
 
+class RelativeLane(Enum):
+    LEFT_LEFT_ADJACENT      = -2
+    LEFT_ADJACENT           = -1
+    EGO                     = 0
+    RIGHT_ADJACENT          = 1
+    RIGHT_RIGHT_ADJACENT    = 2
+    MERGE                   = 3
+    LANE_CHANGE_SOURCE      = 4
+    LANE_CHANGE_DESTINATION = 5
+
+
 class Direction(Enum):
     FORWARD = 0
     BACKWARD = 1
@@ -90,23 +101,39 @@ def get_next_merge_ramp(lane_map, lane_ref):
     return None
 
 
-def get_next_merge_lane(lane_map, lane_ref, skip_curr_lane=False):
+def get_next_merge_lane(lane_map, lane_ref, max_iterations=5):
     """
     Returns the next merge lane, given a starting lane_ref.
 
     :param lane_map:
     :param lane_ref: lane ref of starting lane
-    :param skip_curr_lane: if True, include given lane. else, skip ahead.
+    :param max_lanes: the maximum number of lanes ahead to look
     :return: next merge lane
     """
     lane = lane_map.get_feature(lane_ref)
 
-    if skip_curr_lane:
-        lane = load_next_lane(lane, lane_map)
-    while lane:
+    iterations = 0
+    while lane and iterations < max_iterations:
         if lane["properties"]["merging"]:
-            return lane
+            merge_junction = lane_map.get_feature(
+                lane["properties"]["end_junction_ref"])
+            merge_inflow_refs = merge_junction["properties"]["inflow_refs"]
+
+            for merge_inflow_ref in merge_inflow_refs:
+                lg_ref = ref_utils.lane_group_ref_from_lane_ref(merge_inflow_ref)
+                is_ramp = lane_map.get_feature(lg_ref)["properties"]["is_ramp"]
+
+                inflow = lane_map.get_feature(merge_inflow_ref)
+                inflow_transition = inflow["properties"]["lane_transition_type"]
+                is_lane_reduction = inflow_transition == "MERGE"
+                if is_ramp or is_lane_reduction:
+                    # We have an on-ramp or a lane reduction. This takes
+                    # rightmost merge lane.
+                    return lane_map.get_feature(merge_inflow_ref)
+
         lane = load_next_lane(lane, lane_map)
+        iterations += 1
+
     return None
 
 
@@ -198,33 +225,147 @@ def load_next_lane(lane, lane_map, direction=Direction.FORWARD,
     return likely_lanes[0]
 
 
-def get_lanes_from_lane_occupancy(lane_map, lane_occupancy):
+def get_lanes_from_lane_occupancy(lane_map, lane_occupancy, tile_id=None):
     """
     Return the lane objects from the lane_occupancy message, preserving order.
     """
     lanes = []
     for lane_ref in lane_occupancy.lane_refs:
+        if tile_id and lane_ref['tile_id'] != tile_id:
+            continue
+
         lanes.append(
             lane_map.get_feature(ref_utils.lane_ref_msg_to_dict(lane_ref)))
 
     return lanes
 
 
-def get_adjacent_lane(lane_map, lane_occupancy, left=True):
-    ego_lane_ref = get_ego_lane_ref(lane_occupancy)
+def add_lane_ref_to_dict(lane_map, lane_ref, relative_lane, lane_refs_dict):
+    lg_ref = ref_utils.lane_group_ref_from_lane_ref(lane_ref)
+    lg = lane_map.get_feature(lg_ref)
+    if not lg['properties']['is_ramp']:
+        lane_refs_dict[relative_lane] = lane_ref
 
-    ego_lane = lane_map.get_feature(ego_lane_ref)
 
-    lane_num = ego_lane['properties']['lane_num']
+def add_adjacent_lane_refs_to_dict(lane_map, lane_occupancy, ego_lane_ref,
+                                   lane_refs_dict, left=True):
+    """
+    Adds lane refs of the (left and left left) OR (right and right right)
+    of ego_lane_ref to the lane_refs_dict.
+
+    :param lane_map: lane map layer
+    :param lane_occupancy: lane occupancy msg
+    :param ego_lane_ref: the lane ref referencing ego lane
+    :param lane_refs_dict: the dict from RelativeLane to lane ref under
+                           construction
+    :param left: whether we should add the left or right lane refs.
+    """
+    lane_ref = get_adjacent_lane_ref(
+        lane_map, lane_occupancy, ego_lane_ref, left=left)
+    if lane_ref:
+        relative_lane = RelativeLane.RIGHT_ADJACENT
+        if left:
+            relative_lane = RelativeLane.LEFT_ADJACENT
+
+        add_lane_ref_to_dict(lane_map, lane_ref, relative_lane, lane_refs_dict)
+
+    outer_lane_ref = get_adjacent_lane_ref(
+        lane_map, lane_occupancy, lane_ref, left=left)
+    if outer_lane_ref:
+        relative_lane = RelativeLane.RIGHT_RIGHT_ADJACENT
+        if left:
+            relative_lane = RelativeLane.LEFT_LEFT_ADJACENT
+
+        add_lane_ref_to_dict(lane_map, outer_lane_ref, relative_lane, lane_refs_dict)
+
+
+def add_merge_lane_refs_to_dict(lane_map, ego_lane_ref, lane_refs_dict):
+    """
+    Add merge lane refs to the lane_refs_dict.
+
+    :param lane_map: lane map layer
+    :param ego_lane_ref: the lane ref referencing ego lane
+    :param lane_refs_dict: the dict from RelativeLane to lane ref under
+                           construction
+    """
+    merge_lane = get_next_merge_lane(lane_map, ego_lane_ref)
+    if not merge_lane:
+        return
+
+    lane_refs_dict[RelativeLane.MERGE] = merge_lane["ref"]
+
+
+def get_lane_refs_dict(lane_map, lane_occupancy):
+    """
+    Returns a mapping from relative lane to lane ref.
+
+    :param lane_map: lane map layer
+    :param lane_occupancy: lane occupancy msg
+    :return: a map from RelativeLane to lane ref.
+    """
+    lane_refs_dict = {}
+    ego_lane_ref = get_ego_lane_ref(lane_map, lane_occupancy)
+    if not ego_lane_ref:
+        return lane_refs_dict
+
+    lane_refs_dict[RelativeLane.EGO] = ego_lane_ref
+
+    add_adjacent_lane_refs_to_dict(
+        lane_map, lane_occupancy, ego_lane_ref, lane_refs_dict, left=True)
+    add_adjacent_lane_refs_to_dict(
+        lane_map, lane_occupancy, ego_lane_ref, lane_refs_dict, left=False)
+    add_merge_lane_refs_to_dict(lane_map, ego_lane_ref, lane_refs_dict)
+
+    return lane_refs_dict
+
+
+def get_adjacent_lane_ref(lane_map, lane_occupancy, lane_ref, left=True):
+    """
+    Returns the lane ref to the right or left of lane_ref, if it exists.
+
+    :param lane_map: lane map layer
+    :param lane_occupancy: lane occupancy msg
+    :param lane_ref: lane ref to use as a reference
+    :param left: True if we want the left adjacent, False if we want right.
+    :return: the adjacent lane ref.
+    """
+    if lane_ref is None:
+        return None
+
+    lane = lane_map.get_feature(lane_ref)
+    if not lane:
+        return None
+
+    lane_num = lane.properties['lane_num']
     adjacent_lane_num = lane_num + (-1 if left else 1)
 
-    lanes = get_lanes_from_lane_occupancy(lane_map, lane_occupancy)
+    lanes = get_lanes_from_lane_occupancy(
+        lane_map, lane_occupancy, tile_id=lane_ref['tile_id'])
 
     for lane in lanes:
-        if lane['properties']['lane_num'] == adjacent_lane_num:
-            return lane
+        if lane.properties['lane_num'] == adjacent_lane_num:
+            return lane['ref']
 
     return None
+
+
+def get_adjacent_lane(lane_map, lane_occupancy, left=True):
+    """
+    Returns the left or right adjacent lane to ego, if it exists.
+
+    :param lane_map: lane map layer
+    :param lane_occupancy: lane occupancy msg
+    :param left: True if we want the left adjacent, False if we want right.
+    :return: the adjacent lane.
+    """
+    ego_lane_ref = get_ego_lane_ref(lane_map, lane_occupancy)
+    adjacent_lane_ref = get_adjacent_lane_ref(
+        lane_map, lane_occupancy, ego_lane_ref, left=left)
+
+    if not adjacent_lane_ref:
+        return None
+
+    return lane_map.get_feature(adjacent_lane_ref)
 
 
 def get_rightmost_lane(lane_map, lane_occupancy, include_emergency_lanes=False):
@@ -275,11 +416,21 @@ def get_rightmost_lane_boundary(lane_map,
     return lane_map.get_feature(right_boundary_ref)
 
 
-def get_ego_lane_ref(lane_occupancy):
+def get_ego_lane_ref(lane_map, lane_occupancy):
     """
     Return the lane ref for the ego lane.
     """
     if lane_occupancy is None or not lane_occupancy.possible_ego_lanes:
         return None
 
+    for possible_ego_lane_ref in lane_occupancy.possible_ego_lanes:
+        lane_group = lane_map.get_feature(
+            ref_utils.lane_group_ref_from_lane_ref(possible_ego_lane_ref))
+
+        if not lane_group['properties']['is_ramp']:
+            # Most of the time we're not on a merge ramp. This helps avoid
+            # confusion in criss-crossing lanes.
+            return ref_utils.lane_ref_msg_to_dict(possible_ego_lane_ref)
+
+    # If all the lanes are ramps, just take the first.
     return ref_utils.lane_ref_msg_to_dict(lane_occupancy.possible_ego_lanes[0])
