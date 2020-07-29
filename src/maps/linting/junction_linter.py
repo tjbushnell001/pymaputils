@@ -34,12 +34,8 @@ def lint_lane_overlap(junction, lane_map, inflows, outflows, issue_layer):
     inflow_lanes = [lane_map.get_feature(lane_ref) for lane_ref in inflows]
     outflow_lanes = [lane_map.get_feature(lane_ref) for lane_ref in outflows]
 
-    for i in range(len(inflow_lanes)):
-        inflow_lane = inflow_lanes[i]
-        end_of_lane_coordinate = inflow_lane.geometry.coordinates[-1]
-
-        for j in range(len(outflow_lanes)):
-            outflow_lane = outflow_lanes[j]
+    for i, inflow_lane in enumerate(inflow_lanes):
+        for j, outflow_lane in enumerate(outflow_lanes):
             validate_lane_connection(junction, inflow_lane, outflow_lane, issue_layer)
 
             for line_id in ('left', 'right'):
