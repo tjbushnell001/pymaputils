@@ -14,7 +14,7 @@ def lint_junction(junction, lane_map, issue_layer):
 
     :param junction: a geojson junction object to lint
     :param lane_map: a geojson based tiled map layer
-    :param issue_layer: an optional pre initialized issue layer to write new issues to
+    :param issue_layer: a pre initialized issue layer to write new issues to
     :return: the issue layer with any new issues added.
     """
     inflows = junction.properties['inflow_refs']
@@ -27,6 +27,8 @@ def lint_junction(junction, lane_map, issue_layer):
     # 1. check that junction has any outflows
     if len(outflows) == 0:
         issue_layer.add_issue(junction, Issue(IssueType.NO_OUTFLOW))
+        if len(inflows) == 0:
+            issue_layer.add_issue(junction, Issue(IssueType.ORPHANED_JUNCTION))
 
     # 2. check outflow transitions
     for counts in out_transitions.values():
@@ -89,6 +91,22 @@ def lint_junction(junction, lane_map, issue_layer):
 
     return issue_layer
 
+def lint_junction_for_orphan(junction, issue_layer):
+    """
+    Lint a junction on an emergency lane,
+    checking the inflow and outflow lanes for the correct properties and formatting.
+
+    :param junction: a geojson junction object to lint
+    :param issue_layer: a pre initialized issue layer to write new issues to
+    :return: the issue layer with any new issues added.
+    """
+    inflows = junction.properties['inflow_refs']
+    outflows = junction.properties['outflow_refs']
+
+    if len(outflows) == 0 and len(inflows) == 0:
+        issue_layer.add_issue(junction, Issue(IssueType.ORPHANED_JUNCTION))
+
+    return issue_layer
 
 def junction_transition_summary(lane_map, lane_refs):
     summary = {

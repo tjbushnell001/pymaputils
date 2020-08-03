@@ -97,11 +97,29 @@ def follow_lanes(initial_lane, lane_map, next_fn):
         lane = next_fn(lane, lane_map)
 
 
+def _lanes_for_lane_group(lane_group, lane_map):
+    tile = lane_map.get_tile(lane_group['ref']['tile_id'])
+    return [tile.get_features('lane')[lane_segment_ref]
+                for lane_segment_ref in lane_group['properties']['lane_segment_refs']]
+
+
 def non_emergency_lanes(lane_group, lane_map):
     non_emergency_lane_list = []
-    tile = lane_map.get_tile(lane_group['ref']['tile_id'])
-    for lane_segment_ref in lane_group['properties']['lane_segment_refs']:
-        lane = tile.get_features('lane')[lane_segment_ref]
+    for lane in _lanes_for_lane_group(lane_group, lane_map):
         if not lane['properties']['is_emergency_lane']:
             non_emergency_lane_list.append(lane)
     return non_emergency_lane_list
+
+
+def emergency_lanes(lane_group, lane_map):
+    emergency_lane_list = []
+    for lane in _lanes_for_lane_group(lane_group, lane_map):
+        if lane['properties']['is_emergency_lane']:
+            emergency_lane_list.append(lane)
+    return emergency_lane_list
+
+
+def connectors_for_lane_group(lane_group, lane_map):
+    connector_refs = [lane_group.properties[c] for c in ['start_connector_ref', 'end_connector_ref']]
+    connectors = [lane_map.get_feature(c) for c in connector_refs]
+    return connectors

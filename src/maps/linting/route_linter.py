@@ -10,7 +10,7 @@ from maps.linting import junction_linter, lane_linter, lane_preference_linter
 from maps.map_layers import MapLayers
 from maps.map_types import MapType
 from maps.road_graph import ROAD_GRAPH_TILE_LEVEL
-from maps.utils import emblog, lane_map_utils, routing_utils
+from maps.utils import emblog, lane_map_utils, ref_utils, routing_utils
 
 
 def lint_lane_group(lane_group, issue_layer):
@@ -51,6 +51,16 @@ def lint_route(route, route_id, lane_map, road_map, issue_layer, lane_preference
                     issue_layer.add_issue(lane, Issue(IssueType.NON_EXISTENT_JUNCTION_REF, msg=str(lane)))
                 else:
                     junction_linter.lint_junction(junction, lane_map, issue_layer)
+
+        for connector in lane_map_utils.connectors_for_lane_group(lane_group, lane_map):
+            # This is a little ugly - there's no way to query for all junctions associated with a connector
+            # so we just query all possible junctions
+            for lane in range(1 << 8):
+                junction_ref = ref_utils.create_junction_ref(
+                    connector['ref']['tile_id'], connector['ref']['id'], lane)
+                junction = lane_map.get_feature(junction_ref)
+                if junction:
+                    junction_linter.lint_junction_for_orphan(junction, issue_layer)
 
 
 def lint_routes(map_dir, map_reader_dir, route_ids, issue_types=None):
