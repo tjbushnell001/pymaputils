@@ -7,6 +7,14 @@ import geopy
 
 LANE_TRANSITION_TYPES = {"MERGE": "M", "SPLIT": "S", "UNKNOWN": "N"}
 
+from geographiclib.geodesic import Geodesic
+
+def get_bearing_helper(lat1, lat2, long1, long2):
+    brng = Geodesic.WGS84.Inverse(lat1, long1, lat2, long2)['azi1']
+    return brng
+
+def get_bearing(coordinates):
+    return get_bearing_helper(coordinates[0][1], coordinates[1][1], coordinates[0][0], coordinates[1][0])
 
 def lint_junction(junction, lane_map, issue_layer):
     """
@@ -58,10 +66,17 @@ def lint_junction(junction, lane_map, issue_layer):
         elif counts['UNKNOWN'] > 1:
             issue_layer.add_issue(junction, Issue(IssueType.MERGE_MULTIPLE_NORMAL, msg=transition_msg))
 
+    merge_lane_locations = []
+    unknown_lane_locations = []
     for lane_ref in inflows:
         lane = lane_map.get_feature(lane_ref)
         if lane.properties['is_emergency_lane']:
             continue
+        transition_type = lane.properties['lane_transition_type']
+        if transition_type == "UNKNOWN":
+            unknown_lane_locations.append(lane.geometry["coordinates"][0])
+        elif transition_type == "MERGE":
+            merge_lane_locations.append(lane.geometry["coordinates"][0])
         # 6. check inflow direction of travel
         lane_dot = lane.properties['direction_of_travel']
         if lane_dot != "FORWARD":
@@ -70,6 +85,14 @@ def lint_junction(junction, lane_map, issue_layer):
         # 7. check inflow geometric properties
         if len(inflows) > 1 and not lane.properties['merging']:
             issue_layer.add_issue(junction, Issue(IssueType.MERGING_MISSING_PROPERTY))
+
+    if len(merge_lane_locations) > 0:
+        for unknown_lane_location in unknown_lane_locations:
+            unknown_heading = get_bearing([unknown_lane_location, junction.geometry.coordinates])
+            for merge_lane_location in merge_lane_locations:
+                merge_heading = get_bearing([merge_lane_location, junction.geometry.coordinates])
+                if unknown_heading < merge_heading:
+                    issue_layer.add_issue(junction, Issue(IssueType.MERGING_MISSING_PROPERTY))
 
     # 8. check junction distance from lanes
     junction_pt = tuple(reversed(junction.geometry['coordinates']))
