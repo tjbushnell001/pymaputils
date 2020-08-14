@@ -343,7 +343,7 @@ def get_adjacent_lane_ref(lane_map, lane_occupancy, lane_ref, left=True):
         lane_map, lane_occupancy, tile_id=lane_ref['tile_id'])
 
     for lane in lanes:
-        if lane.properties['lane_num'] == adjacent_lane_num:
+        if lane and lane.properties['lane_num'] == adjacent_lane_num:
             return lane['ref']
 
     return None
