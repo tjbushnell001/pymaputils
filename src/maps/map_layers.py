@@ -93,7 +93,9 @@ class MapLayers(object):
 
         elif layer_type == MapType.ROAD:
             if MapType.ROAD not in self.layers:
-                self.layers[MapType.ROAD] = self.create_tiled_map_layer(layer_type, ROAD_GRAPH_TILE_LEVEL, **kwargs)
+                self.layers[MapType.ROAD] = self.create_tiled_map_layer(
+                    layer_type, ROAD_GRAPH_TILE_LEVEL, cache_tiles=kwargs.get('cache_tiles', True),
+                    **kwargs)
             return self.layers[MapType.ROAD]
 
         elif layer_type == MapType.DISENGAGE_ZONE:
