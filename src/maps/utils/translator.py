@@ -398,6 +398,11 @@ def convert_lane_to_geojson(raw_lane, tile_id, lane_group_id, lane_idx, start_co
     lane_seg_ref = ref_utils.create_lane_segment_ref(tile_id, lane_group_id, raw_lane['id'])
 
     lane_type = raw_lane['lane_type']
+    # We convert the old LANE_TYPE_UNKNOWN to be just UNKNOWN in our on disk set
+    if lane_type == 'LANE_TYPE_UNKNOWN':
+        lane_type = 'UNKNOWN'
+    if lane_type not in VALID_LANE_TYPES:
+        print 'LANE_TYPE [{}] not in VALID_LANE_TYPES!'.format(lane_type)
     assert lane_type in VALID_LANE_TYPES
 
     lane_transition_type = raw_lane['lane_transition_type']
