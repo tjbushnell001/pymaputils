@@ -389,7 +389,7 @@ def get_rightmost_lane(lane_map, lane_occupancy, include_emergency_lanes=False):
         return lane_objects[-1]
 
     for lane in reversed(lane_objects):
-        if lane['properties']['is_emergency_lane']:
+        if lane['properties'] and lane['properties']['is_emergency_lane']:
             continue
         return lane
 
