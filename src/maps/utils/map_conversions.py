@@ -74,6 +74,10 @@ def get_utm_theta(utm_zone, heading_gcs, lat, lon):
     utm_heading = get_utm_heading(utm_zone, heading_gcs, lat, lon)
     return (np.pi / 2.0) - np.radians(utm_heading)
 
+def get_heading_gcs(utm_zone, utm_theta, lat, lon):
+     utm_heading = np.degrees((np.pi / 2.0) - utm_theta)
+     return get_heading_gcs(utm_zone, utm_heading, lat, lon)
+
 
 def get_utm_heading(utm_zone, heading_gcs, lat, lon):
     """ GCS heading to UTM heading (in degrees NED, clockwise) at the given coordinates.
@@ -97,6 +101,14 @@ def get_utm_heading(utm_zone, heading_gcs, lat, lon):
     lon_0_rad = np.radians(lon_0) # pylint: disable=assignment-from-no-return
     convergence_rad = np.arctan(np.tan(lon_rad - lon_0_rad) * np.sin(lat_rad)) # pylint: disable=assignment-from-no-return
     return heading_gcs - np.degrees(convergence_rad)
+
+def get_heading_gcs(utm_zone, utm_heading, lat, lon):
+    lon_0 = get_utm_zone_central_meridian(utm_zone[0])
+    lat_rad = np.radians(lat) # pylint: disable=assignment-from-no-return
+    lon_rad = np.radians(lon) # pylint: disable=assignment-from-no-return
+    lon_0_rad = np.radians(lon_0) # pylint: disable=assignment-from-no-return
+    convergence_rad = np.arctan(np.tan(lon_rad - lon_0_rad) * np.sin(lat_rad)) # pylint: disable=assignment-from-no-return
+    return utm_heading + np.degrees(convergence_rad)
 
 
 def get_utm_zone_central_meridian(utm_zone):
