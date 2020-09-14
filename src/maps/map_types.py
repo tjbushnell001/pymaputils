@@ -12,6 +12,7 @@ class MapType(Enum):
     DISENGAGE_ZONE = "DISENGAGE_ZONE"
     LIDAR_LINE = "LIDAR_LINE"
     LANE_PREFERENCE = "LANE_PREFERENCE"
+    VMF_LANE = "VMF_LANE"
 
 
 # TODO: update downstream users' Enum dependencies to use more recent

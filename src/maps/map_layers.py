@@ -91,6 +91,12 @@ class MapLayers(object):
                 self.layers[MapType.LANE] = self.create_lane_map_layer(**kwargs)
             return self.layers[MapType.LANE]
 
+        if layer_type == MapType.VMF_LANE:
+            if MapType.LANE not in self.layers:
+                self.layers[MapType.VMF_LANE] = self.create_lane_map_layer(
+                    layer_type=MapType.VMF_LANE, **kwargs)
+            return self.layers[MapType.VMF_LANE]
+
         elif layer_type == MapType.ROAD:
             if MapType.ROAD not in self.layers:
                 self.layers[MapType.ROAD] = self.create_tiled_map_layer(layer_type, ROAD_GRAPH_TILE_LEVEL, **kwargs)
@@ -163,6 +169,8 @@ class MapLayers(object):
     def get_dir(self, layer_type):
         if layer_type == MapType.LANE:
             return os.path.join(self.map_dir, 'tiles')
+        elif layer_type == MapType.VMF_LANE:
+            return os.path.join(self.map_dir, 'vmf_tiles')
         elif layer_type == MapType.ROAD:
             return os.path.join(self.map_dir, 'road_tiles')
         elif layer_type == MapType.DISENGAGE_ZONE:
@@ -188,8 +196,8 @@ class MapLayers(object):
     # ----------------------------------------------
 
     def create_lane_map_layer(self, cache_tiles=False, load_tiles=True,
-                              fix_dot=True):
-        tile_dir = self.get_dir(MapType.LANE)
+                              fix_dot=True, layer_type=MapType.LANE):
+        tile_dir = self.get_dir(layer_type)
         return ConvertedLaneMapLayer(tile_dir, cache_tiles=cache_tiles,
                                      load_tiles=load_tiles, fix_dot=fix_dot)
 
