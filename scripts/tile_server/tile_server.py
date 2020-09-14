@@ -23,11 +23,13 @@ from maps.utils import ref_utils
 
 import shapely.geometry
 
+
 def parse_args(args=None):
-  parser = argparse.ArgumentParser(description="Mappy tile server")
-  parser.add_argument('--map_dir', type=str, required=True,
-                      help="Location of map data (root of tiled_maps) on the local machine")
-  return parser.parse_args(args=args)
+    parser = argparse.ArgumentParser(description="Mappy tile server")
+    parser.add_argument('--map_dir', type=str, required=True,
+                        help="Location of map data (root of tiled_maps) on the local machine")
+    return parser.parse_args(args=args)
+
 
 # ------------------------------------
 # Constants
@@ -292,11 +294,14 @@ def update_tile(tile_id):
 
 
 def main():
-    global map_reader_dir
-    global lidar_map_layer
-    global lane_map
-    global road_graph
-    global dot_corrected_lane_map
+    # Using globals because flask is not meant to be a robust service and doesn't allow for smarter
+    # design
+    # TODO(christian): move on from flask.
+    global map_reader_dir  # pylint: disable=global-statement
+    global lidar_map_layer  # pylint: disable=global-statement
+    global lane_map  # pylint: disable=global-statement
+    global road_graph  # pylint: disable=global-statement
+    global dot_corrected_lane_map  # pylint: disable=global-statement
 
     args = parse_args()
 
