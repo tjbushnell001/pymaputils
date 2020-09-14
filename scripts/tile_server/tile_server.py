@@ -9,6 +9,7 @@ import maps.road_graph
 import os
 import re
 
+from copy import copy
 from flask_cors import cross_origin
 from maps.feature_dict import FeatureDict
 from maps.geojson_tiled_map import GeoJsonTiledMapLayer
@@ -91,41 +92,24 @@ def get_lane_tiles():
 def get_lane_tile(tile_id):
     """
     Load the tile associated with tile_id from disk and return it as a geojson object.
-
     :param tile_id: the id of the tile being loaded
     :return: the geojson lane tile data as a json object
     """
-    tile = lane_map.get_tile(int(tile_id))
+    tile_id = int(tile_id)
+    tile = lane_map.get_tile(tile_id)
     if not tile:
         flask.abort(404)
         return
+
+    lidar_tile = lidar_map_layer.get_tile(tile_id)
+
+    if lidar_tile:
+        collection_copy = copy(tile.collection)
+        collection_copy.features = copy(tile.collection.features) + lidar_tile.collection.features
+
+        return flask.jsonify(collection_copy)
+
     return flask.jsonify(tile.collection)
-
-
-@app.route("/lidar_maps", methods=['GET'])
-@app.route("/lidar_maps/", methods=['GET'])
-@cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
-def get_lidar_maps():
-    """ Get a list of lidar maps. """
-    lidar_sections = lidar_map_layer.get_sections()
-    return flask.jsonify(lidar_sections)
-
-
-@app.route("/lidar_maps/<section_id>", methods=['GET'])
-@app.route("/lidar_maps/<section_id>/", methods=['GET'])
-@cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
-def get_lidar_map(section_id):
-    """
-    Load the lidar lines section associated with "section_id"
-
-    :param section_id: the section id of the lidar line set
-    :return: the geojson lane data as a json object
-    """
-    if section_id not in lidar_map_layer.get_sections():
-        flask.abort(404)
-        return
-    return flask.jsonify(lidar_map_layer[section_id].collection)
-
 
 @app.route("/tiles/find", methods=['GET'])
 @app.route("/tiles/find/", methods=['GET'])
@@ -134,7 +118,6 @@ def get_lane_feature():
     """
     Find coordinates for the specified feature ref.  Ref is encoded as url args.
     (e.g. "/tiles/find/?type=lane_ref&tile_id=309134521&lane_group_id=2083391152&id=2")
-
     :return: A feature with the coordinates
     """
     # create a ref from url arguments
@@ -183,7 +166,6 @@ def get_road_tiles():
 def get_road_tile(tile_id):
     """
     Load the road tile associated with tile_id from disk and return it as a geojson object.
-
     :param tile_id: the id of the road tile being loaded
     :return: the geojson road tile data as a json object
     """
@@ -289,13 +271,17 @@ def update_tile(tile_id):
     For right now, tile updates
     purely replace the full tile.
     TODO: implement partial patching logic
-
     :param tile_id: the id of the lane tile being replaced
     :return: a flask response object
     """
     print "Saving tile [{}], please wait...".format(tile_id)
 
-    tile = FeatureDict(geojson.loads(flask.request.data))
+    features = geojson.loads(flask.request.data)
+
+    # Filter out lidar data in tile
+    features = [feature for feature in features if feature['type'] != 'lidar_segment']
+    tile = FeatureDict(features)
+
     lane_map.save_tile(tile_id, tile)
 
     print "Rebuilding road tiles, please wait..."
