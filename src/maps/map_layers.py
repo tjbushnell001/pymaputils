@@ -171,29 +171,35 @@ class MapLayers(object):
         return self.layers[layer_type]
 
     def get_dir(self, layer_type):
+        layer_dir = None
+
         if layer_type == MapType.LANE:
-            return os.path.join(self.map_dir, 'tiles')
+            layer_dir = os.path.join(self.map_dir, 'tiles')
         elif layer_type == MapType.VMF_LANE:
-            return os.path.join(self.map_dir, 'vmf_tiles')
+            layer_dir = os.path.join(self.map_dir, 'vmf_tiles')
         elif layer_type == MapType.ROAD:
-            return os.path.join(self.map_dir, 'road_tiles')
+            layer_dir = os.path.join(self.map_dir, 'road_tiles')
         elif layer_type == MapType.DISENGAGE_ZONE:
-            return os.path.join(self.map_dir, 'annotations')
+            layer_dir = os.path.join(self.map_dir, 'annotations')
         elif layer_type == MapType.LANE_ANNOTATION:
-            return os.path.join(self.map_dir, 'annotations')
+            layer_dir = os.path.join(self.map_dir, 'annotations')
         elif layer_type == MapType.MAP_READER:
-            return self.map_reader_dir
+            layer_dir = self.map_reader_dir
         elif layer_type == MapType.FREE_SPACE:
-            return self.free_space_dir
+            layer_dir = self.free_space_dir
         elif layer_type == MapType.RADAR_ZONE:
-            return self.radar_zones_dir
+            layer_dir = self.radar_zones_dir
         elif layer_type == MapType.LOCALIZATION_ZONE:
-            return os.path.join(
+            layer_dir = os.path.join(
                 self.map_dir, '../../localization_filter_zones.json')
         elif layer_type == MapType.LIDAR_LINE:
-            return self.lidar_lines_dir
+            layer_dir = self.lidar_lines_dir
         elif layer_type == MapType.LANE_PREFERENCE:
-            return os.path.join(self.map_dir, 'preferences')
+            layer_dir = os.path.join(self.map_dir, 'preferences')
+
+        if layer_dir is None:
+            raise NotImplementedError("MapType {} is not implemented.".format(layer_type))
+        return layer_dir
 
     # ----------------------------------------------
     # Layer Constructors
