@@ -86,21 +86,22 @@ class MapLayers(object):
     # ----------------------------------------------
 
     def get_layer(self, layer_type, layer_name='', as_dict=False, **kwargs):
+        layer = None
         if layer_type == MapType.LANE:
             if MapType.LANE not in self.layers:
                 self.layers[MapType.LANE] = self.create_lane_map_layer(**kwargs)
-            return self.layers[MapType.LANE]
+            layer = self.layers[MapType.LANE]
 
-        if layer_type == MapType.VMF_LANE:
+        elif layer_type == MapType.VMF_LANE:
             if MapType.LANE not in self.layers:
                 self.layers[MapType.VMF_LANE] = self.create_lane_map_layer(
                     layer_type=MapType.VMF_LANE, **kwargs)
-            return self.layers[MapType.VMF_LANE]
+            layer = self.layers[MapType.VMF_LANE]
 
         elif layer_type == MapType.ROAD:
             if MapType.ROAD not in self.layers:
                 self.layers[MapType.ROAD] = self.create_tiled_map_layer(layer_type, ROAD_GRAPH_TILE_LEVEL, **kwargs)
-            return self.layers[MapType.ROAD]
+            layer = self.layers[MapType.ROAD]
 
         elif layer_type == MapType.DISENGAGE_ZONE:
             if MapType.DISENGAGE_ZONE not in self.layers:
@@ -108,7 +109,7 @@ class MapLayers(object):
                     self.get_dir(MapType.DISENGAGE_ZONE),
                     spec="disengage_zones*.json")
 
-            return self.layers[MapType.DISENGAGE_ZONE].get(layer_name)
+            layer = self.layers[MapType.DISENGAGE_ZONE].get(layer_name)
 
         elif layer_type == MapType.LANE_ANNOTATION:
             if MapType.LANE_ANNOTATION not in self.layers:
@@ -117,40 +118,40 @@ class MapLayers(object):
                     spec="*.json",
                     as_dict=as_dict)
 
-            return self.layers[MapType.LANE_ANNOTATION].get(layer_name)
+            layer = self.layers[MapType.LANE_ANNOTATION].get(layer_name)
 
         elif layer_type == MapType.MAP_READER:
             if MapType.MAP_READER not in self.layers:
                 self.layers[MapType.MAP_READER] = self.load_single_layers(
                     self.get_dir(MapType.MAP_READER),
                     as_dict=as_dict)
-            return self.layers[MapType.MAP_READER].get(layer_name)
+            layer = self.layers[MapType.MAP_READER].get(layer_name)
 
         elif layer_type == MapType.FREE_SPACE:
             if MapType.FREE_SPACE not in self.layers:
                 self.layers[MapType.FREE_SPACE] = self.load_single_layers(
                     self.get_dir(MapType.FREE_SPACE),
                     as_dict=as_dict)
-            return self.layers[MapType.FREE_SPACE].get(layer_name)
+            layer = self.layers[MapType.FREE_SPACE].get(layer_name)
 
         elif layer_type == MapType.RADAR_ZONE:
             if MapType.RADAR_ZONE not in self.layers:
                 self.layers[MapType.RADAR_ZONE] = self.load_single_layers(
                     self.get_dir(MapType.RADAR_ZONE),
                     as_dict=as_dict)
-            return self.layers[MapType.RADAR_ZONE].get(layer_name)
+            layer = self.layers[MapType.RADAR_ZONE].get(layer_name)
 
         elif layer_type == MapType.LOCALIZATION_ZONE:
             if MapType.LOCALIZATION_ZONE not in self.layers:
                 self.layers[MapType.LOCALIZATION_ZONE] = feature_dict.load_from_file(
                     self.get_dir(MapType.LOCALIZATION_ZONE), feature_dict=as_dict)
 
-            return self.layers[MapType.LOCALIZATION_ZONE]
+            layer = self.layers[MapType.LOCALIZATION_ZONE]
 
         elif layer_type == MapType.LIDAR_LINE:
             if MapType.LIDAR_LINE not in self.layers:
                 self.layers[MapType.LIDAR_LINE] = self.create_tiled_map_layer(layer_type, LANE_MAP_TILE_LEVEL, **kwargs)
-            return self.layers[MapType.LIDAR_LINE]
+            layer = self.layers[MapType.LIDAR_LINE]
 
         elif layer_type == MapType.LANE_PREFERENCE:
             if MapType.LANE_PREFERENCE not in self.layers:
@@ -158,8 +159,11 @@ class MapLayers(object):
                     self.get_dir(MapType.LANE_PREFERENCE),
                     as_dict=as_dict
                 )
-            return self.layers[MapType.LANE_PREFERENCE]
-        raise NotImplementedError()
+            layer = self.layers[MapType.LANE_PREFERENCE]
+
+        if layer is None:
+            raise NotImplementedError("MapType {} is not implemented.".format(layer_type))
+        return layer
 
     def get_all_layers(self, layer_type, **kwargs):
         # make sure it gets created
